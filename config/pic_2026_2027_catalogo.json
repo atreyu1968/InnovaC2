@@ -1,0 +1,884 @@
+{
+  "id": "PIC_2026_2027_INNOVACION_C2",
+  "version": "1.0.0",
+  "estado": "transcripcion_para_revision",
+  "fecha_corte": "2026-10-17",
+  "fuente": "PIC_Innovacion_Centro_26-27.docx (modelo facilitado para cumplimentacion en Laycos)",
+  "reglas": {
+    "objetivos": 6,
+    "acciones_minimas_por_objetivo": 1,
+    "acciones_obligatorias": [
+      "1.1",
+      "1.2"
+    ],
+    "otras_acciones_maximo": 3,
+    "proyectos_maximo_formulario": 6,
+    "dafo_por_cuadrante_minimo": 1,
+    "dafo_por_cuadrante_maximo": 3,
+    "reuniones_CICLOPE_minimo": 4,
+    "plazo_pic": "2026-10-30",
+    "plazo_memoria": "2027-06-18",
+    "riesgo_numerico_positivo": true,
+    "logrado_actualizable_solo_en_seguimiento": true
+  },
+  "objetivos": [
+    {
+      "codigo": "1",
+      "titulo": "Impulsar la creación de una cultura innovadora en el centro",
+      "acciones": [
+        {
+          "codigo": "1.1",
+          "titulo": "Constitución y dinamización de la unidad de Coordinación de Innovación, Calidad, Orientación Profesional y Emprendimiento (CICLOPE)  [OBLIGATORIA]",
+          "obligatoria": true,
+          "indicadores": [
+            {
+              "id": "PIC-1.1-I1",
+              "descripcion": "Unidad CICLOPE constituida (sí / no)",
+              "tipo": "booleano",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-1.1-I2",
+              "descripcion": "N.º de reuniones de CICLOPE celebradas en el curso (mínimo 4)  (número)",
+              "tipo": "numero",
+              "minimo_normativo": 4,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "1.2",
+          "titulo": "Elaboración del Plan de Innovación del Centro, incorporación como anexo a la PGA y presentación al Claustro  [OBLIGATORIA]",
+          "obligatoria": true,
+          "indicadores": [
+            {
+              "id": "PIC-1.2-I1",
+              "descripcion": "PIC incorporado como anexo a la PGA (sí / no)",
+              "tipo": "booleano",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-1.2-I2",
+              "descripcion": "Proyecto de Innovación de las Redes presentado al Claustro (sí / no)",
+              "tipo": "booleano",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "1.3",
+          "titulo": "Difusión interna de las actuaciones de la Red de Innovación y de las buenas prácticas del centro (CCP o ETA, Claustro y departamentos)",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-1.3-I1",
+              "descripcion": "N.º de informaciones trasladadas a la CCP o ETA (mínimo 3, una por trimestre)  (número)",
+              "tipo": "numero",
+              "minimo_normativo": 3,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-1.3-I2",
+              "descripcion": "N.º de difusiones realizadas en Claustro o departamentos  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "1.4",
+          "titulo": "Organización de formación del alumnado en competencias relacionadas con la innovación",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-1.4-I1",
+              "descripcion": "N.º de alumnado formado  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "1.5",
+          "titulo": "Acciones de reconocimiento de la actividad innovadora del profesorado e impulso del talento interno",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-1.5-I1",
+              "descripcion": "N.º de docentes reconocidos por sus iniciativas de innovación  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "2",
+      "titulo": "Incorporar nuevas metodologías de enseñanza para favorecer la innovación pedagógica en Formación Profesional",
+      "acciones": [
+        {
+          "codigo": "2.1",
+          "titulo": "Organización de formación del profesorado en metodologías activas y en tecnologías vinculadas a los proyectos de innovación",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-2.1-I1",
+              "descripcion": "N.º de docentes formados  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "2.2",
+          "titulo": "Difusión entre el profesorado de los recursos de la Red de Innovación (Observatorio de Metodologías Activas, vídeos de proyectos, materiales de ABR y ApS)",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-2.2-I1",
+              "descripcion": "N.º de docentes que han recibido los materiales  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "2.3",
+          "titulo": "Evaluación del impacto de las metodologías activas en el aprendizaje del alumnado",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-2.3-I1",
+              "descripcion": "N.º de informes o valoraciones de impacto elaborados  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "3",
+      "titulo": "Fomentar la realización de proyectos de innovación",
+      "acciones": [
+        {
+          "codigo": "3.1",
+          "titulo": "Elaboración y presentación de proyectos de innovación a convocatorias oficiales (DGFPERE, Ministerio, Erasmus+, CaixaBank Dualiza…)",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-3.1-I1",
+              "descripcion": "N.º de proyectos presentados  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-3.1-I2",
+              "descripcion": "N.º de docentes y alumnado implicados en su elaboración  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "3.2",
+          "titulo": "Ejecución, seguimiento y evaluación de los proyectos de innovación aprobados",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-3.2-I1",
+              "descripcion": "% de proyectos ejecutados respecto a los aprobados  (porcentaje)",
+              "tipo": "porcentaje",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "3.3",
+          "titulo": "Consolidación y continuidad de los proyectos innovadores en el centro",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-3.3-I1",
+              "descripcion": "N.º de proyectos con plan de continuidad definido  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "3.4",
+          "titulo": "Comunicación de los resultados de los proyectos de innovación vivos en el centro, por familia profesional",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-3.4-I1",
+              "descripcion": "N.º de comunicaciones o difusiones de resultados realizadas  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-3.4-I2",
+              "descripcion": "N.º de familias profesionales cuyos proyectos se han comunicado  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "4",
+      "titulo": "Explorar e integrar la innovación tecnológica y la digitalización en los procesos de enseñanza-aprendizaje y en la organización del centro",
+      "acciones": [
+        {
+          "codigo": "4.1",
+          "titulo": "Impulso del uso del Aula de Tecnología Aplicada (ATECA), propia o del centro de referencia de la red",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-4.1-I1",
+              "descripcion": "N.º de acciones desarrolladas en el aula ATECA  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-4.1-I2",
+              "descripcion": "N.º de grupos o módulos que han utilizado el aula ATECA  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "4.2",
+          "titulo": "Desarrollo de proyectos de digitalización curricular en los módulos profesionales",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-4.2-I1",
+              "descripcion": "N.º de proyectos de digitalización implantados en los módulos  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "4.3",
+          "titulo": "Implementación de herramientas de gestión digital en la organización del centro",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-4.3-I1",
+              "descripcion": "N.º de procesos administrativos o de gestión digitalizados  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "4.4",
+          "titulo": "Formación del profesorado y del alumnado en competencias digitales y tecnologías emergentes",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-4.4-I1",
+              "descripcion": "N.º de docentes formados en competencias digitales  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            },
+            {
+              "id": "PIC-4.4-I2",
+              "descripcion": "N.º de alumnado formado en competencias digitales  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "5",
+      "titulo": "Promover la colaboración con las empresas y el entorno productivo",
+      "acciones": [
+        {
+          "codigo": "5.1",
+          "titulo": "Realización de actividades y retos innovadores en colaboración con empresas (Aprendizaje Basado en Retos)",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-5.1-I1",
+              "descripcion": "N.º de retos o actividades desarrollados con empresas  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "5.2",
+          "titulo": "Establecimiento de acuerdos con empresas y entidades para el desarrollo de proyectos conjuntos",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-5.2-I1",
+              "descripcion": "N.º de acuerdos o convenios formalizados en el curso  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "5.3",
+          "titulo": "Organización de charlas y conferencias de profesionales de los sectores productivos",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-5.3-I1",
+              "descripcion": "N.º de charlas realizadas en el centro  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "5.4",
+          "titulo": "Estancias formativas del profesorado en empresas interesadas en la innovación",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-5.4-I1",
+              "descripcion": "N.º de docentes que realizan estancias en empresas  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "codigo": "6",
+      "titulo": "Impulsar la transferencia de conocimiento y la difusión de las buenas prácticas de innovación",
+      "acciones": [
+        {
+          "codigo": "6.1",
+          "titulo": "Participación en jornadas y encuentros de intercambio de buenas prácticas con otros centros",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-6.1-I1",
+              "descripcion": "N.º de jornadas o encuentros en los que participa el centro  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "6.2",
+          "titulo": "Creación y alimentación de un repositorio digital de recursos y buenas prácticas de innovación del centro",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-6.2-I1",
+              "descripcion": "N.º de recursos y buenas prácticas incorporados al repositorio  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "6.3",
+          "titulo": "Difusión externa de los proyectos y buenas prácticas del centro (web, redes sociales, medios y entorno productivo)",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-6.3-I1",
+              "descripcion": "N.º de publicaciones o noticias difundidas  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        },
+        {
+          "codigo": "6.4",
+          "titulo": "Participación en redes e iniciativas de innovación autonómicas, nacionales o internacionales",
+          "obligatoria": false,
+          "indicadores": [
+            {
+              "id": "PIC-6.4-I1",
+              "descripcion": "N.º de redes o iniciativas externas en las que participa el centro  (número)",
+              "tipo": "numero",
+              "minimo_normativo": null,
+              "metodo_calculo": "CONFIGURAR_Y_VALIDAR_CON_C2",
+              "fuente_evidencia": "pendiente_definicion",
+              "conteo": "UNICO_SALVO_REGLA_ESPECIFICA"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "familias_profesionales": [
+    "Actividades Físicas y Deportivas",
+    "Administración y Gestión",
+    "Agraria",
+    "Artes Gráficas",
+    "Artes y Artesanías",
+    "Comercio y Marketing",
+    "Edificación y Obra Civil",
+    "Electricidad y Electrónica",
+    "Energía y Agua",
+    "Fabricación Mecánica",
+    "Formación y Orientación Laboral",
+    "Hostelería y Turismo",
+    "Idiomas",
+    "Imagen Personal",
+    "Imagen y Sonido",
+    "Industrias Alimentarias",
+    "Informática y Comunicaciones",
+    "Instalación y Mantenimiento",
+    "Madera, Mueble y Corcho",
+    "Marítimo-Pesquera",
+    "Química",
+    "Sanidad",
+    "Seguridad y Medio Ambiente",
+    "Servicios Socioculturales y a la Comunidad",
+    "Textil, Confección y Piel",
+    "Transporte y Mantenimiento de Vehículos"
+  ],
+  "ods_2030": [
+    "ODS 1. Poner fin a la pobreza en todas sus formas en todo el mundo.",
+    "ODS 2. Poner fin al hambre, lograr la seguridad alimentaria y la mejora de la nutrición y promover la agricultura sostenible.",
+    "ODS 3. Garantizar una vida sana y promover el bienestar para todos en todas las edades.",
+    "ODS 4. Garantizar una educación inclusiva, equitativa y de calidad y promover oportunidades de aprendizaje durante toda la vida para todos.",
+    "ODS 5. Lograr la igualdad entre los géneros y empoderar a todas las mujeres y las niñas.",
+    "ODS 6. Garantizar la disponibilidad de agua y su gestión sostenible y el saneamiento para todos.",
+    "ODS 7. Garantizar el acceso a una energía asequible, segura, sostenible y moderna para todos.",
+    "ODS 8. Promover el crecimiento económico sostenido, inclusivo y sostenible, el empleo pleno y productivo y el trabajo decente para todos.",
+    "ODS 9. Construir infraestructuras resilientes, promover la industrialización inclusiva y sostenible y fomentar la innovación.",
+    "ODS 10. Reducir la desigualdad en y entre los países.",
+    "ODS 11. Lograr que las ciudades y los asentamientos humanos sean inclusivos, seguros, resilientes y sostenibles.",
+    "ODS 12. Garantizar modalidades de consumo y producción sostenibles.",
+    "ODS 13. Adoptar medidas urgentes para combatir el cambio climático y sus efectos.",
+    "ODS 14. Conservar y utilizar de forma sostenible los océanos, los mares y los recursos marinos para el desarrollo sostenible.",
+    "ODS 15. Proteger, restablecer y promover el uso sostenible de los ecosistemas terrestres, gestionar de manera sostenible los bosques, luchar contra la desertificación, detener e invertir la degradación de las tierras y detener la pérdida de biodiversidad.",
+    "ODS 16. Promover sociedades pacíficas e inclusivas para el desarrollo sostenible, facilitar el acceso a la justicia para todos y construir a todos los niveles instituciones eficaces, responsables e inclusivas.",
+    "ODS 17. Fortalecer los medios de ejecución y revitalizar la Alianza Mundial para el Desarrollo Sostenible."
+  ],
+  "ods_canarios": [
+    "ODS-C 1. Poner fin a la pobreza en Canarias, garantizando condiciones de vida dignas para todas las personas y reduciendo todas las formas de exclusión social en el Archipiélago.",
+    "ODS-C 2. Construir una Canarias cohesionada, que reduzca las desigualdades sociales, económicas y territoriales, asegurando la equidad y la cohesión interterritorial entre las islas y comarcas.",
+    "ODS-C 3. Lograr una Canarias plural, igualitaria y de bienestar, que garantice la igualdad real y efectiva entre mujeres y hombres, la inclusión de todas las personas, el respeto pleno a la diversidad y la protección de los derechos humanos.",
+    "ODS-C 4. Impulsar una Canarias educada, innovadora y cultural, que asegure una educación inclusiva y de calidad, fomente la innovación, la investigación y el conocimiento científico, y promueva la cultura y la creatividad como motores de transformación y cohesión social.",
+    "ODS-C 5. Avanzar hacia una Canarias sostenible y neutral climáticamente, que transite hacia un modelo energético 100 % renovable, adopte medidas frente al cambio climático, impulse la economía circular y garantice un desarrollo justo, equilibrado y resiliente.",
+    "ODS-C 6. Consolidar una Canarias solidaria, justa y en paz, con instituciones eficaces, responsables e inclusivas, que fortalezcan la participación ciudadana, la democracia, la justicia social y el ejercicio de los derechos fundamentales.",
+    "ODS-C 7. Promover una Canarias con trabajo decente y desarrollo económico sostenible, diversificando la economía, fortaleciendo sectores estratégicos, impulsando el turismo responsable y garantizando empleo digno e inclusivo para toda la población.",
+    "ODS-C 8. Garantizar una Canarias saludable, que proteja la vida y el bienestar de todas las personas en todas las edades, con un sistema sanitario público, universal y sostenible, y que fomente estilos de vida activos y saludables.",
+    "ODS-C 9. Proteger y promover una Canarias con vida en tierra y en el mar, asegurando la conservación y uso sostenible de la biodiversidad, de los ecosistemas terrestres y marinos, y de los recursos naturales insulares y oceánicos."
+  ],
+  "cargos_ciclope": [
+    "Coordinador/a de la Red de Innovación",
+    "Coordinador/a de la Red de Emprendimiento",
+    "Coordinador/a de la Red de Información y Orientación Profesional",
+    "Coordinador/a de la Red de Calidad",
+    "Coordinador/a de FP Dual",
+    "Representante del equipo directivo (preferentemente jefatura de estudios de FP)",
+    "Director/a",
+    "Vicedirector/a",
+    "Secretario/a",
+    "Jefe/a de estudios",
+    "Jefe/a de departamento",
+    "Prospector/a o coordinador/a de familia profesional",
+    "Coordinador/a TIC",
+    "Coordinador/a de Internacionalización",
+    "Coordinador/a de Igualdad",
+    "Orientador/a del Departamento de Orientación Educativa",
+    "Docente"
+  ],
+  "dafo_categorias": {
+    "debilidades": [
+      {
+        "categoria": "Recursos humanos",
+        "opciones": [
+          "Escasez de personal y limitación horaria",
+          "Sobrecarga de trabajo en el profesorado",
+          "Dificultad para coordinarse en equipo",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Recursos materiales",
+        "opciones": [
+          "Limitación de espacios físicos adecuados",
+          "Carencia de material tecnológico actualizado",
+          "Presupuesto insuficiente para llevar a cabo acciones de innovación",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Formación del profesorado en innovación",
+        "opciones": [
+          "Falta de formación específica en innovación",
+          "Falta de actualización en metodologías activas",
+          "Escasa participación previa en proyectos de innovación aplicada",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Formación del alumnado en innovación",
+        "opciones": [
+          "Bajo nivel de conocimientos sobre innovación",
+          "Falta de motivación e interés en actividades innovadoras",
+          "Escasa experiencia en proyectos reales fuera del aula",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Cultura y organización innovadora del centro",
+        "opciones": [
+          "Resistencia al cambio",
+          "Falta de cultura innovadora",
+          "Escasa implicación para desarrollar proyectos innovadores",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Canales de comunicación (interna y externa)",
+        "opciones": [
+          "Limitada fluidez en la comunicación entre docentes, alumnado y familias",
+          "Escasa visibilidad de los proyectos innovadores",
+          "Carencia de herramientas efectivas de comunicación interna",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Utilización de las TIC",
+        "opciones": [
+          "Bajo nivel de integración de las TIC en proyectos innovadores",
+          "Falta de competencias digitales del profesorado y del alumnado",
+          "Carencia de plataformas colaborativas efectivas",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Acción social y ODS (Agenda 2030)",
+        "opciones": [
+          "Desconocimiento de los ODS y su aplicación en proyectos educativos",
+          "Escasa vinculación de los proyectos a impactos sociales",
+          "Dificultad para sensibilizar al alumnado sobre sostenibilidad y responsabilidad social",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Contexto Canarias",
+        "opciones": [
+          "Dificultad para atraer profesionales externos, ponentes o colaboradores en materia de innovación",
+          "Dependencia de sectores económicos tradicionales que limitan la diversificación de la oferta formativa",
+          "Lejanía geográfica como barrera para la participación en redes y proyectos nacionales e internacionales",
+          "Otra situación (especificar) — texto libre"
+        ]
+      }
+    ],
+    "fortalezas": [
+      {
+        "categoria": "Recursos humanos",
+        "opciones": [
+          "Profesorado motivado e implicado",
+          "Alumnado con creatividad e iniciativa",
+          "Buen clima de colaboración",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Recursos materiales",
+        "opciones": [
+          "Aulas equipadas y funcionales",
+          "Acceso a tecnologías digitales",
+          "Espacios y materiales específicos para proyectos innovadores",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Formación del profesorado en innovación",
+        "opciones": [
+          "Experiencia en proyectos de innovación educativa",
+          "Formación en metodologías activas (ABP, ABR, Design Thinking…)",
+          "Interés en la actualización continua",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Formación del alumnado en innovación",
+        "opciones": [
+          "Alumnado con conocimientos previos en innovación",
+          "Alta motivación e interés en participar en proyectos",
+          "Experiencia en concursos o ferias de innovación",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Cultura y organización innovadora del centro",
+        "opciones": [
+          "Apoyo de la dirección y de los equipos de coordinación",
+          "Existencia de proyectos previos en materia de innovación",
+          "Buena relación con las familias profesionales y la comunidad educativa",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Canales de comunicación (interna y externa)",
+        "opciones": [
+          "Comunicación eficiente entre docentes, alumnado y familias",
+          "Estrategias de difusión efectivas (redes sociales, web, prensa local…)",
+          "Participación activa del centro en redes educativas o comunitarias",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Utilización de las TIC",
+        "opciones": [
+          "Innovación con TIC en proyectos educativos (realidad aumentada, IA…)",
+          "Acceso a una conexión a internet de calidad en el centro",
+          "Integración de las TIC en el aula de forma transversal en todas las materias",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Acción social y ODS (Agenda 2030)",
+        "opciones": [
+          "Participación activa en proyectos vinculados a la sostenibilidad y la responsabilidad social",
+          "Colaboraciones con ONG y asociaciones con impacto social",
+          "Integración de la perspectiva de género e igualdad en los proyectos innovadores",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Contexto Canarias",
+        "opciones": [
+          "Riqueza cultural y diversidad del alumnado, factores que fomentan la creatividad",
+          "Participación en proyectos de sectores emergentes (economía azul, turismo sostenible, energías renovables)",
+          "Experiencia del centro en la gestión de programas y fondos europeos específicos para Canarias",
+          "Otra situación (especificar) — texto libre"
+        ]
+      }
+    ],
+    "amenazas": [
+      {
+        "categoria": "Ecosistemas de apoyo a la innovación",
+        "opciones": [
+          "Limitada conexión entre el centro educativo y las iniciativas empresariales innovadoras",
+          "Escasa coordinación entre los diferentes agentes del ecosistema de innovación",
+          "Inexistencia de redes de docentes innovadores que compartan experiencias y buenas prácticas",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Financiación y dotación económica",
+        "opciones": [
+          "Dependencia excesiva de subvenciones externas para apoyar proyectos innovadores",
+          "Complejidad burocrática para acceder a fondos",
+          "Recursos humanos limitados para la gestión de fondos públicos",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Colaboraciones y sinergias con empresas y entidades",
+        "opciones": [
+          "Escasa cultura de colaboración entre las empresas y los centros educativos",
+          "Riesgo de colaboraciones puntuales sin continuidad",
+          "Dependencia de un número reducido de empresas locales",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Canales de comunicación (interna y externa)",
+        "opciones": [
+          "Saturación informativa que dificulta que los mensajes del centro tengan impacto",
+          "Retos en mantener la privacidad y la protección de datos en la difusión de contenidos con alumnado",
+          "Brecha digital que limita la participación de la comunidad educativa",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Utilización de las TIC",
+        "opciones": [
+          "Vulnerabilidad ante problemas de ciberseguridad o pérdida de datos",
+          "Rápida obsolescencia tecnológica y necesidad constante de actualización, con costes asociados",
+          "Riesgos de dependencia excesiva de herramientas externas o comerciales",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Acción social y ODS (Agenda 2030)",
+        "opciones": [
+          "Riesgo de que los ODS se perciban como un tema de moda sin continuidad real",
+          "Complejidad de algunos objetivos para trabajarlos con alumnado de determinadas edades",
+          "Desfase entre el discurso institucional y la práctica real en el centro educativo",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Contexto Canarias",
+        "opciones": [
+          "Aislamiento geográfico que dificulta intercambios y proyectos presenciales",
+          "Fuga de talento joven debido a la limitada oferta profesional en las islas",
+          "Dependencia económica del turismo como sector predominante",
+          "Otra situación (especificar) — texto libre"
+        ]
+      }
+    ],
+    "oportunidades": [
+      {
+        "categoria": "Ecosistemas de apoyo a la innovación",
+        "opciones": [
+          "Asociaciones empresariales, cámaras de comercio y parques tecnológicos interesados en apoyar proyectos educativos",
+          "Disponibilidad de ferias, concursos y hackatones sobre innovación",
+          "Creciente interés institucional y social por la cultura innovadora y emprendedora",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Financiación y dotación económica",
+        "opciones": [
+          "Existencia de premios y concursos con dotación económica que estimulan la participación del alumnado",
+          "Posibilidad de financiación externa para proyectos educativos de innovación",
+          "Disponibilidad de becas y programas de movilidad para alumnado y profesorado",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Colaboraciones y sinergias con empresas y entidades",
+        "opciones": [
+          "Posibilidad de visitas, prácticas o mentorías con empresas y entidades",
+          "Existencia de empresas locales interesadas en colaborar en proyectos innovadores",
+          "Apertura de sectores emergentes que demandan talento joven",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Canales de comunicación (interna y externa)",
+        "opciones": [
+          "Potencial de las redes sociales y medios digitales para dar visibilidad a los proyectos innovadores",
+          "Participación en campañas regionales, nacionales e internacionales que promueven la innovación juvenil",
+          "Interés de medios locales en difundir proyectos educativos innovadores",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Utilización de las TIC",
+        "opciones": [
+          "Acceso a plataformas y recursos educativos abiertos",
+          "Mayor visibilidad y difusión de los proyectos a través de entornos digitales y redes profesionales",
+          "Integración de nuevas herramientas educativas (gamificación, realidad aumentada, inteligencia artificial…)",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Acción social y ODS (Agenda 2030)",
+        "opciones": [
+          "Interés social por proyectos que integren medio ambiente, igualdad e inclusión",
+          "Demanda creciente de perfiles laborales con sensibilidad hacia los ODS",
+          "Existencia de convocatorias de concursos y premios vinculados a la sostenibilidad y el impacto social",
+          "Otra situación (especificar) — texto libre"
+        ]
+      },
+      {
+        "categoria": "Contexto Canarias",
+        "opciones": [
+          "Ubicación estratégica que favorece la proyección internacional de proyectos educativos",
+          "Potencial de sectores innovadores en las islas (economía azul, energías renovables)",
+          "Crecimiento de redes de innovación en el archipiélago",
+          "Otra situación (especificar) — texto libre"
+        ]
+      }
+    ]
+  }
+}

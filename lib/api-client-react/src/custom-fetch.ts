@@ -17,6 +17,12 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
+let _csrfToken: string | null = null;
+
+/** Set the session CSRF token returned by login, setup, or the current-user endpoint. */
+export function setCsrfToken(token: string | null): void {
+  _csrfToken = token;
+}
 
 /**
  * Set a base URL that is prepended to every relative request URL
@@ -349,6 +355,10 @@ export async function customFetch<T = unknown>(
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
+  if (method !== "GET" && method !== "HEAD" && _csrfToken && !headers.has("x-csrf-token")) {
+    headers.set("x-csrf-token", _csrfToken);
+  }
+
   // Attach bearer token when an auth getter is configured and no
   // Authorization header has been explicitly provided.
   if (_authTokenGetter && !headers.has("authorization")) {
@@ -360,7 +370,7 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const response = await fetch(input, { ...init, method, headers, credentials: init.credentials ?? "same-origin" });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

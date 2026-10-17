@@ -1,11 +1,16 @@
 import express, { type Express } from "express";
-import cors from "cors";
+import path from "node:path";
+import { existsSync } from "node:fs";
 import pinoHttp from "pino-http";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+app.disable("x-powered-by");
+if (process.env.TRUST_PROXY === "1") {
+  app.set("trust proxy", 1);
+}
 app.use(
   pinoHttp({
     logger,
@@ -25,10 +30,48 @@ app.use(
     },
   }),
 );
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use((_, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (process.env.NODE_ENV === "production") {
+    res.setHeader(
+      "Strict-Transport-Security",
+      "max-age=31536000; includeSubDomains",
+    );
+  }
+  next();
+});
+app.use(express.json({ limit: "2mb" }));
 
-app.use("/api", router);
+app.use("/api/v1", router);
+
+const webDist = process.env.WEB_DIST_DIR;
+if (webDist) {
+  const webRoot = path.resolve(webDist);
+  const indexFile = path.join(webRoot, "index.html");
+  if (!existsSync(indexFile)) {
+    throw new Error(`WEB_DIST_DIR does not contain index.html: ${webRoot}`);
+  }
+  app.use(express.static(webRoot, { index: false, maxAge: "1h" }));
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !req.path.startsWith("/api/")) {
+      res.setHeader("Cache-Control", "no-cache");
+      res.sendFile(indexFile);
+      return;
+    }
+    next();
+  });
+}
+
+app.use("/api/v1", (_req, res) => {
+  res.status(404).json({ error: "No existe la ruta solicitada." });
+});
+app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error({ err, method: req.method, path: req.path }, "Unhandled API error");
+  if (res.headersSent) return;
+  res.status(500).json({ error: "Se produjo un error interno." });
+});
 
 export default app;

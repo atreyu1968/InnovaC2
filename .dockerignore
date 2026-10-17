@@ -1,0 +1,15 @@
+.git
+.cache
+.local
+.agents
+attached_assets
+node_modules
+**/node_modules
+**/dist
+**/.tsbuildinfo
+backups
+data
+.env
+.env.*
+!.env.example
+docs/reference/paquete-original

@@ -47,3 +47,23 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Local configuration, persisted documents, and backup artifacts
+.env
+.env.*
+!.env.example
+/data/
+/backups/
+/coverage/
+
+# User uploads and transient agent/document inspection output
+/attached_assets/
+/.conversation/
+/.agents/outputs/
+/.agents/scripts/render_innova_pic_sample.py
+
+# Temporary Python environment created only for local PDF inspection
+/.pythonlibs/
+/main.py
+/pyproject.toml
+/uv.lock

@@ -1,5 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { ensureReferenceData } from "./lib/reference-data";
+import { sessionSecret } from "./lib/auth";
+import { ensureDataDirectory } from "./lib/storage";
 
 const rawPort = process.env["PORT"];
 
@@ -15,11 +18,20 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
-  if (err) {
+async function start(): Promise<void> {
+  sessionSecret();
+  await ensureDataDirectory();
+  await ensureReferenceData();
+  const server = app.listen(port, () => {
+    logger.info({ port }, "Server listening");
+  });
+  server.on("error", (err) => {
     logger.error({ err }, "Error listening on port");
     process.exit(1);
-  }
+  });
+}
 
-  logger.info({ port }, "Server listening");
+start().catch((err: unknown) => {
+  logger.fatal({ err }, "Server startup failed");
+  process.exit(1);
 });

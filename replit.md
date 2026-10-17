@@ -1,45 +1,66 @@
-# [Project name]
+# INNOVA-C2
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Aplicación local para la coordinación del programa PIC de innovación y mejora del IES Manuel Martín González. Las cuentas, permisos, centros, cursos y catálogos se guardan en PostgreSQL; no usar valores simulados en paneles ni en informes.
 
-## Run & Operate
+## Ejecutar y comprobar
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-server run dev` — API en el puerto configurado por `PORT`.
+- `pnpm run typecheck` — comprobación de TypeScript del workspace.
+- `pnpm run build` — comprobación y construcción de paquetes.
+- `pnpm --filter @workspace/api-spec run codegen` — regenerar cliente y validadores desde `lib/api-spec/openapi.yaml`.
+- `pnpm --filter @workspace/db run push` — sincronizar el esquema de la base de desarrollo, nunca producción.
+- `pnpm --filter @workspace/db run generate` / `migrate` — crear y aplicar migraciones versionadas.
+- `pnpm run test:phase0` — prueba real de API/PostgreSQL; exige que el asistente de configuración siga sin completar.
+- `python3 docs/reference/paquete-original/qa/validate_catalog.py config/pic_2026_2027_catalogo.json` — comprobar el catálogo original.
 
-## Stack
+Variables mínimas de Replit: `DATABASE_URL` y `SESSION_SECRET` (mínimo 32 caracteres, guardado en Secrets).
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+## Estructura del proyecto
 
-## Where things live
+- `artifacts/innova-c2/` — interfaz React/Vite, configuración inicial, panel, gestión de usuarios y consulta/importación del catálogo.
+- `artifacts/api-server/` — API Express, autenticación local y autorización por rol.
+- `lib/api-spec/openapi.yaml` — contrato versionado en `/api/v1`.
+- `lib/db/src/schema/` y `lib/db/drizzle/` — esquema PostgreSQL Drizzle y migraciones.
+- `config/pic_2026_2027_catalogo.json` — catálogo PIC usado por instalación y prueba; su fuente original se conserva en `docs/reference/paquete-original/`.
+- `docs/reference/paquete-original/` — contenido completo del ZIP recibido; no modificar para sustituir las fuentes.
+- `scripts/` — instalación y mantenimiento de la versión independiente de Replit.
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+## Despliegue independiente
 
-## Architecture decisions
+Requisitos: Ubuntu 22.04 o posterior, arquitectura compatible con Docker Engine, al menos 2 vCPU, 4 GB RAM y almacenamiento suficiente para documentos y copias. El instalador comprueba Ubuntu, instala Docker Compose v2 si falta, genera secretos locales con permisos `0600`, construye la imagen y arranca PostgreSQL y la aplicación:
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+```bash
+chmod +x scripts/*.sh
+sudo scripts/install.sh
+```
 
-## Product
+La primera visita conduce a una configuración de un solo uso que crea centro, curso y primera cuenta `admin_tecnico`; no se crea ningún usuario o centro de muestra. La interfaz inicial está en `http://SERVIDOR:8080` según `APP_PORT`. Para producción, publicar detrás de un proxy inverso HTTPS, configurar `COOKIE_SECURE=true` y `TRUST_PROXY=1` solo si el proxy de confianza sobrescribe correctamente `X-Forwarded-*`. No exponer PostgreSQL a Internet.
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Comandos:
 
-## User preferences
+```bash
+docker compose up -d
+docker compose down
+scripts/backup.sh
+scripts/restore.sh backups/AAAAMMDDTHHMMSSZ
+scripts/migrate.sh
+scripts/health.sh
+docker compose logs --tail=100 -f
+```
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+Las copias incluyen PostgreSQL y el volumen documental, cifrados con `BACKUP_ENCRYPTION_KEY`; conservan checksums. Guárdese esa clave fuera del servidor. La restauración reemplaza datos: pide confirmación escrita y debe hacerse después de crear una copia del estado actual. Retención y destino externo de las copias quedan bajo responsabilidad del centro.
 
-## Gotchas
+## Seguridad y alcance por fases
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Sesiones opacas persistidas, contraseñas Argon2id, cookies HttpOnly/SameSite, token CSRF, caducidad y bloqueo persistente por intentos.
+- RBAC comprobado en la API; permisos de administración técnica separados de coordinación C2.
+- Catálogo importado a PostgreSQL con hash SHA-256, validación de 6 objetivos, 24 acciones, 31 indicadores y conservación de versiones previas.
+- Se auditan altas, accesos y cambios de catálogo. No almacenar contraseñas en texto claro ni en logs.
+- La aplicación no se integra con Laycos: prepara exportaciones/campos para entrega manual.
+- Resend y la IA están desactivados; no enviar comunicaciones externas ni introducir proveedores externos hasta disponer de autorización, configuración y pruebas específicas.
 
-## Pointers
+Fase 0 cubre la base ejecutable, seguridad, centro/curso, catálogo y administración inicial. Los módulos de planificación PIC, gestión documental y demás fases deben completarse según la especificación antes de considerar la aplicación como entrega final.
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+## Fuentes y decisiones técnicas
+
+Se mantiene el monorepo pnpm del proyecto (React/TypeScript, Express 5, PostgreSQL/Drizzle y OpenAPI/Orval) como alternativa equivalente al stack de referencia FastAPI, documentando la decisión para poder construir el mismo sistema con Docker sin servicios propios de Replit. El ZIP original y la captura de referencia se conservan en `docs/reference/paquete-original/` y `attached_assets/`.

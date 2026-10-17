@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "INNOVA-C2"
+description = "Aplicación autónoma de gestión de la coordinación C2 de innovación de Formación Profesional: expediente PIC, catálogo oficial, evidencias y seguimiento con datos persistentes y permisos por rol."
+version = "1.0.0"
+id = "artifacts/innova-c2"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20820
+
+[services.development]
+run = "pnpm --filter @workspace/innova-c2 run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/innova-c2", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/innova-c2/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20820"
+BASE_PATH = "/"

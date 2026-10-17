@@ -5,13 +5,23 @@ info:
   version: 0.1.0
   description: API specification
 servers:
-  - url: /api
-    description: Base API path
+  - url: /api/v1
+    description: Versioned API path
 tags:
   - name: health
     description: Health operations
+  - name: setup
+    description: Initial installation
+  - name: auth
+    description: Local authentication
+  - name: dashboard
+    description: Overview and system status
+  - name: users
+    description: User and role administration
+  - name: catalog
+    description: Official PIC catalogue
 paths:
-  /healthz:
+  /health:
     get:
       operationId: healthCheck
       tags: [health]
@@ -24,6 +34,570 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /setup/status:
+    get:
+      operationId: getSetupStatus
+      tags: [setup]
+      summary: Check whether initial setup is required
+      responses:
+        "200":
+          description: Setup state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupStatus"
+  /setup/initialize:
+    post:
+      operationId: initializeSetup
+      tags: [setup]
+      summary: Create the first administrator, centre, and school year
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetupInitializeInput"
+      responses:
+        "201":
+          description: Initial administrator created and signed in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "409":
+          description: Setup is already complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in with a local account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Authenticated session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: End the current session
+      responses:
+        "200":
+          description: Session ended
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get the current user and CSRF token
+      responses:
+        "200":
+          description: Current session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get persisted centre and catalogue totals
+      responses:
+        "200":
+          description: Dashboard counts from stored records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List accounts visible to the administrator
+      responses:
+        "200":
+          description: User accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a user with a least-privilege role
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "201":
+          description: Created account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid account data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /catalogs/current:
+    get:
+      operationId: getCurrentCatalog
+      tags: [catalog]
+      summary: Get the imported official PIC catalogue
+      responses:
+        "200":
+          description: Current catalogue and validation counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicCatalog"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /admin/catalogs/import:
+    post:
+      operationId: importCatalog
+      tags: [catalog]
+      summary: Import and version an official PIC catalogue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CatalogImportInput"
+      responses:
+        "201":
+          description: Catalogue imported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogImportResult"
+        "400":
+          description: Catalogue does not pass validation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Administrator role required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Version already exists with different content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /plans/current:
+    get:
+      operationId: getCurrentPicPlan
+      tags: [pic]
+      summary: Read the PIC draft for the active centre and year
+      responses:
+        "200":
+          description: Current PIC plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicPlan"
+        "404":
+          description: No plan has been created for this year
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createCurrentPicPlan
+      tags: [pic]
+      summary: Create the first PIC draft for the active year
+      responses:
+        "201":
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicPlan"
+        "409":
+          description: A plan already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /plans/{planId}:
+    parameters:
+      - name: planId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      operationId: savePicPlan
+      tags: [pic]
+      summary: Save PIC sections 1–10 with optimistic concurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PicPlanWriteInput"
+      responses:
+        "200":
+          description: Plan saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicPlan"
+        "400":
+          description: Invalid plan content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Plan changed by another user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /plans/{planId}/validation:
+    get:
+      operationId: validatePicPlan
+      tags: [pic]
+      summary: Validate official PIC completion rules
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicPlanValidation"
+  /plans/{planId}/snapshot:
+    post:
+      operationId: createPicSnapshot
+      tags: [pic]
+      summary: Save an immutable, validated PIC snapshot
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PicSnapshotInput"
+      responses:
+        "201":
+          description: Snapshot created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicSnapshotResponse"
+        "422":
+          description: Plan has blocking validation issues
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicPlanValidation"
+  /plans/{planId}/snapshots:
+    get:
+      operationId: listPicSnapshots
+      tags: [pic]
+      summary: List immutable PIC snapshots
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Snapshot metadata, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PicSnapshotSummary"
+  /plans/{planId}/snapshots/{snapshotId}:
+    get:
+      operationId: getPicSnapshot
+      tags: [pic]
+      summary: Retrieve the immutable content of a PIC snapshot
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: snapshotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Snapshot content and original validation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicSnapshotDetail"
+        "404":
+          description: Snapshot not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /plans/{planId}/submission:
+    get:
+      operationId: getPicSubmission
+      tags: [pic]
+      summary: Read the latest recorded Laycos submission
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Submission receipt metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicSubmissionResponse"
+        "404":
+          description: No submission has been recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: recordPicSubmission
+      tags: [pic]
+      summary: Record a manually completed Laycos submission with its proof
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PicSubmissionInput"
+      responses:
+        "201":
+          description: Submission record stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicSubmissionResponse"
+        "400":
+          description: Evidence file or submission data is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: An immutable plan snapshot is required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /plans/{planId}/submission/{submissionId}/evidence:
+    get:
+      operationId: getPicSubmissionEvidence
+      tags: [pic]
+      summary: Download the stored Laycos submission proof
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: submissionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Base64-encoded evidence file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicSubmissionEvidence"
+        "404":
+          description: Evidence not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /plans/{planId}/exports/laycos:
+    get:
+      operationId: exportPicLaycos
+      tags: [pic]
+      summary: Prepare ordered field-by-field manual Laycos export
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Ordered Laycos fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaycosExport"
+  /plans/{planId}/exports/docx:
+    get:
+      operationId: exportPicDocx
+      tags: [pic]
+      summary: Generate editable PIC document
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Base64-encoded DOCX export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportFile"
+  /plans/{planId}/exports/pdf:
+    get:
+      operationId: exportPicPdf
+      tags: [pic]
+      summary: Generate printable PIC document
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Base64-encoded PDF export
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportFile"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +607,778 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required: [success]
+    SetupStatus:
+      type: object
+      properties:
+        initialized:
+          type: boolean
+      required: [initialized]
+    UserRole:
+      type: string
+      enum:
+        - admin_tecnico
+        - c2_innovacion
+        - equipo_directivo
+        - coordinacion_red
+        - jefatura_departamento
+        - profesorado
+        - consulta_c1
+        - consulta_auditora
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+        active:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, name, role, active, createdAt]
+    AuthSession:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        csrfToken:
+          type: string
+      required: [user, csrfToken]
+    LoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+          maxLength: 1024
+      required: [email, password]
+    SetupInitializeInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        password:
+          type: string
+          minLength: 12
+          maxLength: 1024
+        centerName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        schoolYear:
+          type: string
+          pattern: "^\\d{4}-\\d{4}$"
+      required: [email, name, password, centerName, schoolYear]
+    CreateUserInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+          minLength: 1
+          maxLength: 160
+        role:
+          $ref: "#/components/schemas/UserRole"
+        temporaryPassword:
+          type: string
+          minLength: 12
+          maxLength: 1024
+      required: [email, name, role, temporaryPassword]
+    DashboardSummary:
+      type: object
+      properties:
+        centerName:
+          type: string
+        schoolYear:
+          type: string
+        userCount:
+          type: integer
+        objectiveCount:
+          type: integer
+        actionCount:
+          type: integer
+        indicatorCount:
+          type: integer
+        catalogVersion:
+          type: string
+      required:
+        - centerName
+        - schoolYear
+        - userCount
+        - objectiveCount
+        - actionCount
+        - indicatorCount
+        - catalogVersion
+    PicCatalogIndicator:
+      type: object
+      properties:
+        id:
+          type: string
+        descripcion:
+          type: string
+        tipo:
+          type: string
+          enum: [booleano, porcentaje, numero, escala_1_5, revisar_unidad]
+        minimo_normativo:
+          type: [integer, "null"]
+        metodo_calculo:
+          type: string
+        fuente_evidencia:
+          type: string
+        conteo:
+          type: string
+      required: [id, descripcion, tipo, minimo_normativo, metodo_calculo, fuente_evidencia, conteo]
+    PicCatalogAction:
+      type: object
+      properties:
+        codigo:
+          type: string
+        titulo:
+          type: string
+        obligatoria:
+          type: boolean
+        indicadores:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicCatalogIndicator"
+      required: [codigo, titulo, obligatoria, indicadores]
+    PicCatalogObjective:
+      type: object
+      properties:
+        codigo:
+          type: string
+        titulo:
+          type: string
+        acciones:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicCatalogAction"
+      required: [codigo, titulo, acciones]
+    PicDafoCategory:
+      type: object
+      properties:
+        categoria:
+          type: string
+        opciones:
+          type: array
+          items:
+            type: string
+      required: [categoria, opciones]
+    PicDafoCategories:
+      type: object
+      properties:
+        debilidades:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicDafoCategory"
+        fortalezas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicDafoCategory"
+        amenazas:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicDafoCategory"
+        oportunidades:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicDafoCategory"
+      required: [debilidades, fortalezas, amenazas, oportunidades]
+    PicCatalog:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: string
+        estado:
+          type: string
+        fecha_corte:
+          type: string
+        fuente:
+          type: string
+        reglas:
+          $ref: "#/components/schemas/PicCatalogRules"
+        objetivos:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicCatalogObjective"
+        familias_profesionales:
+          type: array
+          items:
+            type: string
+        ods_2030:
+          type: array
+          items:
+            type: string
+        ods_canarios:
+          type: array
+          items:
+            type: string
+        cargos_ciclope:
+          type: array
+          items:
+            type: string
+        dafo_categorias:
+          $ref: "#/components/schemas/PicDafoCategories"
+      required:
+        - id
+        - version
+        - estado
+        - fecha_corte
+        - fuente
+        - reglas
+        - objetivos
+        - familias_profesionales
+        - ods_2030
+        - ods_canarios
+        - cargos_ciclope
+        - dafo_categorias
+    PicCatalogRules:
+      type: object
+      properties:
+        objetivos:
+          type: integer
+        acciones_minimas_por_objetivo:
+          type: integer
+        acciones_obligatorias:
+          type: array
+          items:
+            type: string
+        otras_acciones_maximo:
+          type: integer
+        proyectos_maximo_formulario:
+          type: integer
+        dafo_por_cuadrante_minimo:
+          type: integer
+        dafo_por_cuadrante_maximo:
+          type: integer
+        reuniones_CICLOPE_minimo:
+          type: integer
+        plazo_pic:
+          type: string
+        plazo_memoria:
+          type: string
+        riesgo_numerico_positivo:
+          type: boolean
+        logrado_actualizable_solo_en_seguimiento:
+          type: boolean
+      required:
+        - objetivos
+        - acciones_minimas_por_objetivo
+        - acciones_obligatorias
+        - otras_acciones_maximo
+        - proyectos_maximo_formulario
+        - dafo_por_cuadrante_minimo
+        - dafo_por_cuadrante_maximo
+        - reuniones_CICLOPE_minimo
+        - plazo_pic
+        - plazo_memoria
+        - riesgo_numerico_positivo
+        - logrado_actualizable_solo_en_seguimiento
+    PicPlanCoordinator:
+      type: object
+      properties:
+        profile:
+          type: string
+          enum: [C1, C2]
+        firstName:
+          type: string
+          maxLength: 120
+        lastName:
+          type: string
+          maxLength: 180
+        corporateEmail:
+          type: string
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 40
+        professionalFamily:
+          type: string
+      required: [profile, firstName, lastName, corporateEmail, phone, professionalFamily]
+    PicPlanCenterProfile:
+      type: object
+      properties:
+        professionalFamily:
+          type: string
+        levels:
+          type: array
+          items:
+            type: string
+            enum: [FP Básica, Grado Medio, Grado Superior, Cursos de especialización, Ofertas parciales (Grados A, B, C, D)]
+        groupCount:
+          type: integer
+          minimum: 0
+      required: [professionalFamily, levels, groupCount]
+    PicDafoEntry:
+      type: object
+      properties:
+        quadrant:
+          type: string
+          enum: [debilidades, fortalezas, amenazas, oportunidades]
+        category:
+          type: string
+        situation:
+          type: string
+        customDetail:
+          type: string
+      required: [quadrant, category, situation]
+    PicProjectInput:
+      type: object
+      properties:
+        promoter:
+          type: string
+          enum: [Erasmus+, Ministerio, CaixaBank Dualiza, DGFPERE-Canarias, Propio del centro, Otro]
+        name:
+          type: string
+          maxLength: 200
+        centerCoordinates:
+          type: boolean
+        coordinatingFamily:
+          type: string
+        coordinatorName:
+          type: string
+          maxLength: 200
+        coordinatorEmail:
+          type: string
+          maxLength: 254
+        includedInPic:
+          type: boolean
+      required: [promoter, name, centerCoordinates, coordinatingFamily, coordinatorName, coordinatorEmail, includedInPic]
+    PicAtecaInput:
+      type: object
+      properties:
+        available:
+          type: boolean
+        referenceCenter:
+          type: string
+          maxLength: 200
+      required: [available, referenceCenter]
+    PicIndicatorTarget:
+      type: object
+      properties:
+        indicatorId:
+          type: string
+        actionCode:
+          type: string
+        unit:
+          type: string
+        targetValue:
+          oneOf:
+            - type: number
+            - type: boolean
+            - type: "null"
+        riskValue:
+          oneOf:
+            - type: number
+            - type: boolean
+            - type: "null"
+      required: [indicatorId, actionCode, unit, targetValue, riskValue]
+    PicActionSelection:
+      type: object
+      properties:
+        actionCode:
+          type: string
+        objectiveCode:
+          type: string
+        indicators:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicIndicatorTarget"
+      required: [actionCode, objectiveCode, indicators]
+    PicCustomAction:
+      type: object
+      properties:
+        objectiveCode:
+          type: string
+        title:
+          type: string
+          maxLength: 400
+        indicatorLabel:
+          type: string
+          maxLength: 300
+        unit:
+          type: string
+          maxLength: 80
+        targetValue:
+          oneOf:
+            - type: number
+            - type: boolean
+            - type: "null"
+        riskValue:
+          oneOf:
+            - type: number
+            - type: boolean
+            - type: "null"
+      required: [objectiveCode, title, indicatorLabel, unit, targetValue, riskValue]
+    PicOdsLink:
+      type: object
+      properties:
+        agenda:
+          type: string
+          enum: [ods_2030, ods_canarios]
+        odsCode:
+          type: string
+        objectiveCodes:
+          type: array
+          items:
+            type: string
+      required: [agenda, odsCode, objectiveCodes]
+    PicCiclopeMember:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        role:
+          type: string
+        professionalFamily:
+          type: string
+      required: [name, role, professionalFamily]
+    PicPlanCalendar:
+      type: object
+      properties:
+        redMeetingDates:
+          type: array
+          items:
+            type: string
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        ciclopeMeetingDates:
+          type: array
+          items:
+            type: string
+            pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        notes:
+          type: string
+          maxLength: 1000
+      required: [redMeetingDates, ciclopeMeetingDates, notes]
+    PicPlanDiffusion:
+      type: object
+      properties:
+        onlineChannels:
+          type: array
+          items:
+            type: string
+        offlineChannels:
+          type: array
+          items:
+            type: string
+      required: [onlineChannels, offlineChannels]
+    PicPlanContent:
+      type: object
+      properties:
+        coordinator:
+          $ref: "#/components/schemas/PicPlanCoordinator"
+        center:
+          $ref: "#/components/schemas/PicPlanCenterProfile"
+        dafo:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicDafoEntry"
+        projectsInCenter:
+          type: boolean
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicProjectInput"
+        ateca:
+          $ref: "#/components/schemas/PicAtecaInput"
+        selectedActions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicActionSelection"
+        customActions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicCustomAction"
+        odsLinks:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicOdsLink"
+        ciclopeMembers:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicCiclopeMember"
+        calendar:
+          $ref: "#/components/schemas/PicPlanCalendar"
+        diffusion:
+          $ref: "#/components/schemas/PicPlanDiffusion"
+      required:
+        - coordinator
+        - center
+        - dafo
+        - projectsInCenter
+        - projects
+        - ateca
+        - selectedActions
+        - customActions
+        - odsLinks
+        - ciclopeMembers
+        - calendar
+        - diffusion
+    PicPlanWriteInput:
+      type: object
+      properties:
+        expectedRevision:
+          type: integer
+          minimum: 1
+        content:
+          $ref: "#/components/schemas/PicPlanContent"
+      required: [expectedRevision, content]
+    PicPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+        status:
+          type: string
+          enum: [draft, internally_complete, submitted]
+        catalogId:
+          type: string
+        catalogVersion:
+          type: string
+        centerName:
+          type: string
+        schoolYear:
+          type: string
+        content:
+          $ref: "#/components/schemas/PicPlanContent"
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, revision, status, catalogId, catalogVersion, centerName, schoolYear, content, updatedAt]
+    PicPlanIssue:
+      type: object
+      properties:
+        code:
+          type: string
+        section:
+          type: integer
+        severity:
+          type: string
+          enum: [error, warning]
+        message:
+          type: string
+      required: [code, section, severity, message]
+    PicPlanValidation:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errorsCount:
+          type: integer
+        warningsCount:
+          type: integer
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/PicPlanIssue"
+      required: [valid, errorsCount, warningsCount, issues]
+    PicSnapshotInput:
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 4
+          maxLength: 400
+      required: [reason]
+    PicSnapshotResponse:
+      type: object
+      properties:
+        snapshotId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        sourceHash:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [snapshotId, version, sourceHash, createdAt]
+    PicSnapshotSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        version:
+          type: integer
+        planRevision:
+          type: integer
+        reason:
+          type: string
+        sourceHash:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, version, planRevision, reason, sourceHash, createdAt]
+    PicSnapshotDetail:
+      allOf:
+        - $ref: "#/components/schemas/PicSnapshotSummary"
+        - type: object
+          properties:
+            content:
+              $ref: "#/components/schemas/PicPlanContent"
+            validation:
+              $ref: "#/components/schemas/PicPlanValidation"
+          required: [content, validation]
+    PicSubmissionInput:
+      type: object
+      properties:
+        snapshotId:
+          type: string
+          format: uuid
+        submissionDate:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        externalIdentifier:
+          type: [string, "null"]
+          maxLength: 200
+        evidenceFileName:
+          type: string
+          maxLength: 255
+        evidenceMimeType:
+          type: string
+          enum: [application/pdf, image/png, image/jpeg]
+        evidenceFileBase64:
+          type: string
+          maxLength: 1400000
+      required: [snapshotId, submissionDate, evidenceFileName, evidenceMimeType, evidenceFileBase64]
+    PicSubmissionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        submissionDate:
+          type: string
+        externalIdentifier:
+          type: [string, "null"]
+        evidenceFileName:
+          type: string
+        evidenceSha256:
+          type: string
+      required: [id, submissionDate, externalIdentifier, evidenceFileName, evidenceSha256]
+    PicSubmissionEvidence:
+      type: object
+      properties:
+        filename:
+          type: string
+        mediaType:
+          type: string
+        contentBase64:
+          type: string
+      required: [filename, mediaType, contentBase64]
+    LaycosField:
+      type: object
+      properties:
+        section:
+          type: integer
+        label:
+          type: string
+        value:
+          type: string
+        certainty:
+          type: string
+          enum: [confirmado, sin_informacion, pendiente_validacion]
+        source:
+          type: string
+      required: [section, label, value, certainty, source]
+    LaycosExport:
+      type: object
+      properties:
+        planId:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+        catalogVersion:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        fields:
+          type: array
+          items:
+            $ref: "#/components/schemas/LaycosField"
+      required: [planId, revision, catalogVersion, generatedAt, fields]
+    ExportFile:
+      type: object
+      properties:
+        filename:
+          type: string
+        mediaType:
+          type: string
+        contentBase64:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+      required: [filename, mediaType, contentBase64, generatedAt]
+    CatalogImportInput:
+      type: object
+      properties:
+        catalog:
+          $ref: "#/components/schemas/PicCatalog"
+      required: [catalog]
+    CatalogImportResult:
+      type: object
+      properties:
+        catalogId:
+          type: string
+        version:
+          type: string
+        sourceHash:
+          type: string
+        active:
+          type: boolean
+        objectiveCount:
+          type: integer
+        actionCount:
+          type: integer
+        indicatorCount:
+          type: integer
+      required:
+        - catalogId
+        - version
+        - sourceHash
+        - active
+        - objectiveCount
+        - actionCount
+        - indicatorCount
 

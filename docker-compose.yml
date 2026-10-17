@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-innova_c2}
+      POSTGRES_USER: ${POSTGRES_USER:-innova}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Create .env with POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - innova_private
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      BASE_PATH: /
+      WEB_DIST_DIR: /app/artifacts/innova-c2/dist
+      DATA_DIR: /var/lib/innova/documents
+      DATABASE_URL: postgresql://${POSTGRES_USER:-innova}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-innova_c2}
+      SESSION_SECRET: ${SESSION_SECRET:?Create .env with SESSION_SECRET}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-0}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - documents_data:/var/lib/innova/documents
+    ports:
+      - "${APP_PORT:-8080}:3000"
+    networks:
+      - innova_private
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  postgres_data:
+  documents_data:
+
+networks:
+  innova_private:
+    driver: bridge
