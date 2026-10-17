@@ -59,6 +59,12 @@ deduplicación, respuestas diferenciadas, persistencia documental/versiones,
 concesiones expresas, cuarentena y reglas de evidencia. La limpieza de los datos
 de prueba respeta las referencias protegidas de las versiones.
 
+**Comprobado en navegador con base aislada:** alta y edición de actuación,
+persistencia después de recargar, subida de evidencia vinculada, conservación de
+metadatos, segunda versión con nombre distinto e historial de ambas versiones.
+Se verificaron los controles bloqueados en cuarentena y la disposición de la
+pantalla autenticada en escritorio y móvil de 390 px.
+
 **Pendiente de validación de despliegue:** detección limpia/infectada con ClamAV
 real, circuito de aprobación posterior y restauración completa sobre Ubuntu.
 No se declara certificada toda la fase mientras falten estas comprobaciones.
