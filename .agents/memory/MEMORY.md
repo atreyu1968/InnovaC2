@@ -5,3 +5,4 @@
 - [Academic cycle policy](academic-cycle-policy.md) — History is attributed context, never current achievement; closure archives actual state without certifying PIC approval.
 - [Closed-course integrity](archive-integrity.md) — Preserve legacy closure hash serialization across JSONB; distinguish archived hashes from redacted-export checksums.
 - [Communications settings](communications-settings.md) — Configure Resend within the technical administrator's existing Configuration section.
+- [Drizzle migration merges](drizzle-migration-merges.md) — After parallel feature merges, reconcile every SQL migration with one ordered journal and test from a fresh database.
