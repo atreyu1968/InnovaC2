@@ -33,7 +33,9 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
   El envío requiere dos confirmaciones independientes del servidor, los secretos,
   DNS SPF/DKIM/DMARC y la verificación del dominio. La prueba de esta fase no envía correo.
 - **Fases 4–6 — memoria, ATECA/FABLab y asistente IA: pendientes.** No se
-  simulan envíos, respuestas, lectura ni capacidades de IA aún no implementadas.
+  simulan envíos, respuestas, lectura ni capacidades aún no implementadas.
+  La grabación/transcripción y el borrador de actas son una extensión parcial de
+  IA; no implican que el asistente documental/RAG esté terminado.
 
 ### Fase 3: uso, límites y comprobaciones
 
@@ -63,10 +65,67 @@ generados se conservan privadamente bajo `DATA_DIR/ciclope-generated`; las
 copias de seguridad existentes incluyen todo `DATA_DIR`. La consulta y descarga
 requieren sesión autorizada; no se exponen rutas de almacenamiento.
 
-La IA del acta no se simula: en esta fase la redacción es manual. Los avisos
+La redacción manual sigue disponible; la extensión de grabación y borrador IA
+se describe a continuación y está desactivada hasta configurar un proveedor. Los avisos
 internos no son correos Resend ni acreditan lectura. La Fase 3B separa los
 estados aceptado, entregado y rebotado: un OK de Resend no se presenta como una
 entrega. Las respuestas automáticas por IA están desactivadas.
+
+### Grabación de reuniones y borrador asistido
+
+En **Configuración → Proveedor de IA**, exclusivamente administración técnica
+puede seleccionar desactivado, local o externo expresamente autorizado, indicar
+el endpoint base compatible con OpenAI (normalmente terminado en `/v1`), el modelo
+de transcripción y el de redacción. El proveedor debe implementar
+`POST /audio/transcriptions` (multipart) y `POST /chat/completions` (JSON).
+No se usa una integración de Replit ni se elige un proveedor alternativo si falla.
+El modo local resuelve únicamente a redes privadas/bucle local; el externo exige
+HTTPS, dirección pública, clave y confirmación institucional. Se bloquean
+metadatos de infraestructura, redirecciones y respuestas excesivas. La dirección
+validada se fija en la conexión para evitar cambios DNS entre validación y envío.
+
+La clave se introduce en esa pantalla, se cifra con AES-256-GCM en PostgreSQL,
+no vuelve a mostrarse y nunca se incluye en la auditoría. La llave de cifrado
+deriva de `SESSION_SECRET`: conservarlo en la instalación autónoma y sus copias
+seguras. Si cambia, hay que volver a introducir la credencial; no se recupera
+en claro desde la interfaz. Aplicar migraciones con
+`pnpm --filter @workspace/db run migrate` antes de arrancar el servidor actualizado.
+El formulario controla revisiones para no pisar cambios simultáneos.
+
+C2 o administración técnica pueden grabar una reunión **convocada**, de manera
+presencial por micrófono o mezclando audio de una pestaña online y, opcionalmente,
+su propio micrófono. Es obligatorio informar a participantes y confirmar su
+consentimiento. El navegador debe permitir micrófono/compartición en un contexto
+seguro (HTTPS o localhost). La captura de pestaña y el audio compartido dependen
+del navegador; la subida de una grabación es la alternativa. En instalaciones
+embebidas, el contenedor también debe conceder estos permisos.
+
+El audio admite hasta 50 MB por fragmento (el proveedor puede imponer menos).
+Permanece **solo en memoria del navegador** hasta procesarlo o descartarlo, con
+preescucha y confirmación antes de reemplazarlo. Se conserva al cambiar de
+sección o reunión dentro de la misma página; cerrar/recargar lo pierde y muestra
+un aviso. Cerrar sesión exige confirmación si hay audio pendiente y lo descarta.
+Para procesarlo hay que detener la grabación y marcar la reunión como celebrada,
+una vez pasada su hora de fin. No hay archivos originales ni copias de audio en
+`DATA_DIR`, base de datos, localStorage o IndexedDB: el servidor lo usa en memoria
+para transmitirlo al proveedor. Tras éxito se elimina también del navegador;
+si falla, se mantiene localmente para reintentar o descartarlo. La retención
+en un proveedor externo depende de su contrato: verificarla antes de autorizarlo.
+
+Solo se conservan transcripción, origen/constancia de consentimiento, borrador,
+revisión inmutable y auditoría técnica. La IA no marca asistencias, no crea
+acuerdos ni certifica aprobación. Las notas previas requieren autorización de
+sustitución; si la reunión o el proveedor cambian durante el proceso, no se
+sobrescribe una revisión humana más reciente ni se manda el texto a otro proveedor.
+El borrador debe revisarse y validarse por la persona competente. Un fallo del
+proveedor no guarda un acta parcial ni modifica las notas existentes.
+
+**Comprobaciones reproducibles:** `pnpm run test:phase3` crea un PostgreSQL
+temporal independiente y un proveedor HTTP local de pruebas. Comprueba permisos,
+CSRF, cifrado/no exposición de claves, consentimiento, concurrencia, conservación
+del original fuera del servidor, errores y ausencia de aprobación automática.
+Ese proveedor existe solo en pruebas: no sustituye a la IA de la aplicación y
+no demuestra la calidad o compatibilidad de un servicio externo real.
 
 ### Fase 3B: comunicaciones y configuración
 

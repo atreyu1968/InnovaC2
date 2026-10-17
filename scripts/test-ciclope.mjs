@@ -8,6 +8,7 @@ import { tmpdir } from "node:os";
 import { createServer } from "node:net";
 import path from "node:path";
 import { createRequire } from "node:module";
+import { startAIRecordingChecks } from "./ciclope-ai-checks.mjs";
 const root = new URL("../", import.meta.url).pathname;
 const require = createRequire(import.meta.url);
 const { Pool } = require(require.resolve("pg", { paths: [path.join(root, "lib/db")] }));
@@ -15,7 +16,7 @@ const directory = await mkdtemp(path.join(tmpdir(), "innova-ciclope-"));
 const pgdata = path.join(directory, "postgres");
 const cleanEnv = Object.fromEntries(Object.entries(process.env).filter(([k]) =>
   !k.startsWith("PG") && !["DATABASE_URL", "TEST_DATABASE_URL", "SESSION_SECRET", "DATA_DIR"].includes(k)));
-let pool, api, postgres = false, output = "", cleaned = false, checks = 0;
+let pool, api, aiChecks, postgres = false, output = "", cleaned = false, checks = 0;
 function command(name, args, env = cleanEnv) {
   const result = spawnSync(name, args, { cwd: root, env, encoding: "utf8", timeout: 90000 });
   assert.equal(result.status, 0, `${name}: ${result.stderr || result.stdout}`);
@@ -27,6 +28,7 @@ async function port() {
 }
 async function cleanup() {
   if (cleaned) return; cleaned = true;
+  if (aiChecks) await aiChecks.close();
   if (api && api.exitCode === null && api.signalCode === null) {
     api.kill("SIGTERM");
     await Promise.race([once(api, "exit"), new Promise(r => setTimeout(r, 2000))]);
@@ -89,6 +91,8 @@ try {
   const direction = await account("direction@ciclope.example.invalid", "equipo_directivo");
   const teacher = await account("teacher@ciclope.example.invalid", "profesorado");
   const outsider = await account("other@ciclope.example.invalid", "profesorado");
+  aiChecks = await startAIRecordingChecks({ request, status, admin, c2, teacher, pool, base, directory });
+  await aiChecks.settingsChecks();
   status(await request("/admin/mail/provider-status", c2.session), 403);
   const mailConfig = status(await request("/admin/mail/provider-status", admin), 200);
   assert.equal(mailConfig.provider.keyConfigured, false); checks++;
@@ -170,11 +174,14 @@ try {
   const queuedRow = await pool.query("SELECT status, attempts, provider_message_id FROM mail_messages WHERE id=$1", [draft.id]);
   assert.deepEqual(queuedRow.rows[0], { status: "en_cola", attempts: 0, provider_message_id: null }); checks++;
   if (process.argv.includes("--serve-browser")) {
+    const browserMeeting = await aiChecks.seedMeeting(body(6), false);
     const fixture = path.join(directory, "browser-fixture.json");
     await writeFile(fixture, JSON.stringify({
       url: `http://127.0.0.1:${apiPort}`, password,
       admin: "admin@ciclope.example.invalid", c2: "c2@ciclope.example.invalid",
       direction: "direction@ciclope.example.invalid", teacher: "teacher@ciclope.example.invalid",
+      meetingId: browserMeeting.id,
+      ...aiChecks.browserFixture(),
     }), { mode: 0o600, flag: "wx" });
     console.log(`Isolated browser fixture ready: ${fixture}`);
     await new Promise(() => {});
@@ -240,6 +247,7 @@ try {
   await act(c2.session, "preparar_acta", 409);
   status(await request(`/ciclope/meetings/${m.id}/export/acta/${m.revision}/pdf`, c2.session), 409);
   await act(c2.session, "celebrar");
+  await aiChecks.exercise(body(6));
   const update = { ...m.data, expectedRevision: m.revision, notes: "Desarrollo revisado por las personas participantes.",
     participants: m.data.participants.map(p => ({ ...p, attendance: "presente" })),
     agreements: [{ title: "Revisar las evidencias pendientes", responsibleUserId: teacher.user.id, dueDate: "2026-10-28", remindersEnabled: true }] };
@@ -251,6 +259,7 @@ try {
   await act(direction.session, "validar_acta");
   assert.equal(m.approvedPolicyRevision, 2);
   const validatedRevision = m.revision;
+  await aiChecks.rejectValidated(m);
   status(await request(`/ciclope/meetings/${m.id}`, c2.session, "PUT", { ...update, expectedRevision: m.revision }), 409);
   const task = (await overview(teacher.session)).tasks[0];
   assert.ok(task.sourceVersionId); assert.equal(task.remindersEnabled, false);
@@ -285,7 +294,8 @@ try {
   }), 200);
   data = await overview(c2.session);
   assert.equal(data.meetings.filter(x => x.data.kind === "ciclope" && x.state === "acta_validada").length, 1);
-  assert.equal(data.meetings.filter(x => x.data.kind === "ciclope" && ["celebrada", "acta_borrador", "acta_validada"].includes(x.state)).length, 1);
+  // The AI fixture is a second real held meeting, but its draft is not validated.
+  assert.equal(data.meetings.filter(x => x.data.kind === "ciclope" && ["celebrada", "acta_borrador", "acta_validada"].includes(x.state)).length, 2);
   assert.equal(data.meetings.filter(x => x.data.kind === "red_c1").length, 1);
   const conflict = created[1];
   const concurrent = await Promise.all([1, 2].map(n => request(`/ciclope/meetings/${conflict.id}/action`, teacher.session, "POST", { expectedRevision: 1, action: "aportar", text: `Propuesta ${n}` })));

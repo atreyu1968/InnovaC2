@@ -432,6 +432,10 @@ paths:
           required: true
           schema: {type: string, enum: [in_person, online, upload]}
         - in: header
+          name: X-Expected-Revision
+          required: true
+          schema: {type: integer, minimum: 1}
+        - in: header
           name: X-Replace-Draft
           required: false
           schema: {type: string, enum: ["true"]}

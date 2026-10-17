@@ -16,7 +16,7 @@ import { requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
 import { loadCaptureActor, loadActiveSchoolYear, type CaptureActor } from "../lib/capture-scope";
 import { exportCiclopeDocument } from "../lib/ciclope-exports";
 import { resendFromAddress } from "../lib/mail-provider";
-import { AIProviderError, draftMeetingMinutes, transcribeMeetingAudio } from "../lib/ai-provider";
+import { AIProviderError, draftMeetingMinutes, loadAIProvider, transcribeMeetingAudio } from "../lib/ai-provider";
 
 type ParsedInput = ReturnType<typeof CreateCiclopeMeetingBody.parse>;
 type Input = Omit<ParsedInput, "startsAt" | "endsAt" | "participants" | "agreements"> & {
@@ -41,6 +41,7 @@ class Fault extends Error { constructor(public status: number, message: string) 
 const fail = (status: number, message: string): never => { throw new Fault(status, message); };
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const router = Router();
+const processingAudio = new Set<string>();
 const getContent = (row: Row) => row.content as Content;
 const dto = (row: Row) => ({ id: row.id, revision: row.revision, state: row.state, ...getContent(row) });
 const visible = (s: Scope, row: Row) => s.manage || s.approve || getContent(row).data.participants.some(p => p.userId === s.actor.id);
@@ -233,22 +234,30 @@ router.post(
     if (!audio.length) return fail(400, "La grabación está vacía.");
     const meetingId = String(req.params.meetingId);
     const before = await meeting(db, s, meetingId);
+    const expectedRevision = Number(req.get("x-expected-revision"));
+    if (!Number.isInteger(expectedRevision) || expectedRevision < 1) return fail(400, "Indica la revisión de la reunión antes de enviar el audio.");
+    if (before.revision !== expectedRevision) return fail(409, "La reunión cambió en otra sesión. Recarga los datos; tu audio sigue en este navegador.");
     if (!["celebrada", "acta_borrador"].includes(before.state)) {
       return fail(409, "Solo se puede transcribir una reunión celebrada o con acta en borrador.");
     }
     if (getContent(before).data.notes.trim() && req.get("x-replace-draft") !== "true") {
       return fail(409, "El borrador actual contiene notas. Confirma expresamente que quieres sustituirlo.");
     }
+    if (processingAudio.has(meetingId)) return fail(429, "Ya se está procesando una grabación para esta reunión.");
+    processingAudio.add(meetingId);
     try {
+      const config = await loadAIProvider(s.actor.centerId);
       const consentedAt = new Date().toISOString();
       const transcript = await transcribeMeetingAudio({
-        centerId: s.actor.centerId,
+        config,
         audio,
         fileName: `meeting-recording.${extensions[mediaType]}`,
         mediaType,
       });
+      const stillConfigured = await loadAIProvider(s.actor.centerId);
+      if (stillConfigured.revision !== config.revision) fail(409, "El proveedor de IA cambió durante la transcripción. No se ha enviado el texto a otro proveedor.");
       const draft = await draftMeetingMinutes({
-        centerId: s.actor.centerId,
+        config,
         meetingTitle: before.title,
         meetingDate: before.startsAt.toISOString(),
         transcript,
@@ -281,7 +290,7 @@ router.post(
           action: "ciclope.ai_transcription",
           entityType: "ciclope_meeting",
           entityId: current.id,
-          details: { source, consentedAt, transcriptCharacters: transcript.length, audioBytes: audio.length },
+          details: { source, consentedAt, transcriptCharacters: transcript.length, audioBytes: audio.length, provider: config.mode, providerRevision: config.revision, transcriptionModel: config.transcriptionModel, minutesModel: config.minutesModel },
         });
         return updated!;
       });
@@ -291,6 +300,7 @@ router.post(
       throw error;
     } finally {
       audio.fill(0);
+      processingAudio.delete(meetingId);
     }
   },
 );

@@ -288,7 +288,7 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
 @keyframes fadeUp { from { opacity:0; transform:translateY(7px) } to { opacity:1; transform:translateY(0) } }
 
 /* Aquamarine chrome: deep surface for white controls, pale aqua for dark active accents. */
-.app-shell { --workspace-aqua:#176b63; --workspace-aqua-pale:#c8eee7; --workspace-ink:#124c46; display:flex; min-height:100dvh; flex-direction:column; background:#f5f7f6; color:#253a3b; }
+.app-shell { --workspace-aqua:#174f49; --workspace-aqua-pale:#c8eee7; --workspace-ink:#124c46; display:flex; min-height:100dvh; flex-direction:column; background:#f5f7f6; color:#253a3b; }
 .workspace-header { position:sticky; top:0; z-index:25; display:flex; align-items:center; min-height:64px; padding:0 clamp(14px, 2.7vw, 32px); gap:16px; background:var(--workspace-aqua); color:#fff; border-bottom:1px solid #125b55; }
 .workspace-brand { display:flex; align-items:center; gap:11px; min-width:0; }
 .workspace-brand .brand-mark { width:34px; height:34px; background:var(--workspace-aqua-pale); color:var(--workspace-ink); }

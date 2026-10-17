@@ -1,4 +1,4 @@
-- [Workspace visual direction](workspace-visual-direction.md) — Keep the aquamarine shell and collapse behavior; public sign-in is a full-screen split with local, credited illustrative photography.
+- [Workspace visual direction](workspace-visual-direction.md) — Match top/sidebar green to section headers; retain collapse behavior and full-screen split sign-in with local, credited photography.
 - [GitHub authentication boundaries](github-authentication.md) — Connector authorization does not imply Git CLI authentication; never extract its token to make a push work.
 - [Test database isolation](test-database-isolation.md) — A “test” database name is not proof of disposability; provision fresh clusters independently of application settings.
 - [Antivirus verification boundaries](antivirus-verification.md) — Keep real-engine regression tests independent of signature downloads; verify production feed health separately.
@@ -7,4 +7,5 @@
 - [Communications settings](communications-settings.md) — Configure Resend within the technical administrator's existing Configuration section.
 - [Drizzle migration merges](drizzle-migration-merges.md) — After parallel feature merges, reconcile every SQL migration with one ordered journal and test from a fresh database.
 - [AI provider boundary](ai-provider-boundary.md) — INNOVA-C2 AI features must use the provider configured by the application, not a Replit-specific integration.
+- [Meeting audio policy](meeting-audio-policy.md) — Record in-person or online meetings for draft minutes; retain transcripts, not original audio, after successful processing.
 - [Communications data continuity](communications-data-continuity.md) — Extend the existing course-scoped mail model; do not replace it with an incompatible schema without a data-preserving migration.

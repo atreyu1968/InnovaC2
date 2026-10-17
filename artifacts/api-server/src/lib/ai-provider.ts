@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { aiProviderSettingsTable, db } from "@workspace/db";
+import { requestAIJson } from "./ai-http";
 
 export type AIProviderMode = "disabled" | "local" | "external_authorized";
 
@@ -61,7 +62,9 @@ export async function loadAIProvider(centerId: string) {
   if (!row.baseUrl || !row.transcriptionModel || !row.minutesModel) {
     throw new AIProviderError(503, "Falta completar el endpoint o los modelos del proveedor de IA.");
   }
-  const apiKey = decryptAIProviderKey(row);
+  let apiKey: string | null;
+  try { apiKey = decryptAIProviderKey(row); }
+  catch { throw new AIProviderError(503, "No se pudo descifrar la credencial de IA. Administración técnica debe volver a configurarla."); }
   if (row.provider === "external_authorized" && (!row.externalAuthorizedAt || !apiKey)) {
     throw new AIProviderError(503, "El proveedor externo no tiene autorización o credenciales completas.");
   }
@@ -71,26 +74,18 @@ export async function loadAIProvider(centerId: string) {
     transcriptionModel: row.transcriptionModel,
     minutesModel: row.minutesModel,
     apiKey,
+    revision: row.revision,
   };
 }
-
-function providerHeaders(apiKey: string | null): HeadersInit {
-  return apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
-}
-
-async function checkResponse(response: Response): Promise<void> {
-  if (!response.ok) {
-    throw new AIProviderError(502, `El proveedor de IA no completó la solicitud (HTTP ${response.status}).`);
-  }
-}
+export type AIProviderConfig = Awaited<ReturnType<typeof loadAIProvider>>;
 
 export async function transcribeMeetingAudio(input: {
-  centerId: string;
+  config: AIProviderConfig;
   audio: Buffer;
   fileName: string;
   mediaType: string;
 }): Promise<string> {
-  const config = await loadAIProvider(input.centerId);
+  const config = input.config;
   const form = new FormData();
   form.set("model", config.transcriptionModel);
   form.set("language", "es");
@@ -99,20 +94,12 @@ export async function transcribeMeetingAudio(input: {
     input.audio.byteOffset + input.audio.byteLength,
   ) as ArrayBuffer;
   form.set("file", new Blob([audioBytes], { type: input.mediaType }), input.fileName);
-  let response: Response;
+  let result: { text?: unknown };
   try {
-    response = await fetch(`${config.baseUrl}/audio/transcriptions`, {
-      method: "POST",
-      headers: providerHeaders(config.apiKey),
-      body: form,
-      redirect: "error",
-      signal: AbortSignal.timeout(120_000),
-    });
+    result = await requestAIJson(config, "audio/transcriptions", form) as { text?: unknown };
   } catch {
-    throw new AIProviderError(502, "No se pudo conectar con el endpoint de transcripción configurado.");
+    throw new AIProviderError(502, "El endpoint de transcripción configurado no completó una respuesta válida.");
   }
-  await checkResponse(response);
-  const result = await response.json() as { text?: unknown };
   if (typeof result.text !== "string" || !result.text.trim()) {
     throw new AIProviderError(502, "El proveedor no devolvió una transcripción legible.");
   }
@@ -120,20 +107,15 @@ export async function transcribeMeetingAudio(input: {
 }
 
 export async function draftMeetingMinutes(input: {
-  centerId: string;
+  config: AIProviderConfig;
   meetingTitle: string;
   meetingDate: string;
   transcript: string;
 }): Promise<string> {
-  const config = await loadAIProvider(input.centerId);
-  let response: Response;
+  const config = input.config;
+  let result: { choices?: Array<{ message?: { content?: unknown } }> };
   try {
-    response = await fetch(`${config.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...providerHeaders(config.apiKey) },
-      redirect: "error",
-      signal: AbortSignal.timeout(120_000),
-      body: JSON.stringify({
+    result = await requestAIJson(config, "chat/completions", JSON.stringify({
         model: config.minutesModel,
         temperature: 0.2,
         messages: [
@@ -150,15 +132,10 @@ export async function draftMeetingMinutes(input: {
             }),
           },
         ],
-      }),
-    });
+      })) as { choices?: Array<{ message?: { content?: unknown } }> };
   } catch {
     throw new AIProviderError(502, "No se pudo conectar con el proveedor de IA para preparar el borrador.");
   }
-  await checkResponse(response);
-  const result = await response.json() as {
-    choices?: Array<{ message?: { content?: unknown } }>;
-  };
   const content = result.choices?.[0]?.message?.content;
   if (typeof content !== "string" || !content.trim()) {
     throw new AIProviderError(502, "El proveedor no devolvió un borrador de acta legible.");

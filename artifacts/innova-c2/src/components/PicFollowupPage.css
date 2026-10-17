@@ -16,7 +16,7 @@
   border-radius: 15px;
   padding: clamp(21px, 3vw, 34px);
   color: #f7f5e9;
-  background: #174f49;
+  background: var(--workspace-aqua, #174f49);
   box-shadow: 0 9px 27px rgba(27, 69, 60, .12);
 }
 .followup-hero::before {

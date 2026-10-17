@@ -1189,10 +1189,14 @@ export const TranscribeCiclopeMeetingAudioParams = zod.object({
   "meetingId": zod.coerce.string().uuid()
 })
 
+
+
+
 export const TranscribeCiclopeMeetingAudioHeader = zod.object({
   "X-CSRF-Token": zod.string(),
   "X-Recording-Consent": zod.enum(['true']),
   "X-Recording-Source": zod.enum(['in_person', 'online', 'upload']),
+  "X-Expected-Revision": zod.number().int().min(1),
   "X-Replace-Draft": zod.enum(['true']).optional()
 })
 

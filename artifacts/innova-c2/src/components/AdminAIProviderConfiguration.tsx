@@ -64,7 +64,7 @@ export function AdminAIProviderConfiguration() {
     });
   }
 
-  return <section className="panel p-5 md:p-7" data-testid="ai-provider-configuration">
+  return <section className="panel min-w-0 break-words p-5 md:p-7 [&_input:not([type=checkbox])]:min-w-0 [&_input:not([type=checkbox])]:max-w-full [&_select]:min-w-0 [&_select]:max-w-full" data-testid="ai-provider-configuration">
     <div className="flex items-start gap-3">
       <div className="rounded-xl bg-teal-50 p-3 text-teal-800"><KeyRound size={22} /></div>
       <div>

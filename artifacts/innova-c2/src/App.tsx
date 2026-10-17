@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { BrandMark } from './components/BrandMark';
 import { CommunicationsPage } from './components/CommunicationsPage';
 import { AdminConfigurationPage } from './components/AdminConfigurationPage';
+import { clearUserAudio, hasUserAudio } from './components/ciclope/ciclopePendingAudio';
 import { hasCoordinationAccess } from './lib/role-access';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
@@ -169,13 +170,17 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
   const logout = useLogout();
   const client = useQueryClient();
   const label = routeLabels[location] ?? 'Espacio de coordinación';
-  const signOut = () => logout.mutate(undefined, {
+  const signOut = () => {
+    if (hasUserAudio(user.id) && !window.confirm('Hay audio de reuniones pendiente en este navegador. Si cierras sesión se descartará. ¿Cerrar sesión?')) return;
+    logout.mutate(undefined, {
     onSuccess: () => {
+      clearUserAudio(user.id);
       setCsrfToken(null);
       client.clear();
       setLocation('/login');
     },
-  });
+    });
+  };
   return (
     <div className="app-shell">
       <header className="workspace-header">

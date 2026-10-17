@@ -3,10 +3,11 @@ import { Router, type Response } from "express";
 import {
   aiProviderSettingsTable, auditLogsTable, centersTable, db, usersTable,
 } from "@workspace/db";
-import { UpdateAdminAIProviderSettings } from "@workspace/api-zod";
+import { UpdateAdminAIProviderSettingsBody } from "@workspace/api-zod";
 import { requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
 import { encryptAIProviderKey, type AIProviderMode } from "../lib/ai-provider";
 import { logger } from "../lib/logger";
+import { resolveAIEndpoint } from "../lib/ai-http";
 
 const router = Router();
 
@@ -41,7 +42,7 @@ function dto(row?: typeof aiProviderSettingsTable.$inferSelect) {
   };
 }
 
-function normalizeBaseUrl(mode: AIProviderMode, input: string): string | null {
+async function normalizeBaseUrl(mode: AIProviderMode, input: string): Promise<string | null> {
   const value = input.trim();
   if (!value) {
     if (mode === "disabled") return null;
@@ -55,25 +56,11 @@ function normalizeBaseUrl(mode: AIProviderMode, input: string): string | null {
   if (mode === "external_authorized" && url.protocol !== "https:") {
     throw new SettingsFailure(400, "Los proveedores externos deben usar HTTPS.");
   }
-  if (mode === "local" && !isLocalHost(url.hostname)) {
-    throw new SettingsFailure(400, "El modo local solo acepta un host local o de red privada.");
+  if (mode !== "disabled") {
+    try { await resolveAIEndpoint(mode, value); }
+    catch { throw new SettingsFailure(400, "El endpoint no resuelve a una dirección permitida. Local requiere una red privada; externo requiere HTTPS y una dirección pública."); }
   }
   return value.replace(/\/+$/, "");
-}
-
-function isLocalHost(host: string): boolean {
-  const name = host.toLowerCase().replace(/^\[|\]$/g, "");
-  if (name === "localhost" || name.endsWith(".localhost") || name.endsWith(".local") || name.endsWith(".lan")) return true;
-  if (name === "::1" || name.startsWith("fc") || name.startsWith("fd") || name.startsWith("fe80:")) return true;
-  const parts = name.split(".").map(Number);
-  if (parts.length === 4 && parts.every((part) => Number.isInteger(part) && part >= 0 && part <= 255)) {
-    return parts[0] === 10 || parts[0] === 127 || parts[0] === 0 ||
-      (parts[0] === 169 && parts[1] === 254) ||
-      (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) ||
-      (parts[0] === 192 && parts[1] === 168);
-  }
-  // Single-label names are commonly used for services on a private Docker or LAN network.
-  return !name.includes(".") && name.length > 0;
 }
 
 function replyError(res: Response, error: unknown): void {
@@ -97,11 +84,11 @@ router.get("/admin/ai/provider", requireAuth, async (_req, res) => {
 router.put("/admin/ai/provider", requireAuth, requireCsrf, async (req, res) => {
   try {
     const identity = await adminIdentity(res);
-    const parsed = UpdateAdminAIProviderSettings.safeParse(req.body);
+    const parsed = UpdateAdminAIProviderSettingsBody.safeParse(req.body);
     if (!parsed.success) throw new SettingsFailure(400, "La configuración no tiene un formato válido.");
     const input = parsed.data;
     const mode = input.provider;
-    const baseUrl = normalizeBaseUrl(mode, input.baseUrl);
+    const baseUrl = await normalizeBaseUrl(mode, input.baseUrl);
     const transcriptionModel = input.transcriptionModel.trim() || null;
     const minutesModel = input.minutesModel.trim() || null;
     if (mode !== "disabled" && (!transcriptionModel || !minutesModel)) {

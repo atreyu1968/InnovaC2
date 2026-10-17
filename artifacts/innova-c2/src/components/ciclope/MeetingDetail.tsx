@@ -34,8 +34,8 @@ export function MeetingDetail({ data, meeting, user, onEdit, onDone }: { data: C
   return <section className="panel overflow-hidden" data-testid={`panel-meeting-${meeting.id}`}>
     <Head eyebrow={`${d.kind === 'ciclope' ? 'Sesión CICLOPE' : 'Red C1 · agenda externa'} · revisión ${meeting.revision}`} title={d.title} icon={<CalendarClock size={18} />}
       action={<span className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${stateTone[meeting.state]}`} data-testid="status-meeting-state">{stateNames[meeting.state]}</span>} />
-    <div className="grid gap-6 p-5 md:p-6 xl:grid-cols-[1.3fr_1fr]">
-      <div className="space-y-4 text-xs text-[#34444a]">
+    <div className="grid min-w-0 grid-cols-1 gap-6 p-5 md:p-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+      <div className="min-w-0 space-y-4 break-words text-xs text-[#34444a]">
         <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
           <Def k="Inicio" v={fmt(d.startsAt)} /><Def k="Fin" v={fmt(d.endsAt)} /><Def k="Lugar" v={d.location || 'Sin indicar'} />
           <Def k="Presidencia" v={name(d.chairUserId)} /><Def k="Secretaría" v={name(d.secretaryUserId)} />
@@ -53,7 +53,7 @@ export function MeetingDetail({ data, meeting, user, onEdit, onDone }: { data: C
          {meeting.transcription && <Block title="Transcripción de la reunión"><p className="whitespace-pre-wrap">{meeting.transcription.text}</p><p className="mt-2 text-[10px] text-[#6b7774]">Origen: {meeting.transcription.source === 'in_person' ? 'presencial' : meeting.transcription.source === 'online' ? 'online' : 'archivo subido'} · Procesada {new Date(meeting.transcription.completedAt).toLocaleString()} · El audio original se eliminó tras procesarlo.</p></Block>}
         <Block title="Acuerdos">{d.agreements.length ? <ul className="space-y-1">{d.agreements.map((a, i) => <li key={i}>{a.title} · <span className="text-[#5f6e69]">{name(a.responsibleUserId, a.responsibleName)} · vence {a.dueDate}</span></li>)}</ul> : <p className="text-[#77817c]">Sin acuerdos.</p>}</Block>
       </div>
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4 break-words">
         <div className="space-y-2 rounded-lg border border-[#eee9df] bg-[#fbfaf5] p-4"><p className="eyebrow">Acciones</p>
           <textarea className="field min-h-[70px] text-xs" maxLength={5000} placeholder="Texto opcional: aportación, motivo de cancelación o comentario de la acción" value={text} onChange={e => setText(e.target.value)} data-testid="input-action-text" />
           <div className="flex flex-wrap gap-2">
@@ -68,7 +68,7 @@ export function MeetingDetail({ data, meeting, user, onEdit, onDone }: { data: C
             {data.canManage && ['programada', 'convocada'].includes(meeting.state) && btn(A.cancelar, 'Cancelar reunión', { withText: true, danger: true, disabled: !text.trim() })}
           </div>
           {data.canManage && isC1 && meeting.state === 'programada' && !c1Ready && <p className="text-[10px] text-[#9b4337]">Para registrar la convocatoria recibida: remitente, lugar o enlace, participantes y orden del día.</p>}
-          {data.canManage && ['celebrada', 'acta_borrador'].includes(meeting.state) && <CiclopeMeetingRecording meetingId={meeting.id} meetingTitle={d.title} meetingStartsAt={d.startsAt} currentNotes={d.notes} onDone={onDone} />}
+          {data.canManage && ['convocada', 'celebrada', 'acta_borrador'].includes(meeting.state) && <CiclopeMeetingRecording key={meeting.id} meetingId={meeting.id} userId={user.id} meetingTitle={d.title} meetingStartsAt={d.startsAt} currentNotes={d.notes} expectedRevision={meeting.revision} canProcess={['celebrada', 'acta_borrador'].includes(meeting.state)} onDone={onDone} />}
           {data.canManage && !isC1 && meeting.state === 'programada' && !policy.authorizedInternalChannel && <p className="text-[10px] text-[#9b4337]">Para convocar, la política debe autorizar el canal interno.</p>}
           {data.canManage && meeting.state === 'convocada' && !ended && <p className="text-[10px] text-[#77817c]">Solo puede marcarse como celebrada cuando haya pasado su hora de fin.</p>}
           {data.canManage && ['programada', 'convocada'].includes(meeting.state) && <p className="text-[10px] text-[#77817c]">La cancelación exige indicar el motivo en el campo de texto.</p>}
