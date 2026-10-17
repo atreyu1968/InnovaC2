@@ -5,6 +5,258 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface CiclopePerson {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  /** @nullable */
+  professionalFamily: string | null;
+}
+
+export type CiclopeParticipantAttendance = typeof CiclopeParticipantAttendance[keyof typeof CiclopeParticipantAttendance];
+
+
+export const CiclopeParticipantAttendance = {
+  pendiente: 'pendiente',
+  presente: 'presente',
+  ausente: 'ausente',
+  excusada: 'excusada',
+} as const;
+
+export interface CiclopeParticipant {
+  name?: string;
+  email?: string;
+  /** @nullable */
+  professionalFamily?: string | null;
+  userId: string;
+  /**
+     * @minLength 1
+     * @maxLength 180
+     */
+  formalRole: string;
+  /** @nullable */
+  appointedOn: string | null;
+  attendance: CiclopeParticipantAttendance;
+}
+
+export interface CiclopeAgreement {
+  responsibleName?: string;
+  /**
+     * @minLength 1
+     * @maxLength 1500
+     */
+  title: string;
+  responsibleUserId: string;
+  dueDate: string;
+  remindersEnabled: boolean;
+}
+
+export interface CiclopeAttachment {
+  documentId: string;
+  title: string;
+  versionId: string;
+  version: number;
+  sha256: string;
+  originalName: string;
+  sizeBytes: number;
+}
+
+export type CiclopeMeetingInputKind = typeof CiclopeMeetingInputKind[keyof typeof CiclopeMeetingInputKind];
+
+
+export const CiclopeMeetingInputKind = {
+  ciclope: 'ciclope',
+  red_c1: 'red_c1',
+} as const;
+
+export type CiclopeMeetingInputExternalChecksLaycos = typeof CiclopeMeetingInputExternalChecksLaycos[keyof typeof CiclopeMeetingInputExternalChecksLaycos];
+
+
+export const CiclopeMeetingInputExternalChecksLaycos = {
+  pendiente: 'pendiente',
+  verificado: 'verificado',
+} as const;
+
+export type CiclopeMeetingInputExternalChecksQuestionnaire = typeof CiclopeMeetingInputExternalChecksQuestionnaire[keyof typeof CiclopeMeetingInputExternalChecksQuestionnaire];
+
+
+export const CiclopeMeetingInputExternalChecksQuestionnaire = {
+  pendiente: 'pendiente',
+  verificado: 'verificado',
+} as const;
+
+export type CiclopeMeetingInputExternalChecksConstituted = typeof CiclopeMeetingInputExternalChecksConstituted[keyof typeof CiclopeMeetingInputExternalChecksConstituted];
+
+
+export const CiclopeMeetingInputExternalChecksConstituted = {
+  pendiente: 'pendiente',
+  verificado: 'verificado',
+} as const;
+
+export type CiclopeMeetingInputExternalChecks = {
+  laycos: CiclopeMeetingInputExternalChecksLaycos;
+  questionnaire: CiclopeMeetingInputExternalChecksQuestionnaire;
+  constituted: CiclopeMeetingInputExternalChecksConstituted;
+};
+
+export interface CiclopeMeetingInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  kind: CiclopeMeetingInputKind;
+  /**
+     * @minLength 3
+     * @maxLength 250
+     */
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  /**
+     * @minLength 3
+     * @maxLength 5000
+     */
+  purpose: string;
+  /** @maxLength 2000 */
+  location: string;
+  /** @maxItems 100 */
+  participants: CiclopeParticipant[];
+  /**
+     * @maxItems 60
+     * @items.minLength 1
+     * @items.maxLength 2000
+     */
+  agenda: string[];
+  /** @maxLength 50000 */
+  notes: string;
+  /** @maxItems 100 */
+  agreements: CiclopeAgreement[];
+  /** @nullable */
+  chairUserId: string | null;
+  /** @nullable */
+  secretaryUserId: string | null;
+  /** @maxItems 20 */
+  validatorUserIds: string[];
+  /** @maxItems 30 */
+  attachmentIds: string[];
+  pinnedAttachments?: CiclopeAttachment[];
+  /** @maxLength 500 */
+  externalSender: string;
+  externalChecks: CiclopeMeetingInputExternalChecks;
+}
+
+export interface CiclopePolicyInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  requireInstitutionalApproval: boolean;
+  authorizedInternalChannel: boolean;
+}
+
+export interface CiclopePolicy {
+  revision: number;
+  requireInstitutionalApproval: boolean;
+  authorizedInternalChannel: boolean;
+}
+
+export type CiclopeMeetingState = typeof CiclopeMeetingState[keyof typeof CiclopeMeetingState];
+
+
+export const CiclopeMeetingState = {
+  programada: 'programada',
+  convocada: 'convocada',
+  celebrada: 'celebrada',
+  acta_borrador: 'acta_borrador',
+  acta_validada: 'acta_validada',
+  cancelada: 'cancelada',
+} as const;
+
+export interface CiclopeMeeting {
+  id: string;
+  revision: number;
+  state: CiclopeMeetingState;
+  data: CiclopeMeetingInput;
+  approvalRequested: boolean;
+  /** @nullable */
+  approvedPolicyRevision: number | null;
+  contributions: string[];
+}
+
+export interface CiclopeTask {
+  id: string;
+  meetingId: string;
+  sourceVersionId: string;
+  title: string;
+  responsibleUserId: string;
+  dueDate: string;
+  remindersEnabled: boolean;
+  /** @nullable */
+  completedAt: string | null;
+}
+
+export interface CiclopeNotice {
+  id: string;
+  meetingId: string;
+  title: string;
+  createdAt: string;
+}
+
+export interface CiclopeOverview {
+  schoolYearId: string;
+  schoolYearLabel: string;
+  canManage: boolean;
+  canApprove: boolean;
+  minimumMeetings: number;
+  policy: CiclopePolicy;
+  people: CiclopePerson[];
+  meetings: CiclopeMeeting[];
+  tasks: CiclopeTask[];
+  notices: CiclopeNotice[];
+}
+
+export interface CiclopeVersion {
+  id: string;
+  revision: number;
+  content: CiclopeMeeting;
+  createdAt: string;
+  createdBy: string;
+}
+
+export type CiclopeActionInputAction = typeof CiclopeActionInputAction[keyof typeof CiclopeActionInputAction];
+
+
+export const CiclopeActionInputAction = {
+  solicitar_refrendo: 'solicitar_refrendo',
+  aprobar_convocatoria: 'aprobar_convocatoria',
+  convocar: 'convocar',
+  celebrar: 'celebrar',
+  preparar_acta: 'preparar_acta',
+  validar_acta: 'validar_acta',
+  cancelar: 'cancelar',
+  aportar: 'aportar',
+} as const;
+
+export interface CiclopeActionInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  action: CiclopeActionInputAction;
+  /** @maxLength 5000 */
+  text?: string;
+}
+
+export type CiclopeTaskActionInputAction = typeof CiclopeTaskActionInputAction[keyof typeof CiclopeTaskActionInputAction];
+
+
+export const CiclopeTaskActionInputAction = {
+  completar: 'completar',
+  reabrir: 'reabrir',
+  activar_recordatorios: 'activar_recordatorios',
+  desactivar_recordatorios: 'desactivar_recordatorios',
+  recordar: 'recordar',
+} as const;
+
+export interface CiclopeTaskActionInput {
+  action: CiclopeTaskActionInputAction;
+}
+
 export type SchoolYearExportSchoolYear = {
   id: string;
   label: string;

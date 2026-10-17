@@ -11,12 +11,14 @@ import plansRouter from "./plans";
 import staffRouter from "./staff";
 import usersRouter from "./users";
 import schoolYearsRouter from "./school-years";
+import ciclopeRouter from "./ciclope";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
 router.use(schoolYearsRouter);
+router.use(ciclopeRouter);
 router.use(dashboardRouter);
 router.use(activitiesRouter);
 router.use(documentsRouter);

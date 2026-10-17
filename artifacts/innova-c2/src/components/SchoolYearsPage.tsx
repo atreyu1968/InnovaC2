@@ -10,7 +10,7 @@ import {
   useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey, exportSchoolYear,
   useGetCurrentCatalog, getGetCurrentCatalogQueryKey,
   getGetDashboardSummaryQueryKey, getGetCurrentPicPlanQueryKey, getListActivitiesQueryKey,
-  getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey,
+  getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey, getGetCiclopeQueryKey,
 } from '@workspace/api-client-react';
 import type { SchoolYear, SchoolYearAccount, SchoolYearSource, UserRole as UserRoleValue } from '@workspace/api-client-react';
 import { discardCourseCache } from '@/lib/course-cache';
@@ -42,6 +42,9 @@ const sourceNames: Record<string, string> = {
   activity_sources: 'Fuentes de actuaciones', activity_people: 'Participantes',
   activity_indicator_links: 'Vínculos de indicadores', document_access_grants: 'Accesos documentales al cierre',
   evidences: 'Evidencias', evidence_links: 'Vínculos de evidencias',
+  ciclope_policies: 'Política institucional CICLOPE', ciclope_meetings: 'Reuniones CICLOPE y red C1',
+  ciclope_versions: 'Versiones documentales CICLOPE', ciclope_tasks: 'Acuerdos y tareas',
+  ciclope_notices: 'Convocatorias y avisos internos',
 };
 
 function messageFor(error: unknown) {
@@ -95,6 +98,7 @@ export function SchoolYearsPage() {
     await discardCourseCache(client, [
       getGetDashboardSummaryQueryKey(), getGetCurrentPicPlanQueryKey(),
       getListActivitiesQueryKey(), getListDocumentsQueryKey(), getListCurrentIndicatorsQueryKey(),
+      getGetCiclopeQueryKey(),
     ]);
     await Promise.all([
       getListSchoolYearsQueryKey(), getGetSchoolYearReviewQueryKey(), getGetDashboardSummaryQueryKey(), getGetCurrentPicPlanQueryKey(),

@@ -22,10 +22,73 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
   solicitudes de datos esenciales, respuestas y validación C2; indicadores con
   trazabilidad de evidencias. Asignación de familia a cuentas nuevas y existentes.
   El antivirus debe estar disponible para descargar o aprobar archivos.
-- **Fases posteriores: pendientes.** Circuitos completos de CICLOPE,
-  comunicaciones reales por Resend, memoria,
+- **Fase 3 — CICLOPE y coordinación C2: implementada.** Composición y
+  participación, calendario, refrendo institucional configurable, convocatorias
+  por bandeja interna autorizada, orden del día, actas manuales versionadas,
+  asistencia revisada, acuerdos/tareas y avisos al responsable según su preferencia.
+  Agenda C1 separada, permisos por curso y exportaciones DOCX/PDF.
+- **Fases posteriores: pendientes.** Centro de comunicaciones Resend, memoria,
   ATECA/FABLab y asistente IA se habilitarán según la especificación, con sus
   pruebas. No se sustituyen por envíos, respuestas o integraciones simuladas.
+
+### Fase 3: uso, límites y comprobaciones
+
+El menú **CICLOPE** usa el curso activo. C2 organiza el expediente; el equipo
+directivo configura si exige refrendo y autoriza expresamente la bandeja
+interna como canal institucional. Sin autorización no se emiten convocatorias.
+La administración técnica mantiene todas estas funciones con su identidad real.
+Una persona participante solo accede a sus reuniones y puede proponer puntos.
+
+El circuito es `programada → convocada → celebrada → acta_borrador →
+acta_validada`. La programación no acredita celebración; la celebración solo
+se registra después del final previsto. C2 revisa expresamente las asistencias,
+el desarrollo y los acuerdos. La validación humana competente crea tareas
+vinculadas a la revisión inmutable del acta. Nadie se suscribe a recordatorios
+por decisión ajena: cada responsable activa su preferencia. Los avisos se
+guardan en su bandeja, no se transfieren a C2.
+
+Las reuniones de red C1 registran convocatorias **recibidas**, separadas de
+CICLOPE; no aumentan su número de sesiones. El dato institucional de 21/10/2026
+se puede incorporar expresamente desde el formulario, con verificaciones y
+asistencia pendientes, sin enlace Meet inventado.
+
+Los adjuntos fijan versión y SHA-256; una nueva versión documental no cambia
+una convocatoria anterior. Las revisiones conservan nombres y roles declarados,
+no solo referencias a cuentas que podrían cambiar después. Los DOCX/PDF
+generados se conservan privadamente bajo `DATA_DIR/ciclope-generated`; las
+copias de seguridad existentes incluyen todo `DATA_DIR`. La consulta y descarga
+requieren sesión autorizada; no se exponen rutas de almacenamiento.
+
+La IA del acta no se simula: en esta fase la redacción es manual. Los avisos
+internos no son correos Resend ni acreditan lectura. Correo externo y automatismos
+de envío corresponden a la fase 3B, con autorización y dominio verificado.
+
+Prueba reproducible, sin reutilizar `DATABASE_URL` ni datos del centro:
+
+```bash
+pnpm run test:phase3
+```
+
+Requiere PostgreSQL (`initdb`, `pg_ctl`) en `PATH`. Crea un clúster temporal,
+aplica todas las migraciones, arranca una API independiente y elimina el entorno
+al finalizar. Comprueba permisos, CSRF, cuatro sesiones, refrendo, solapamientos,
+estados, C1 separado, actas, responsables/avisos, concurrencia, DOCX/PDF, revisión
+inmutable e inclusión de CICLOPE en el expediente cerrado. Resultado de la
+ejecución: **87 comprobaciones API correctas**.
+
+Una pasada de navegador sobre el entorno desechable comprobó persistencia,
+refrendo, convocatoria, asistencia, acta validada, historial, descargas DOCX/PDF,
+tarea del docente y adaptación a móvil. Detectó que editar el acta borraba la
+indicación del refrendo anterior; se corrigió y se añadió una regresión por API.
+No se verificó en navegador el selector de adjuntos por no disponer de un
+documento limpio aprobado en ese entorno; no se falsificó el análisis antivirus.
+
+Ubuntu/Proxmox conserva el procedimiento autónomo existente: reconstruir la
+imagen, ejecutar `./scripts/migrate.sh` y arrancar `docker compose up -d`.
+Las migraciones `0008` y `0009` crean las tablas y los bloqueos de cursos
+cerrados/versiones inmutables. En desarrollo se aplica `pnpm --filter
+@workspace/db run push` seguido de `node scripts/apply-course-guards.mjs`;
+un `push` aislado no instala los triggers.
 
 El PIC de 2024–2025 facilitado como referencia se ha resumido de forma
 anonimizada en `docs/reference/pic-2024-25-aportes-anonimizados.md`. Sus

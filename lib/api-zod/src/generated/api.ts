@@ -8,6 +8,621 @@
 import * as zod from 'zod';
 
 
+export const getCiclopeResponseMeetingsItemDataExpectedRevisionMin = 0;
+
+export const getCiclopeResponseMeetingsItemDataTitleMin = 3;
+export const getCiclopeResponseMeetingsItemDataTitleMax = 250;
+
+export const getCiclopeResponseMeetingsItemDataPurposeMin = 3;
+export const getCiclopeResponseMeetingsItemDataPurposeMax = 5000;
+
+export const getCiclopeResponseMeetingsItemDataLocationMax = 2000;
+
+export const getCiclopeResponseMeetingsItemDataParticipantsItemFormalRoleMax = 180;
+
+export const getCiclopeResponseMeetingsItemDataParticipantsMax = 100;
+
+export const getCiclopeResponseMeetingsItemDataAgendaItemMax = 2000;
+
+export const getCiclopeResponseMeetingsItemDataAgendaMax = 60;
+
+export const getCiclopeResponseMeetingsItemDataNotesMax = 50000;
+
+export const getCiclopeResponseMeetingsItemDataAgreementsItemTitleMax = 1500;
+
+export const getCiclopeResponseMeetingsItemDataAgreementsMax = 100;
+
+export const getCiclopeResponseMeetingsItemDataValidatorUserIdsMax = 20;
+
+export const getCiclopeResponseMeetingsItemDataAttachmentIdsMax = 30;
+
+export const getCiclopeResponseMeetingsItemDataExternalSenderMax = 500;
+
+
+
+export const GetCiclopeResponse = zod.object({
+  "schoolYearId": zod.string(),
+  "schoolYearLabel": zod.string(),
+  "canManage": zod.boolean(),
+  "canApprove": zod.boolean(),
+  "minimumMeetings": zod.number().int(),
+  "policy": zod.object({
+  "revision": zod.number().int(),
+  "requireInstitutionalApproval": zod.boolean(),
+  "authorizedInternalChannel": zod.boolean()
+}),
+  "people": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string(),
+  "role": zod.string(),
+  "professionalFamily": zod.string().nullable()
+})),
+  "meetings": zod.array(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "state": zod.enum(['programada', 'convocada', 'celebrada', 'acta_borrador', 'acta_validada', 'cancelada']),
+  "data": zod.object({
+  "expectedRevision": zod.number().int().min(getCiclopeResponseMeetingsItemDataExpectedRevisionMin),
+  "kind": zod.enum(['ciclope', 'red_c1']),
+  "title": zod.string().min(getCiclopeResponseMeetingsItemDataTitleMin).max(getCiclopeResponseMeetingsItemDataTitleMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "purpose": zod.string().min(getCiclopeResponseMeetingsItemDataPurposeMin).max(getCiclopeResponseMeetingsItemDataPurposeMax),
+  "location": zod.string().max(getCiclopeResponseMeetingsItemDataLocationMax),
+  "participants": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
+  "professionalFamily": zod.string().nullish(),
+  "userId": zod.string().uuid(),
+  "formalRole": zod.string().min(1).max(getCiclopeResponseMeetingsItemDataParticipantsItemFormalRoleMax),
+  "appointedOn": zod.coerce.date().nullable(),
+  "attendance": zod.enum(['pendiente', 'presente', 'ausente', 'excusada'])
+})).max(getCiclopeResponseMeetingsItemDataParticipantsMax),
+  "agenda": zod.array(zod.string().min(1).max(getCiclopeResponseMeetingsItemDataAgendaItemMax)).max(getCiclopeResponseMeetingsItemDataAgendaMax),
+  "notes": zod.string().max(getCiclopeResponseMeetingsItemDataNotesMax),
+  "agreements": zod.array(zod.object({
+  "responsibleName": zod.string().optional(),
+  "title": zod.string().min(1).max(getCiclopeResponseMeetingsItemDataAgreementsItemTitleMax),
+  "responsibleUserId": zod.string().uuid(),
+  "dueDate": zod.coerce.date(),
+  "remindersEnabled": zod.boolean()
+})).max(getCiclopeResponseMeetingsItemDataAgreementsMax),
+  "chairUserId": zod.string().uuid().nullable(),
+  "secretaryUserId": zod.string().uuid().nullable(),
+  "validatorUserIds": zod.array(zod.string().uuid()).max(getCiclopeResponseMeetingsItemDataValidatorUserIdsMax),
+  "attachmentIds": zod.array(zod.string().uuid()).max(getCiclopeResponseMeetingsItemDataAttachmentIdsMax),
+  "pinnedAttachments": zod.array(zod.object({
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "versionId": zod.string(),
+  "version": zod.number().int(),
+  "sha256": zod.string(),
+  "originalName": zod.string(),
+  "sizeBytes": zod.number().int()
+})).optional(),
+  "externalSender": zod.string().max(getCiclopeResponseMeetingsItemDataExternalSenderMax),
+  "externalChecks": zod.object({
+  "laycos": zod.enum(['pendiente', 'verificado']),
+  "questionnaire": zod.enum(['pendiente', 'verificado']),
+  "constituted": zod.enum(['pendiente', 'verificado'])
+})
+}),
+  "approvalRequested": zod.boolean(),
+  "approvedPolicyRevision": zod.number().int().nullable(),
+  "contributions": zod.array(zod.string())
+})),
+  "tasks": zod.array(zod.object({
+  "id": zod.string(),
+  "meetingId": zod.string(),
+  "sourceVersionId": zod.string(),
+  "title": zod.string(),
+  "responsibleUserId": zod.string(),
+  "dueDate": zod.string(),
+  "remindersEnabled": zod.boolean(),
+  "completedAt": zod.string().nullable()
+})),
+  "notices": zod.array(zod.object({
+  "id": zod.string(),
+  "meetingId": zod.string(),
+  "title": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+export const updateCiclopePolicyBodyExpectedRevisionMin = 0;
+
+
+
+export const UpdateCiclopePolicyBody = zod.object({
+  "expectedRevision": zod.number().int().min(updateCiclopePolicyBodyExpectedRevisionMin),
+  "requireInstitutionalApproval": zod.boolean(),
+  "authorizedInternalChannel": zod.boolean()
+})
+
+export const UpdateCiclopePolicyResponse = zod.unknown()
+
+
+export const createCiclopeMeetingBodyExpectedRevisionMin = 0;
+
+export const createCiclopeMeetingBodyTitleMin = 3;
+export const createCiclopeMeetingBodyTitleMax = 250;
+
+export const createCiclopeMeetingBodyPurposeMin = 3;
+export const createCiclopeMeetingBodyPurposeMax = 5000;
+
+export const createCiclopeMeetingBodyLocationMax = 2000;
+
+export const createCiclopeMeetingBodyParticipantsItemFormalRoleMax = 180;
+
+export const createCiclopeMeetingBodyParticipantsMax = 100;
+
+export const createCiclopeMeetingBodyAgendaItemMax = 2000;
+
+export const createCiclopeMeetingBodyAgendaMax = 60;
+
+export const createCiclopeMeetingBodyNotesMax = 50000;
+
+export const createCiclopeMeetingBodyAgreementsItemTitleMax = 1500;
+
+export const createCiclopeMeetingBodyAgreementsMax = 100;
+
+export const createCiclopeMeetingBodyValidatorUserIdsMax = 20;
+
+export const createCiclopeMeetingBodyAttachmentIdsMax = 30;
+
+export const createCiclopeMeetingBodyExternalSenderMax = 500;
+
+
+
+export const CreateCiclopeMeetingBody = zod.object({
+  "expectedRevision": zod.number().int().min(createCiclopeMeetingBodyExpectedRevisionMin),
+  "kind": zod.enum(['ciclope', 'red_c1']),
+  "title": zod.string().min(createCiclopeMeetingBodyTitleMin).max(createCiclopeMeetingBodyTitleMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "purpose": zod.string().min(createCiclopeMeetingBodyPurposeMin).max(createCiclopeMeetingBodyPurposeMax),
+  "location": zod.string().max(createCiclopeMeetingBodyLocationMax),
+  "participants": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
+  "professionalFamily": zod.string().nullish(),
+  "userId": zod.string().uuid(),
+  "formalRole": zod.string().min(1).max(createCiclopeMeetingBodyParticipantsItemFormalRoleMax),
+  "appointedOn": zod.coerce.date().nullable(),
+  "attendance": zod.enum(['pendiente', 'presente', 'ausente', 'excusada'])
+})).max(createCiclopeMeetingBodyParticipantsMax),
+  "agenda": zod.array(zod.string().min(1).max(createCiclopeMeetingBodyAgendaItemMax)).max(createCiclopeMeetingBodyAgendaMax),
+  "notes": zod.string().max(createCiclopeMeetingBodyNotesMax),
+  "agreements": zod.array(zod.object({
+  "responsibleName": zod.string().optional(),
+  "title": zod.string().min(1).max(createCiclopeMeetingBodyAgreementsItemTitleMax),
+  "responsibleUserId": zod.string().uuid(),
+  "dueDate": zod.coerce.date(),
+  "remindersEnabled": zod.boolean()
+})).max(createCiclopeMeetingBodyAgreementsMax),
+  "chairUserId": zod.string().uuid().nullable(),
+  "secretaryUserId": zod.string().uuid().nullable(),
+  "validatorUserIds": zod.array(zod.string().uuid()).max(createCiclopeMeetingBodyValidatorUserIdsMax),
+  "attachmentIds": zod.array(zod.string().uuid()).max(createCiclopeMeetingBodyAttachmentIdsMax),
+  "pinnedAttachments": zod.array(zod.object({
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "versionId": zod.string(),
+  "version": zod.number().int(),
+  "sha256": zod.string(),
+  "originalName": zod.string(),
+  "sizeBytes": zod.number().int()
+})).optional(),
+  "externalSender": zod.string().max(createCiclopeMeetingBodyExternalSenderMax),
+  "externalChecks": zod.object({
+  "laycos": zod.enum(['pendiente', 'verificado']),
+  "questionnaire": zod.enum(['pendiente', 'verificado']),
+  "constituted": zod.enum(['pendiente', 'verificado'])
+})
+})
+
+export const createCiclopeMeetingResponseDataExpectedRevisionMin = 0;
+
+export const createCiclopeMeetingResponseDataTitleMin = 3;
+export const createCiclopeMeetingResponseDataTitleMax = 250;
+
+export const createCiclopeMeetingResponseDataPurposeMin = 3;
+export const createCiclopeMeetingResponseDataPurposeMax = 5000;
+
+export const createCiclopeMeetingResponseDataLocationMax = 2000;
+
+export const createCiclopeMeetingResponseDataParticipantsItemFormalRoleMax = 180;
+
+export const createCiclopeMeetingResponseDataParticipantsMax = 100;
+
+export const createCiclopeMeetingResponseDataAgendaItemMax = 2000;
+
+export const createCiclopeMeetingResponseDataAgendaMax = 60;
+
+export const createCiclopeMeetingResponseDataNotesMax = 50000;
+
+export const createCiclopeMeetingResponseDataAgreementsItemTitleMax = 1500;
+
+export const createCiclopeMeetingResponseDataAgreementsMax = 100;
+
+export const createCiclopeMeetingResponseDataValidatorUserIdsMax = 20;
+
+export const createCiclopeMeetingResponseDataAttachmentIdsMax = 30;
+
+export const createCiclopeMeetingResponseDataExternalSenderMax = 500;
+
+
+
+export const CreateCiclopeMeetingResponse = zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "state": zod.enum(['programada', 'convocada', 'celebrada', 'acta_borrador', 'acta_validada', 'cancelada']),
+  "data": zod.object({
+  "expectedRevision": zod.number().int().min(createCiclopeMeetingResponseDataExpectedRevisionMin),
+  "kind": zod.enum(['ciclope', 'red_c1']),
+  "title": zod.string().min(createCiclopeMeetingResponseDataTitleMin).max(createCiclopeMeetingResponseDataTitleMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "purpose": zod.string().min(createCiclopeMeetingResponseDataPurposeMin).max(createCiclopeMeetingResponseDataPurposeMax),
+  "location": zod.string().max(createCiclopeMeetingResponseDataLocationMax),
+  "participants": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
+  "professionalFamily": zod.string().nullish(),
+  "userId": zod.string().uuid(),
+  "formalRole": zod.string().min(1).max(createCiclopeMeetingResponseDataParticipantsItemFormalRoleMax),
+  "appointedOn": zod.coerce.date().nullable(),
+  "attendance": zod.enum(['pendiente', 'presente', 'ausente', 'excusada'])
+})).max(createCiclopeMeetingResponseDataParticipantsMax),
+  "agenda": zod.array(zod.string().min(1).max(createCiclopeMeetingResponseDataAgendaItemMax)).max(createCiclopeMeetingResponseDataAgendaMax),
+  "notes": zod.string().max(createCiclopeMeetingResponseDataNotesMax),
+  "agreements": zod.array(zod.object({
+  "responsibleName": zod.string().optional(),
+  "title": zod.string().min(1).max(createCiclopeMeetingResponseDataAgreementsItemTitleMax),
+  "responsibleUserId": zod.string().uuid(),
+  "dueDate": zod.coerce.date(),
+  "remindersEnabled": zod.boolean()
+})).max(createCiclopeMeetingResponseDataAgreementsMax),
+  "chairUserId": zod.string().uuid().nullable(),
+  "secretaryUserId": zod.string().uuid().nullable(),
+  "validatorUserIds": zod.array(zod.string().uuid()).max(createCiclopeMeetingResponseDataValidatorUserIdsMax),
+  "attachmentIds": zod.array(zod.string().uuid()).max(createCiclopeMeetingResponseDataAttachmentIdsMax),
+  "pinnedAttachments": zod.array(zod.object({
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "versionId": zod.string(),
+  "version": zod.number().int(),
+  "sha256": zod.string(),
+  "originalName": zod.string(),
+  "sizeBytes": zod.number().int()
+})).optional(),
+  "externalSender": zod.string().max(createCiclopeMeetingResponseDataExternalSenderMax),
+  "externalChecks": zod.object({
+  "laycos": zod.enum(['pendiente', 'verificado']),
+  "questionnaire": zod.enum(['pendiente', 'verificado']),
+  "constituted": zod.enum(['pendiente', 'verificado'])
+})
+}),
+  "approvalRequested": zod.boolean(),
+  "approvedPolicyRevision": zod.number().int().nullable(),
+  "contributions": zod.array(zod.string())
+})
+
+
+export const UpdateCiclopeMeetingParams = zod.object({
+  "meetingId": zod.coerce.string().uuid()
+})
+
+export const updateCiclopeMeetingBodyExpectedRevisionMin = 0;
+
+export const updateCiclopeMeetingBodyTitleMin = 3;
+export const updateCiclopeMeetingBodyTitleMax = 250;
+
+export const updateCiclopeMeetingBodyPurposeMin = 3;
+export const updateCiclopeMeetingBodyPurposeMax = 5000;
+
+export const updateCiclopeMeetingBodyLocationMax = 2000;
+
+export const updateCiclopeMeetingBodyParticipantsItemFormalRoleMax = 180;
+
+export const updateCiclopeMeetingBodyParticipantsMax = 100;
+
+export const updateCiclopeMeetingBodyAgendaItemMax = 2000;
+
+export const updateCiclopeMeetingBodyAgendaMax = 60;
+
+export const updateCiclopeMeetingBodyNotesMax = 50000;
+
+export const updateCiclopeMeetingBodyAgreementsItemTitleMax = 1500;
+
+export const updateCiclopeMeetingBodyAgreementsMax = 100;
+
+export const updateCiclopeMeetingBodyValidatorUserIdsMax = 20;
+
+export const updateCiclopeMeetingBodyAttachmentIdsMax = 30;
+
+export const updateCiclopeMeetingBodyExternalSenderMax = 500;
+
+
+
+export const UpdateCiclopeMeetingBody = zod.object({
+  "expectedRevision": zod.number().int().min(updateCiclopeMeetingBodyExpectedRevisionMin),
+  "kind": zod.enum(['ciclope', 'red_c1']),
+  "title": zod.string().min(updateCiclopeMeetingBodyTitleMin).max(updateCiclopeMeetingBodyTitleMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "purpose": zod.string().min(updateCiclopeMeetingBodyPurposeMin).max(updateCiclopeMeetingBodyPurposeMax),
+  "location": zod.string().max(updateCiclopeMeetingBodyLocationMax),
+  "participants": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
+  "professionalFamily": zod.string().nullish(),
+  "userId": zod.string().uuid(),
+  "formalRole": zod.string().min(1).max(updateCiclopeMeetingBodyParticipantsItemFormalRoleMax),
+  "appointedOn": zod.coerce.date().nullable(),
+  "attendance": zod.enum(['pendiente', 'presente', 'ausente', 'excusada'])
+})).max(updateCiclopeMeetingBodyParticipantsMax),
+  "agenda": zod.array(zod.string().min(1).max(updateCiclopeMeetingBodyAgendaItemMax)).max(updateCiclopeMeetingBodyAgendaMax),
+  "notes": zod.string().max(updateCiclopeMeetingBodyNotesMax),
+  "agreements": zod.array(zod.object({
+  "responsibleName": zod.string().optional(),
+  "title": zod.string().min(1).max(updateCiclopeMeetingBodyAgreementsItemTitleMax),
+  "responsibleUserId": zod.string().uuid(),
+  "dueDate": zod.coerce.date(),
+  "remindersEnabled": zod.boolean()
+})).max(updateCiclopeMeetingBodyAgreementsMax),
+  "chairUserId": zod.string().uuid().nullable(),
+  "secretaryUserId": zod.string().uuid().nullable(),
+  "validatorUserIds": zod.array(zod.string().uuid()).max(updateCiclopeMeetingBodyValidatorUserIdsMax),
+  "attachmentIds": zod.array(zod.string().uuid()).max(updateCiclopeMeetingBodyAttachmentIdsMax),
+  "pinnedAttachments": zod.array(zod.object({
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "versionId": zod.string(),
+  "version": zod.number().int(),
+  "sha256": zod.string(),
+  "originalName": zod.string(),
+  "sizeBytes": zod.number().int()
+})).optional(),
+  "externalSender": zod.string().max(updateCiclopeMeetingBodyExternalSenderMax),
+  "externalChecks": zod.object({
+  "laycos": zod.enum(['pendiente', 'verificado']),
+  "questionnaire": zod.enum(['pendiente', 'verificado']),
+  "constituted": zod.enum(['pendiente', 'verificado'])
+})
+})
+
+export const updateCiclopeMeetingResponseDataExpectedRevisionMin = 0;
+
+export const updateCiclopeMeetingResponseDataTitleMin = 3;
+export const updateCiclopeMeetingResponseDataTitleMax = 250;
+
+export const updateCiclopeMeetingResponseDataPurposeMin = 3;
+export const updateCiclopeMeetingResponseDataPurposeMax = 5000;
+
+export const updateCiclopeMeetingResponseDataLocationMax = 2000;
+
+export const updateCiclopeMeetingResponseDataParticipantsItemFormalRoleMax = 180;
+
+export const updateCiclopeMeetingResponseDataParticipantsMax = 100;
+
+export const updateCiclopeMeetingResponseDataAgendaItemMax = 2000;
+
+export const updateCiclopeMeetingResponseDataAgendaMax = 60;
+
+export const updateCiclopeMeetingResponseDataNotesMax = 50000;
+
+export const updateCiclopeMeetingResponseDataAgreementsItemTitleMax = 1500;
+
+export const updateCiclopeMeetingResponseDataAgreementsMax = 100;
+
+export const updateCiclopeMeetingResponseDataValidatorUserIdsMax = 20;
+
+export const updateCiclopeMeetingResponseDataAttachmentIdsMax = 30;
+
+export const updateCiclopeMeetingResponseDataExternalSenderMax = 500;
+
+
+
+export const UpdateCiclopeMeetingResponse = zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "state": zod.enum(['programada', 'convocada', 'celebrada', 'acta_borrador', 'acta_validada', 'cancelada']),
+  "data": zod.object({
+  "expectedRevision": zod.number().int().min(updateCiclopeMeetingResponseDataExpectedRevisionMin),
+  "kind": zod.enum(['ciclope', 'red_c1']),
+  "title": zod.string().min(updateCiclopeMeetingResponseDataTitleMin).max(updateCiclopeMeetingResponseDataTitleMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "purpose": zod.string().min(updateCiclopeMeetingResponseDataPurposeMin).max(updateCiclopeMeetingResponseDataPurposeMax),
+  "location": zod.string().max(updateCiclopeMeetingResponseDataLocationMax),
+  "participants": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
+  "professionalFamily": zod.string().nullish(),
+  "userId": zod.string().uuid(),
+  "formalRole": zod.string().min(1).max(updateCiclopeMeetingResponseDataParticipantsItemFormalRoleMax),
+  "appointedOn": zod.coerce.date().nullable(),
+  "attendance": zod.enum(['pendiente', 'presente', 'ausente', 'excusada'])
+})).max(updateCiclopeMeetingResponseDataParticipantsMax),
+  "agenda": zod.array(zod.string().min(1).max(updateCiclopeMeetingResponseDataAgendaItemMax)).max(updateCiclopeMeetingResponseDataAgendaMax),
+  "notes": zod.string().max(updateCiclopeMeetingResponseDataNotesMax),
+  "agreements": zod.array(zod.object({
+  "responsibleName": zod.string().optional(),
+  "title": zod.string().min(1).max(updateCiclopeMeetingResponseDataAgreementsItemTitleMax),
+  "responsibleUserId": zod.string().uuid(),
+  "dueDate": zod.coerce.date(),
+  "remindersEnabled": zod.boolean()
+})).max(updateCiclopeMeetingResponseDataAgreementsMax),
+  "chairUserId": zod.string().uuid().nullable(),
+  "secretaryUserId": zod.string().uuid().nullable(),
+  "validatorUserIds": zod.array(zod.string().uuid()).max(updateCiclopeMeetingResponseDataValidatorUserIdsMax),
+  "attachmentIds": zod.array(zod.string().uuid()).max(updateCiclopeMeetingResponseDataAttachmentIdsMax),
+  "pinnedAttachments": zod.array(zod.object({
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "versionId": zod.string(),
+  "version": zod.number().int(),
+  "sha256": zod.string(),
+  "originalName": zod.string(),
+  "sizeBytes": zod.number().int()
+})).optional(),
+  "externalSender": zod.string().max(updateCiclopeMeetingResponseDataExternalSenderMax),
+  "externalChecks": zod.object({
+  "laycos": zod.enum(['pendiente', 'verificado']),
+  "questionnaire": zod.enum(['pendiente', 'verificado']),
+  "constituted": zod.enum(['pendiente', 'verificado'])
+})
+}),
+  "approvalRequested": zod.boolean(),
+  "approvedPolicyRevision": zod.number().int().nullable(),
+  "contributions": zod.array(zod.string())
+})
+
+
+export const ActCiclopeMeetingParams = zod.object({
+  "meetingId": zod.coerce.string().uuid()
+})
+
+
+export const actCiclopeMeetingBodyTextMax = 5000;
+
+
+
+export const ActCiclopeMeetingBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "action": zod.enum(['solicitar_refrendo', 'aprobar_convocatoria', 'convocar', 'celebrar', 'preparar_acta', 'validar_acta', 'cancelar', 'aportar']),
+  "text": zod.string().max(actCiclopeMeetingBodyTextMax).optional()
+})
+
+export const ActCiclopeMeetingResponse = zod.unknown()
+
+
+export const ListCiclopeVersionsParams = zod.object({
+  "meetingId": zod.coerce.string().uuid()
+})
+
+export const listCiclopeVersionsResponseContentDataExpectedRevisionMin = 0;
+
+export const listCiclopeVersionsResponseContentDataTitleMin = 3;
+export const listCiclopeVersionsResponseContentDataTitleMax = 250;
+
+export const listCiclopeVersionsResponseContentDataPurposeMin = 3;
+export const listCiclopeVersionsResponseContentDataPurposeMax = 5000;
+
+export const listCiclopeVersionsResponseContentDataLocationMax = 2000;
+
+export const listCiclopeVersionsResponseContentDataParticipantsItemFormalRoleMax = 180;
+
+export const listCiclopeVersionsResponseContentDataParticipantsMax = 100;
+
+export const listCiclopeVersionsResponseContentDataAgendaItemMax = 2000;
+
+export const listCiclopeVersionsResponseContentDataAgendaMax = 60;
+
+export const listCiclopeVersionsResponseContentDataNotesMax = 50000;
+
+export const listCiclopeVersionsResponseContentDataAgreementsItemTitleMax = 1500;
+
+export const listCiclopeVersionsResponseContentDataAgreementsMax = 100;
+
+export const listCiclopeVersionsResponseContentDataValidatorUserIdsMax = 20;
+
+export const listCiclopeVersionsResponseContentDataAttachmentIdsMax = 30;
+
+export const listCiclopeVersionsResponseContentDataExternalSenderMax = 500;
+
+
+
+export const ListCiclopeVersionsResponseItem = zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "content": zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "state": zod.enum(['programada', 'convocada', 'celebrada', 'acta_borrador', 'acta_validada', 'cancelada']),
+  "data": zod.object({
+  "expectedRevision": zod.number().int().min(listCiclopeVersionsResponseContentDataExpectedRevisionMin),
+  "kind": zod.enum(['ciclope', 'red_c1']),
+  "title": zod.string().min(listCiclopeVersionsResponseContentDataTitleMin).max(listCiclopeVersionsResponseContentDataTitleMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "purpose": zod.string().min(listCiclopeVersionsResponseContentDataPurposeMin).max(listCiclopeVersionsResponseContentDataPurposeMax),
+  "location": zod.string().max(listCiclopeVersionsResponseContentDataLocationMax),
+  "participants": zod.array(zod.object({
+  "name": zod.string().optional(),
+  "email": zod.string().optional(),
+  "professionalFamily": zod.string().nullish(),
+  "userId": zod.string().uuid(),
+  "formalRole": zod.string().min(1).max(listCiclopeVersionsResponseContentDataParticipantsItemFormalRoleMax),
+  "appointedOn": zod.coerce.date().nullable(),
+  "attendance": zod.enum(['pendiente', 'presente', 'ausente', 'excusada'])
+})).max(listCiclopeVersionsResponseContentDataParticipantsMax),
+  "agenda": zod.array(zod.string().min(1).max(listCiclopeVersionsResponseContentDataAgendaItemMax)).max(listCiclopeVersionsResponseContentDataAgendaMax),
+  "notes": zod.string().max(listCiclopeVersionsResponseContentDataNotesMax),
+  "agreements": zod.array(zod.object({
+  "responsibleName": zod.string().optional(),
+  "title": zod.string().min(1).max(listCiclopeVersionsResponseContentDataAgreementsItemTitleMax),
+  "responsibleUserId": zod.string().uuid(),
+  "dueDate": zod.coerce.date(),
+  "remindersEnabled": zod.boolean()
+})).max(listCiclopeVersionsResponseContentDataAgreementsMax),
+  "chairUserId": zod.string().uuid().nullable(),
+  "secretaryUserId": zod.string().uuid().nullable(),
+  "validatorUserIds": zod.array(zod.string().uuid()).max(listCiclopeVersionsResponseContentDataValidatorUserIdsMax),
+  "attachmentIds": zod.array(zod.string().uuid()).max(listCiclopeVersionsResponseContentDataAttachmentIdsMax),
+  "pinnedAttachments": zod.array(zod.object({
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "versionId": zod.string(),
+  "version": zod.number().int(),
+  "sha256": zod.string(),
+  "originalName": zod.string(),
+  "sizeBytes": zod.number().int()
+})).optional(),
+  "externalSender": zod.string().max(listCiclopeVersionsResponseContentDataExternalSenderMax),
+  "externalChecks": zod.object({
+  "laycos": zod.enum(['pendiente', 'verificado']),
+  "questionnaire": zod.enum(['pendiente', 'verificado']),
+  "constituted": zod.enum(['pendiente', 'verificado'])
+})
+}),
+  "approvalRequested": zod.boolean(),
+  "approvedPolicyRevision": zod.number().int().nullable(),
+  "contributions": zod.array(zod.string())
+}),
+  "createdAt": zod.string(),
+  "createdBy": zod.string()
+})
+export const ListCiclopeVersionsResponse = zod.array(ListCiclopeVersionsResponseItem)
+
+
+
+
+
+export const ExportCiclopeMeetingParams = zod.object({
+  "meetingId": zod.coerce.string().uuid(),
+  "format": zod.enum(['docx', 'pdf']),
+  "revision": zod.coerce.number().int().min(1),
+  "document": zod.enum(['convocatoria', 'acta'])
+})
+
+export const ExportCiclopeMeetingResponse = zod.unknown()
+
+
+export const ActCiclopeTaskParams = zod.object({
+  "taskId": zod.coerce.string().uuid()
+})
+
+export const ActCiclopeTaskBody = zod.object({
+  "action": zod.enum(['completar', 'reabrir', 'activar_recordatorios', 'desactivar_recordatorios', 'recordar'])
+})
+
+export const ActCiclopeTaskResponse = zod.unknown()
+
+
 /**
  * Returns server health status
  * @summary Health check

@@ -24,3 +24,13 @@ recompute the original private hash from the public projection.
 
 **How to apply:** Describe both checks honestly and never claim authenticity from
 self-contained, unsigned checksums.
+
+Use semantic object comparison for immutable-field checks on data returned from
+JSONB; do not compare ordinary JSON strings as a proxy for equality.
+
+**Why:** Equivalent objects can have different key order after database storage.
+Treating that difference as a user edit incorrectly blocks valid updates.
+
+**How to apply:** Distinguish field equality from historical hash verification:
+compare fields semantically, while preserving the original serialization contract
+when verifying existing archive hashes.

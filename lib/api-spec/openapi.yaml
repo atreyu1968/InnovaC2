@@ -29,6 +29,141 @@ tags:
   - name: indicators
     description: Observaciones y cálculos trazables de indicadores
 paths:
+  /ciclope:
+    get:
+      operationId: getCiclope
+      responses:
+        "200":
+          description: Curso activo y coordinación autorizada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CiclopeOverview"
+  /ciclope/policy:
+    put:
+      operationId: updateCiclopePolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CiclopePolicyInput"
+      responses:
+        "200":
+          description: Política institucional guardada
+  /ciclope/meetings:
+    post:
+      operationId: createCiclopeMeeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CiclopeMeetingInput"
+      responses:
+        "201":
+          description: Reunión preparada sin atribuir asistencia ni envío
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CiclopeMeeting"
+  /ciclope/meetings/{meetingId}:
+    parameters:
+      - in: path
+        name: meetingId
+        required: true
+        schema: {type: string, format: uuid}
+    put:
+      operationId: updateCiclopeMeeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CiclopeMeetingInput"
+      responses:
+        "200":
+          description: Nueva revisión
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CiclopeMeeting"
+  /ciclope/meetings/{meetingId}/action:
+    parameters:
+      - in: path
+        name: meetingId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: actCiclopeMeeting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CiclopeActionInput"
+      responses:
+        "200":
+          description: Transición auditada
+  /ciclope/meetings/{meetingId}/versions:
+    parameters:
+      - in: path
+        name: meetingId
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      operationId: listCiclopeVersions
+      responses:
+        "200":
+          description: Revisiones inmutables
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: "#/components/schemas/CiclopeVersion"}
+  /ciclope/meetings/{meetingId}/export/{document}/{revision}/{format}:
+    parameters:
+      - in: path
+        name: meetingId
+        required: true
+        schema: {type: string, format: uuid}
+      - in: path
+        name: format
+        required: true
+        schema: {type: string, enum: [docx, pdf]}
+      - in: path
+        name: revision
+        required: true
+        schema: {type: integer, minimum: 1}
+      - in: path
+        name: document
+        required: true
+        schema: {type: string, enum: [convocatoria, acta]}
+    get:
+      operationId: exportCiclopeMeeting
+      responses:
+        "200":
+          description: Documento de la revisión indicada
+          content:
+            application/octet-stream:
+              schema: {type: string, format: binary}
+  /ciclope/tasks/{taskId}/action:
+    parameters:
+      - in: path
+        name: taskId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: actCiclopeTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CiclopeTaskActionInput"
+      responses:
+        "200":
+          description: Tarea o aviso dirigido a la persona responsable
   /health:
     get:
       operationId: healthCheck
@@ -1538,6 +1673,181 @@ paths:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
 components:
   schemas:
+    CiclopePerson:
+      type: object
+      required: [id, name, email, role, professionalFamily]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        email: {type: string}
+        role: {type: string}
+        professionalFamily: {type: [string, "null"]}
+    CiclopeParticipant:
+      type: object
+      required: [userId, formalRole, appointedOn, attendance]
+      properties:
+        name: {type: string}
+        email: {type: string}
+        professionalFamily: {type: [string, "null"]}
+        userId: {type: string, format: uuid}
+        formalRole: {type: string, minLength: 1, maxLength: 180}
+        appointedOn: {type: [string, "null"], format: date}
+        attendance: {type: string, enum: [pendiente, presente, ausente, excusada]}
+    CiclopeAgreement:
+      type: object
+      required: [title, responsibleUserId, dueDate, remindersEnabled]
+      properties:
+        responsibleName: {type: string}
+        title: {type: string, minLength: 1, maxLength: 1500}
+        responsibleUserId: {type: string, format: uuid}
+        dueDate: {type: string, format: date}
+        remindersEnabled: {type: boolean}
+    CiclopeAttachment:
+      type: object
+      required: [documentId, title, versionId, version, sha256, originalName, sizeBytes]
+      properties:
+        documentId: {type: string}
+        title: {type: string}
+        versionId: {type: string}
+        version: {type: integer}
+        sha256: {type: string}
+        originalName: {type: string}
+        sizeBytes: {type: integer}
+    CiclopeMeetingInput:
+      type: object
+      required: [expectedRevision, kind, title, startsAt, endsAt, purpose, location, participants, agenda, notes, agreements, chairUserId, secretaryUserId, validatorUserIds, attachmentIds, externalSender, externalChecks]
+      properties:
+        expectedRevision: {type: integer, minimum: 0}
+        kind: {type: string, enum: [ciclope, red_c1]}
+        title: {type: string, minLength: 3, maxLength: 250}
+        startsAt: {type: string, format: date-time}
+        endsAt: {type: string, format: date-time}
+        purpose: {type: string, minLength: 3, maxLength: 5000}
+        location: {type: string, maxLength: 2000}
+        participants:
+          type: array
+          maxItems: 100
+          items: {$ref: "#/components/schemas/CiclopeParticipant"}
+        agenda:
+          type: array
+          maxItems: 60
+          items: {type: string, minLength: 1, maxLength: 2000}
+        notes: {type: string, maxLength: 50000}
+        agreements:
+          type: array
+          maxItems: 100
+          items: {$ref: "#/components/schemas/CiclopeAgreement"}
+        chairUserId: {type: [string, "null"], format: uuid}
+        secretaryUserId: {type: [string, "null"], format: uuid}
+        validatorUserIds:
+          type: array
+          maxItems: 20
+          items: {type: string, format: uuid}
+        attachmentIds:
+          type: array
+          maxItems: 30
+          items: {type: string, format: uuid}
+        pinnedAttachments:
+          type: array
+          items: {$ref: "#/components/schemas/CiclopeAttachment"}
+        externalSender: {type: string, maxLength: 500}
+        externalChecks:
+          type: object
+          required: [laycos, questionnaire, constituted]
+          properties:
+            laycos: {type: string, enum: [pendiente, verificado]}
+            questionnaire: {type: string, enum: [pendiente, verificado]}
+            constituted: {type: string, enum: [pendiente, verificado]}
+    CiclopePolicyInput:
+      type: object
+      required: [expectedRevision, requireInstitutionalApproval, authorizedInternalChannel]
+      properties:
+        expectedRevision: {type: integer, minimum: 0}
+        requireInstitutionalApproval: {type: boolean}
+        authorizedInternalChannel: {type: boolean}
+    CiclopePolicy:
+      type: object
+      required: [revision, requireInstitutionalApproval, authorizedInternalChannel]
+      properties:
+        revision: {type: integer}
+        requireInstitutionalApproval: {type: boolean}
+        authorizedInternalChannel: {type: boolean}
+    CiclopeMeeting:
+      type: object
+      required: [id, revision, state, data, approvalRequested, approvedPolicyRevision, contributions]
+      properties:
+        id: {type: string}
+        revision: {type: integer}
+        state: {type: string, enum: [programada, convocada, celebrada, acta_borrador, acta_validada, cancelada]}
+        data: {$ref: "#/components/schemas/CiclopeMeetingInput"}
+        approvalRequested: {type: boolean}
+        approvedPolicyRevision: {type: [integer, "null"]}
+        contributions:
+          type: array
+          items: {type: string}
+    CiclopeTask:
+      type: object
+      required: [id, meetingId, sourceVersionId, title, responsibleUserId, dueDate, remindersEnabled, completedAt]
+      properties:
+        id: {type: string}
+        meetingId: {type: string}
+        sourceVersionId: {type: string}
+        title: {type: string}
+        responsibleUserId: {type: string}
+        dueDate: {type: string}
+        remindersEnabled: {type: boolean}
+        completedAt: {type: [string, "null"]}
+    CiclopeNotice:
+      type: object
+      required: [id, meetingId, title, createdAt]
+      properties:
+        id: {type: string}
+        meetingId: {type: string}
+        title: {type: string}
+        createdAt: {type: string}
+    CiclopeOverview:
+      type: object
+      required: [schoolYearId, schoolYearLabel, canManage, canApprove, minimumMeetings, policy, people, meetings, tasks, notices]
+      properties:
+        schoolYearId: {type: string}
+        schoolYearLabel: {type: string}
+        canManage: {type: boolean}
+        canApprove: {type: boolean}
+        minimumMeetings: {type: integer}
+        policy: {$ref: "#/components/schemas/CiclopePolicy"}
+        people:
+          type: array
+          items: {$ref: "#/components/schemas/CiclopePerson"}
+        meetings:
+          type: array
+          items: {$ref: "#/components/schemas/CiclopeMeeting"}
+        tasks:
+          type: array
+          items: {$ref: "#/components/schemas/CiclopeTask"}
+        notices:
+          type: array
+          items: {$ref: "#/components/schemas/CiclopeNotice"}
+    CiclopeVersion:
+      type: object
+      required: [id, revision, content, createdAt, createdBy]
+      properties:
+        id: {type: string}
+        revision: {type: integer}
+        content: {$ref: "#/components/schemas/CiclopeMeeting"}
+        createdAt: {type: string}
+        createdBy: {type: string}
+    CiclopeActionInput:
+      type: object
+      required: [expectedRevision, action]
+      properties:
+        expectedRevision: {type: integer, minimum: 1}
+        action: {type: string, enum: [solicitar_refrendo, aprobar_convocatoria, convocar, celebrar, preparar_acta, validar_acta, cancelar, aportar]}
+        text: {type: string, maxLength: 5000}
+    CiclopeTaskActionInput:
+      type: object
+      required: [action]
+      properties:
+        action: {type: string, enum: [completar, reabrir, activar_recordatorios, desactivar_recordatorios, recordar]}
     SchoolYearExport:
       type: object
       required: [format, version, schoolYear, archive, manifest, content]

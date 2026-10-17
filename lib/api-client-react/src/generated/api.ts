@@ -25,6 +25,13 @@ import type {
   AuthSession,
   CatalogImportInput,
   CatalogImportResult,
+  CiclopeActionInput,
+  CiclopeMeeting,
+  CiclopeMeetingInput,
+  CiclopeOverview,
+  CiclopePolicyInput,
+  CiclopeTaskActionInput,
+  CiclopeVersion,
   ConfirmActivityInput,
   CreateActivityInput,
   CreateIndicatorObservationInput,
@@ -104,6 +111,647 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetCiclopeUrl = () => {
+
+
+
+
+  return `/api/v1/ciclope`
+}
+
+export const getCiclope = async ( options?: Parameters<typeof customFetch>[1]): Promise<CiclopeOverview> => {
+
+  return customFetch<CiclopeOverview>(getGetCiclopeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCiclopeQueryKey = () => {
+    return [
+    `/api/v1/ciclope`
+    ] as const;
+    }
+
+
+export const getGetCiclopeQueryOptions = <TData = Awaited<ReturnType<typeof getCiclope>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCiclope>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCiclopeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCiclope>>> = ({ signal }) => getCiclope({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCiclope>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCiclopeQueryResult = NonNullable<Awaited<ReturnType<typeof getCiclope>>>
+export type GetCiclopeQueryError = ErrorType<unknown>
+
+
+
+export function useGetCiclope<TData = Awaited<ReturnType<typeof getCiclope>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCiclope>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCiclopeQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateCiclopePolicyUrl = () => {
+
+
+
+
+  return `/api/v1/ciclope/policy`
+}
+
+export const updateCiclopePolicy = async (ciclopePolicyInput: CiclopePolicyInput, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getUpdateCiclopePolicyUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(ciclopePolicyInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCiclopePolicyMutationKey = () => ['updateCiclopePolicy'] as const;
+
+export const getUpdateCiclopePolicyMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCiclopePolicy>>, TError,UpdateCiclopePolicyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCiclopePolicy>>, TError,UpdateCiclopePolicyMutationVariables, TContext> => {
+
+const mutationKey = getUpdateCiclopePolicyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCiclopePolicy>>, UpdateCiclopePolicyMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateCiclopePolicy(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCiclopePolicyMutationResult = NonNullable<Awaited<ReturnType<typeof updateCiclopePolicy>>>
+    export type UpdateCiclopePolicyMutationBody = BodyType<CiclopePolicyInput>
+    export type UpdateCiclopePolicyMutationError = ErrorType<unknown>
+    export type UpdateCiclopePolicyMutationVariables = {data: BodyType<CiclopePolicyInput>}
+
+    export const useUpdateCiclopePolicy = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCiclopePolicy>>, TError,UpdateCiclopePolicyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCiclopePolicy>>,
+        TError,
+        UpdateCiclopePolicyMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateCiclopePolicyMutationOptions(options));
+    }
+
+export const getCreateCiclopeMeetingUrl = () => {
+
+
+
+
+  return `/api/v1/ciclope/meetings`
+}
+
+export const createCiclopeMeeting = async (ciclopeMeetingInput: CiclopeMeetingInput, options?: Parameters<typeof customFetch>[1]): Promise<CiclopeMeeting> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CiclopeMeeting>(getCreateCiclopeMeetingUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(ciclopeMeetingInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCiclopeMeetingMutationKey = () => ['createCiclopeMeeting'] as const;
+
+export const getCreateCiclopeMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCiclopeMeeting>>, TError,CreateCiclopeMeetingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCiclopeMeeting>>, TError,CreateCiclopeMeetingMutationVariables, TContext> => {
+
+const mutationKey = getCreateCiclopeMeetingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCiclopeMeeting>>, CreateCiclopeMeetingMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCiclopeMeeting(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCiclopeMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof createCiclopeMeeting>>>
+    export type CreateCiclopeMeetingMutationBody = BodyType<CiclopeMeetingInput>
+    export type CreateCiclopeMeetingMutationError = ErrorType<unknown>
+    export type CreateCiclopeMeetingMutationVariables = {data: BodyType<CiclopeMeetingInput>}
+
+    export const useCreateCiclopeMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCiclopeMeeting>>, TError,CreateCiclopeMeetingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCiclopeMeeting>>,
+        TError,
+        CreateCiclopeMeetingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateCiclopeMeetingMutationOptions(options));
+    }
+
+export const getUpdateCiclopeMeetingUrl = (meetingId: string,) => {
+
+
+
+
+  return `/api/v1/ciclope/meetings/${meetingId}`
+}
+
+export const updateCiclopeMeeting = async (meetingId: string,
+    ciclopeMeetingInput: CiclopeMeetingInput, options?: Parameters<typeof customFetch>[1]): Promise<CiclopeMeeting> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CiclopeMeeting>(getUpdateCiclopeMeetingUrl(meetingId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(ciclopeMeetingInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCiclopeMeetingMutationKey = () => ['updateCiclopeMeeting'] as const;
+
+export const getUpdateCiclopeMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCiclopeMeeting>>, TError,UpdateCiclopeMeetingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCiclopeMeeting>>, TError,UpdateCiclopeMeetingMutationVariables, TContext> => {
+
+const mutationKey = getUpdateCiclopeMeetingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCiclopeMeeting>>, UpdateCiclopeMeetingMutationVariables> = (props) => {
+          const {meetingId,data} = props ?? {};
+
+          return  updateCiclopeMeeting(meetingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCiclopeMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof updateCiclopeMeeting>>>
+    export type UpdateCiclopeMeetingMutationBody = BodyType<CiclopeMeetingInput>
+    export type UpdateCiclopeMeetingMutationError = ErrorType<unknown>
+    export type UpdateCiclopeMeetingMutationVariables = {meetingId: string;data: BodyType<CiclopeMeetingInput>}
+
+    export const useUpdateCiclopeMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCiclopeMeeting>>, TError,UpdateCiclopeMeetingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCiclopeMeeting>>,
+        TError,
+        UpdateCiclopeMeetingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateCiclopeMeetingMutationOptions(options));
+    }
+
+export const getActCiclopeMeetingUrl = (meetingId: string,) => {
+
+
+
+
+  return `/api/v1/ciclope/meetings/${meetingId}/action`
+}
+
+export const actCiclopeMeeting = async (meetingId: string,
+    ciclopeActionInput: CiclopeActionInput, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getActCiclopeMeetingUrl(meetingId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(ciclopeActionInput)
+  }
+);}
+
+
+
+
+
+export const getActCiclopeMeetingMutationKey = () => ['actCiclopeMeeting'] as const;
+
+export const getActCiclopeMeetingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof actCiclopeMeeting>>, TError,ActCiclopeMeetingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof actCiclopeMeeting>>, TError,ActCiclopeMeetingMutationVariables, TContext> => {
+
+const mutationKey = getActCiclopeMeetingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof actCiclopeMeeting>>, ActCiclopeMeetingMutationVariables> = (props) => {
+          const {meetingId,data} = props ?? {};
+
+          return  actCiclopeMeeting(meetingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ActCiclopeMeetingMutationResult = NonNullable<Awaited<ReturnType<typeof actCiclopeMeeting>>>
+    export type ActCiclopeMeetingMutationBody = BodyType<CiclopeActionInput>
+    export type ActCiclopeMeetingMutationError = ErrorType<unknown>
+    export type ActCiclopeMeetingMutationVariables = {meetingId: string;data: BodyType<CiclopeActionInput>}
+
+    export const useActCiclopeMeeting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof actCiclopeMeeting>>, TError,ActCiclopeMeetingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof actCiclopeMeeting>>,
+        TError,
+        ActCiclopeMeetingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getActCiclopeMeetingMutationOptions(options));
+    }
+
+export const getListCiclopeVersionsUrl = (meetingId: string,) => {
+
+
+
+
+  return `/api/v1/ciclope/meetings/${meetingId}/versions`
+}
+
+export const listCiclopeVersions = async (meetingId: string, options?: Parameters<typeof customFetch>[1]): Promise<CiclopeVersion[]> => {
+
+  return customFetch<CiclopeVersion[]>(getListCiclopeVersionsUrl(meetingId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCiclopeVersionsQueryKey = (meetingId: string,) => {
+    return [
+    `/api/v1/ciclope/meetings/${meetingId}/versions`
+    ] as const;
+    }
+
+
+export const getListCiclopeVersionsQueryOptions = <TData = Awaited<ReturnType<typeof listCiclopeVersions>>, TError = ErrorType<unknown>>(meetingId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCiclopeVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCiclopeVersionsQueryKey(meetingId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCiclopeVersions>>> = ({ signal }) => listCiclopeVersions(meetingId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: meetingId !== null && meetingId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCiclopeVersions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCiclopeVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof listCiclopeVersions>>>
+export type ListCiclopeVersionsQueryError = ErrorType<unknown>
+
+
+
+export function useListCiclopeVersions<TData = Awaited<ReturnType<typeof listCiclopeVersions>>, TError = ErrorType<unknown>>(
+ meetingId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCiclopeVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCiclopeVersionsQueryOptions(meetingId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getExportCiclopeMeetingUrl = (meetingId: string,
+    document: 'convocatoria' | 'acta',
+    revision: number,
+    format: 'docx' | 'pdf',) => {
+
+
+
+
+  return `/api/v1/ciclope/meetings/${meetingId}/export/${document}/${revision}/${format}`
+}
+
+export const exportCiclopeMeeting = async (meetingId: string,
+    document: 'convocatoria' | 'acta',
+    revision: number,
+    format: 'docx' | 'pdf', options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getExportCiclopeMeetingUrl(meetingId,document,revision,format),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportCiclopeMeetingQueryKey = (meetingId: string,
+    document: 'convocatoria' | 'acta',
+    revision: number,
+    format: 'docx' | 'pdf',) => {
+    return [
+    `/api/v1/ciclope/meetings/${meetingId}/export/${document}/${revision}/${format}`
+    ] as const;
+    }
+
+
+export const getExportCiclopeMeetingQueryOptions = <TData = Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError = ErrorType<unknown>>(meetingId: string,
+    document: 'convocatoria' | 'acta',
+    revision: number,
+    format: 'docx' | 'pdf', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportCiclopeMeetingQueryKey(meetingId,document,revision,format);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportCiclopeMeeting>>> = ({ signal }) => exportCiclopeMeeting(meetingId,document,revision,format, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: meetingId !== null && meetingId !== undefined && document !== null && document !== undefined && revision !== null && revision !== undefined && format !== null && format !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportCiclopeMeetingQueryResult = NonNullable<Awaited<ReturnType<typeof exportCiclopeMeeting>>>
+export type ExportCiclopeMeetingQueryError = ErrorType<unknown>
+
+
+
+export function useExportCiclopeMeeting<TData = Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError = ErrorType<unknown>>(
+ meetingId: string,
+    document: 'convocatoria' | 'acta',
+    revision: number,
+    format: 'docx' | 'pdf', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportCiclopeMeetingQueryOptions(meetingId,document,revision,format,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getActCiclopeTaskUrl = (taskId: string,) => {
+
+
+
+
+  return `/api/v1/ciclope/tasks/${taskId}/action`
+}
+
+export const actCiclopeTask = async (taskId: string,
+    ciclopeTaskActionInput: CiclopeTaskActionInput, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<void>(getActCiclopeTaskUrl(taskId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(ciclopeTaskActionInput)
+  }
+);}
+
+
+
+
+
+export const getActCiclopeTaskMutationKey = () => ['actCiclopeTask'] as const;
+
+export const getActCiclopeTaskMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof actCiclopeTask>>, TError,ActCiclopeTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof actCiclopeTask>>, TError,ActCiclopeTaskMutationVariables, TContext> => {
+
+const mutationKey = getActCiclopeTaskMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof actCiclopeTask>>, ActCiclopeTaskMutationVariables> = (props) => {
+          const {taskId,data} = props ?? {};
+
+          return  actCiclopeTask(taskId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ActCiclopeTaskMutationResult = NonNullable<Awaited<ReturnType<typeof actCiclopeTask>>>
+    export type ActCiclopeTaskMutationBody = BodyType<CiclopeTaskActionInput>
+    export type ActCiclopeTaskMutationError = ErrorType<unknown>
+    export type ActCiclopeTaskMutationVariables = {taskId: string;data: BodyType<CiclopeTaskActionInput>}
+
+    export const useActCiclopeTask = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof actCiclopeTask>>, TError,ActCiclopeTaskMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof actCiclopeTask>>,
+        TError,
+        ActCiclopeTaskMutationVariables,
+        TContext
+      > => {
+      return useMutation(getActCiclopeTaskMutationOptions(options));
+    }
 
 export const getHealthCheckUrl = () => {
 
