@@ -32,12 +32,12 @@ openssl enc -d -aes-256-cbc -pbkdf2 -iter 310000 -md sha256 \
 openssl enc -d -aes-256-cbc -pbkdf2 -iter 310000 -md sha256 \
   -pass env:BACKUP_ENCRYPTION_KEY \
   -in "$backup_path/documents.tar.gz.enc" -out "$temporary/documents.tar.gz"
-docker compose exec -T db pg_restore --list - \
+docker compose exec -T db pg_restore --list \
   < "$temporary/database.dump" >/dev/null
 
 docker compose stop api
 docker compose exec -T db pg_restore \
-  --clean --if-exists --no-owner \
+  --clean --if-exists --no-owner --exit-on-error --single-transaction \
   --username="${POSTGRES_USER:-innova}" \
   --dbname="${POSTGRES_DB:-innova_c2}" \
   < "$temporary/database.dump"

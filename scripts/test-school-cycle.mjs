@@ -9,10 +9,13 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { createServer } from "node:net";
 import path from "node:path";
+import { materializeDocuments, verifyBackupRestore } from "./test-school-cycle-backup.mjs";
 
 const root = new URL("../", import.meta.url).pathname;
 const require = createRequire(import.meta.url);
 const { Pool } = require(require.resolve("pg", { paths: [path.join(root, "lib/db")] }));
+const isolatedEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
+  !key.startsWith("PG") && !["DATABASE_URL", "TEST_DATABASE_URL", "SESSION_SECRET", "DATA_DIR"].includes(key)));
 const directory = await mkdtemp(path.join(tmpdir(), "innova-cycle-test-"));
 const pgdata = path.join(directory, "pgdata");
 let api, pool, postgresStarted = false;
@@ -24,7 +27,7 @@ const freePort = async () => {
   await new Promise(resolve => server.close(resolve));
   return port;
 };
-function command(name, args, env = process.env) {
+function command(name, args, env = isolatedEnv) {
   const result = spawnSync(name, args, { cwd: root, env, encoding: "utf8", timeout: 90_000 });
   if (result.status !== 0) throw new Error(`${name} failed: ${result.stderr || result.error || result.stdout}`);
 }
@@ -53,7 +56,7 @@ try {
     "-o", `-h 127.0.0.1 -p ${pgPort} -k ${directory}`, "-w", "start"]);
   postgresStarted = true;
   const databaseUrl = `postgresql://cycle_test@127.0.0.1:${pgPort}/postgres`;
-  const env = { ...process.env, DATABASE_URL: databaseUrl, SESSION_SECRET: randomBytes(48).toString("hex"),
+  const env = { ...isolatedEnv, DATABASE_URL: databaseUrl, SESSION_SECRET: randomBytes(48).toString("hex"),
     PORT: String(apiPort), NODE_ENV: "test", COOKIE_SECURE: "false", DATA_DIR: path.join(directory, "files"),
     RESEND_API_KEY: "", PASSWORD_RESET_EMAIL_ENABLED: "false", CLAMAV_HOST: "", CLAMAV_PORT: "" };
   command("pnpm", ["--filter", "@workspace/db", "run", "migrate"], env);
@@ -103,6 +106,13 @@ try {
   const years = () => request("/school-years", { session: admin });
   const old = status(await years(), 200)[0];
   const [{ center_id: center }] = (await pool.query("SELECT center_id FROM school_years WHERE id=$1", [old.id])).rows;
+  if (process.argv.includes("--backup-restore")) {
+    for (const account of [c2.account, teacher.account]) {
+      await pool.query(`INSERT INTO school_year_assignments
+        (school_year_id,user_id,role,professional_family,reviewed_by) VALUES ($1,$2,$3,$4,$5)`,
+        [old.id, account.id, account.role, account.professionalFamily ?? null, initialized.data.user.id]);
+    }
+  }
   const foreignCenter = (await pool.query("INSERT INTO centers(name) VALUES ('Other center') RETURNING id")).rows[0].id;
   const foreignYear = (await pool.query("INSERT INTO school_years(center_id,label) VALUES ($1,'2099-2100') RETURNING id", [foreignCenter])).rows[0].id;
   status(await request(`/school-years/${foreignYear}/validation`, { session: admin }), 404);
@@ -149,6 +159,9 @@ try {
   await pool.query("UPDATE information_requests SET status='cerrada' WHERE id=$1", [information]);
   check = status(await validation(), 200);
   assert.equal(check.canClose, true);
+  // Unlike metadata-only fixtures, these bytes must survive a real backup.
+  await materializeDocuments(pool, env.DATA_DIR, old.id);
+  check = status(await validation(), 200);
   status(await request(`/school-years/${old.id}/close`, { method: "POST", session: { cookie: admin.cookie }, body: closeBody() }), 403);
   status(await request(`/school-years/${old.id}/close`, { method: "POST", session: admin,
     body: { ...closeBody(), confirmation: "wrong" } }), 409);
@@ -316,6 +329,27 @@ try {
   assert.equal(Number(audit.find(a => a.action === "school_year.closed").n), 1);
   assert.equal(Number(audit.find(a => a.action === "school_year.opened").n), 1);
   assert.ok(Number(audit.find(a => a.action === "school_year.history.read").n) >= 2);
+  if (process.argv.includes("--backup-restore")) {
+    await materializeDocuments(pool, env.DATA_DIR, next.id);
+    const secondValidation = status(await request(`/school-years/${next.id}/validation`, { session: admin }), 200);
+    assert.equal(secondValidation.canClose, true, JSON.stringify(secondValidation.blockers));
+    const secondClosed = status(await request(`/school-years/${next.id}/close`, {
+      method: "POST", session: admin, body: {
+        expectedRevision: secondValidation.revision, confirmation: next.label, reason: "Segundo expediente para restauración aislada.",
+      },
+    }), 200);
+    const current = status(await request("/school-years", { method: "POST", session: admin, body: {
+      label: "2101-2102", previousYearId: next.id, expectedRevision: secondClosed.revision,
+      permissionsReviewed: true, assignments,
+    } }), 201);
+    const histories = await Promise.all([old, next].map(async year =>
+      status(await request(`/school-years/${year.id}/history`, { session: admin }), 200)));
+    api.kill("SIGTERM");
+    await once(api, "exit");
+    api = undefined;
+    await verifyBackupRestore({ pool, env, directory, root, closedYears: [old.id, next.id],
+      activeYear: current.id, histories });
+  }
   console.log("PASS: isolated two-course lifecycle, RBAC/CSRF, pending/stale validation, concurrent close/open, immutable PIC/documents/indicators, source attribution, annual assignments and audit.");
 } catch (error) {
   console.error(apiOutput.slice(-10000));

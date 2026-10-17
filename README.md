@@ -229,6 +229,34 @@ validaciones pendientes, revisiones antiguas, cierres/aperturas concurrentes,
 inmutabilidad y ausencia de traslados. Al terminar o recibir una señal normal
 detiene los procesos y elimina su directorio.
 
+### Prueba aislada de copia y restauración de expedientes
+
+```bash
+pnpm run test:school-cycle-backup
+```
+
+Requiere además `pg_dump`, `pg_restore`, `createdb`, Bash, OpenSSL, `tar` y
+`sha256sum`. Reutiliza las pruebas del ciclo y archiva **dos cursos con archivos
+físicos**, dejando un tercero activo. Ejecuta copias sin modificar de
+`scripts/backup.sh` y `scripts/restore.sh` desde una carpeta temporal, con una
+clave generada solo para la prueba. Un adaptador estricto de las órdenes Docker
+ejecuta PostgreSQL y `tar` locales: no usa Docker, `.env`, volúmenes, claves ni
+bases del centro. La base de destino pertenece al mismo clúster desechable,
+distinta de la base origen.
+
+Comprueba todos los registros antes/después, incluidos los snapshots y sus
+huellas/fuentes, asignaciones revisadas, curso activo y checksums/tamaños de
+cada archivo. Comprueba que se eliminan los archivos anteriores del destino,
+que siguen vigentes los bloqueos de escritura de ambos cursos cerrados y que
+el curso activo admite cambios. También exige rechazo sin alteraciones ante
+una copia corrupta o una confirmación cancelada. Las migraciones se aplican
+desde cero; no se desactivan los triggers para restaurar.
+
+Esta prueba valida el contenido y los scripts, **no** la orquestación real de
+Docker, permisos de sus volúmenes ni una recuperación completa en Ubuntu.
+Tampoco certifica la consistencia de una copia tomada mientras se modifican
+documentos en producción.
+
 En desarrollo, el setup posterior a la integración aplica `drizzle push` y
 `scripts/apply-course-guards.mjs`: los triggers no se representan en un simple
 `push`. Las instalaciones independientes siguen las migraciones versionadas,
