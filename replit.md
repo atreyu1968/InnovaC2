@@ -65,6 +65,7 @@ Fase 0 cubre la base ejecutable, seguridad, centro/curso, catálogo y administra
 ## Fuentes y decisiones técnicas
 
 - El logo y el favicon oficiales son la imagen aportada por el usuario: flecha blanca curva ascendente sobre fondo turquesa. Conservar esa imagen, sin sustituirla por las iniciales «IC» ni reinterpretarla.
+- El logo institucional del IES Manuel Martín González es la imagen «IES MMG» aportada por el usuario. Es distinto del logo de INNOVA-C2 y no sustituye su favicon.
 
 - Por confirmación del usuario, el apartado 2 del PIC representa al conjunto del centro: desglose por familia profesional y totales del centro. No debe limitarse a la familia de la persona C2. Los datos antiguos no se reparten por inferencia y las versiones históricas permanecen inmutables.
 

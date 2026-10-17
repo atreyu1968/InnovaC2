@@ -581,7 +581,14 @@ function AuthFrame({ children, variant }: { children: ReactNode; variant?: 'logi
               </p>
             </div>
             <div className="story-bottom">
-              <span className="story-seal" aria-hidden="true">IES</span>
+              <img
+                className="school-logo"
+                src={`${import.meta.env.BASE_URL}branding/ies-manuel-martin-gonzalez.png`}
+                alt="Logo del IES Manuel Martín González"
+                width={112}
+                height={72}
+                decoding="async"
+              />
               <p><strong>IES Manuel Martín González</strong><br />Coordinación educativa · Canarias</p>
               <span className="story-year">PIC <i /> CENTRO</span>
             </div>

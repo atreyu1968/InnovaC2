@@ -651,18 +651,15 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   padding-top: 18px;
   border-top: 1px solid rgba(227, 247, 239, .2);
 }
-.story-seal {
-  display: grid;
-  width: 36px;
-  height: 36px;
+.school-logo {
+  display: block;
+  width: 112px;
+  height: 72px;
   flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid rgba(231, 249, 241, .4);
-  border-radius: 50%;
-  color: #e4f5ed;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .08em;
+  object-fit: contain;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fff;
 }
 .story-bottom p { color: #b9d9cf; font-size: 10px; line-height: 1.55; }
 .story-bottom p strong { color: #f6fbf8; font-size: 11px; }
@@ -824,7 +821,7 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   .story-copy > p { margin-top: 4px; font-size: 9px; }
   .story-copy .photo-credit { font-size: 8px; }
   .story-bottom { margin-top: 16px; padding-top: 12px; }
-  .story-seal { width: 31px; height: 31px; }
+  .school-logo { width: 88px; height: 58px; }
   .story-bottom p { font-size: 9px; }
   .story-bottom p strong { font-size: 10px; }
   .story-year { font-size: 7px; }
