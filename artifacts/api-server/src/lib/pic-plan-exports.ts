@@ -62,6 +62,14 @@ export function createLaycosExport(
   add(2, "Familia profesional de coordinación", content.center.professionalFamily);
   add(2, "Niveles impartidos", content.center.levels.join(", "));
   add(2, "N.º de grupos de enseñanzas profesionales", content.center.groupCount);
+  if (content.center.familyProfiles !== undefined) {
+    add(2, "N.º de familias profesionales del centro", content.center.familyProfiles.length);
+    content.center.familyProfiles.forEach((family, index) => {
+      add(2, `Familia ${index + 1} · nombre`, family.professionalFamily);
+      add(2, `Familia ${index + 1} · niveles impartidos`, family.levels.join(", "));
+      add(2, `Familia ${index + 1} · número de grupos`, family.groupCount);
+    });
+  }
 
   for (const quadrant of ["debilidades", "fortalezas", "amenazas", "oportunidades"] as const) {
     const entries = content.dafo.filter((entry) => entry.quadrant === quadrant);

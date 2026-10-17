@@ -1795,6 +1795,23 @@ components:
         professionalFamily:
           type: string
       required: [profile, firstName, lastName, corporateEmail, phone, professionalFamily]
+    PicPlanFamilyProfile:
+      type: object
+      properties:
+        professionalFamily:
+          type: string
+          minLength: 1
+          maxLength: 120
+        levels:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum: [FP Básica, Grado Medio, Grado Superior, Cursos de especialización, "Ofertas parciales (Grados A, B, C, D)"]
+        groupCount:
+          type: integer
+          minimum: 0
+      required: [professionalFamily, levels, groupCount]
     PicPlanCenterProfile:
       type: object
       properties:
@@ -1804,10 +1821,16 @@ components:
           type: array
           items:
             type: string
-            enum: [FP Básica, Grado Medio, Grado Superior, Cursos de especialización, Ofertas parciales (Grados A, B, C, D)]
+            enum: [FP Básica, Grado Medio, Grado Superior, Cursos de especialización, "Ofertas parciales (Grados A, B, C, D)"]
         groupCount:
           type: integer
           minimum: 0
+        familyProfiles:
+          type: array
+          description: Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/PicPlanFamilyProfile"
       required: [professionalFamily, levels, groupCount]
     PicDafoEntry:
       type: object

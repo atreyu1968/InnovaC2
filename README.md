@@ -105,6 +105,23 @@ de esas copias. `scripts/restore.sh` reemplaza los datos existentes: verifica
 las sumas y conserva una copia previa, pero ejecútalo solo durante una
 restauración planificada.
 
+## PIC · apartado 2: familias y totales del centro
+
+El apartado 2 permite añadir, editar y quitar familias del catálogo oficial,
+indicando los niveles impartidos y el número de grupos de cada una. Se conserva
+por separado la familia de coordinación requerida por el formulario oficial.
+Los grupos del centro son la suma del desglose y los niveles son su unión sin
+repeticiones; no son campos editables ni se calculan contando usuarios o actividades.
+El servidor recalcula los totales y rechaza familias desconocidas o duplicadas.
+El desglose se guarda con «Guardar PIC» y aparece también en Word, PDF y la ficha
+de campos para Laycos.
+
+Los PIC antiguos conservan sus cifras originales. La aplicación no distribuye
+automáticamente ese total entre familias: muestra un aviso para completar el
+desglose o asignar expresamente el registro anterior a la familia de coordinación.
+Las versiones inmutables ya creadas no se reescriben. Para validar una nueva versión
+se exige al menos una familia con niveles y grupos completos.
+
 ## Desarrollo y pruebas
 
 La recuperación de contraseña y su aviso se comprueban con:

@@ -66,6 +66,7 @@ export const InitializeSetupResponse = zod.object({
 export const loginBodyPasswordMax = 1024;
 
 
+
 export const LoginBody = zod.object({
   "email": zod.string().email(),
   "password": zod.string().min(1).max(loginBodyPasswordMax)
@@ -91,6 +92,7 @@ export const LoginResponse = zod.object({
 export const requestPasswordResetBodyEmailMax = 254;
 
 
+
 export const RequestPasswordResetBody = zod.object({
   "email": zod.string().email().max(requestPasswordResetBodyEmailMax)
 })
@@ -110,6 +112,7 @@ export const completePasswordResetBodyPasswordMin = 12;
 export const completePasswordResetBodyPasswordMax = 1024;
 
 
+
 export const CompletePasswordResetBody = zod.object({
   "token": zod.string().min(completePasswordResetBodyTokenMin).max(completePasswordResetBodyTokenMax),
   "password": zod.string().min(completePasswordResetBodyPasswordMin).max(completePasswordResetBodyPasswordMax)
@@ -119,12 +122,32 @@ export const CompletePasswordResetResponse = zod.object({
   "success": zod.boolean()
 })
 
+
 /**
  * @summary Change own password and revoke other sessions
  */
 export const ChangePasswordHeader = zod.object({
   "X-CSRF-Token": zod.string()
 })
+
+export const changePasswordBodyCurrentPasswordMax = 1024;
+
+export const changePasswordBodyPasswordMin = 12;
+export const changePasswordBodyPasswordMax = 1024;
+
+
+
+export const ChangePasswordBody = zod.object({
+  "currentPassword": zod.string().min(1).max(changePasswordBodyCurrentPasswordMax),
+  "password": zod.string().min(changePasswordBodyPasswordMin).max(changePasswordBodyPasswordMax)
+})
+
+export const ChangePasswordResponse = zod.object({
+  "success": zod.boolean(),
+  "noticeSent": zod.boolean()
+})
+
+
 /**
  * @summary End the current session
  */
@@ -190,6 +213,7 @@ export const createUserBodyTemporaryPasswordMax = 1024;
 export const createUserBodyProfessionalFamilyMax = 120;
 
 
+
 export const CreateUserBody = zod.object({
   "email": zod.string().email(),
   "name": zod.string().min(1).max(createUserBodyNameMax),
@@ -217,6 +241,7 @@ export const UpdateUserFamilyParams = zod.object({
 })
 
 export const updateUserFamilyBodyProfessionalFamilyMax = 160;
+
 
 
 export const UpdateUserFamilyBody = zod.object({
@@ -404,6 +429,12 @@ export const getCurrentPicPlanResponseContentCoordinatorPhoneMax = 40;
 
 export const getCurrentPicPlanResponseContentCenterGroupCountMin = 0;
 
+export const getCurrentPicPlanResponseContentCenterFamilyProfilesItemProfessionalFamilyMax = 120;
+
+export const getCurrentPicPlanResponseContentCenterFamilyProfilesItemGroupCountMin = 0;
+
+export const getCurrentPicPlanResponseContentCenterFamilyProfilesMax = 100;
+
 export const getCurrentPicPlanResponseContentProjectsItemNameMax = 200;
 
 export const getCurrentPicPlanResponseContentProjectsItemCoordinatorNameMax = 200;
@@ -425,6 +456,7 @@ export const getCurrentPicPlanResponseContentCalendarCiclopeMeetingDatesItemRegE
 export const getCurrentPicPlanResponseContentCalendarNotesMax = 1000;
 
 
+
 export const GetCurrentPicPlanResponse = zod.object({
   "id": zod.string().uuid(),
   "revision": zod.number().int(),
@@ -444,8 +476,13 @@ export const GetCurrentPicPlanResponse = zod.object({
 }),
   "center": zod.object({
   "professionalFamily": zod.string(),
-  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A', 'B', 'C', 'D)'])),
-  "groupCount": zod.number().int().min(getCurrentPicPlanResponseContentCenterGroupCountMin)
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(getCurrentPicPlanResponseContentCenterGroupCountMin),
+  "familyProfiles": zod.array(zod.object({
+  "professionalFamily": zod.string().min(1).max(getCurrentPicPlanResponseContentCenterFamilyProfilesItemProfessionalFamilyMax),
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(getCurrentPicPlanResponseContentCenterFamilyProfilesItemGroupCountMin)
+})).max(getCurrentPicPlanResponseContentCenterFamilyProfilesMax).optional().describe('Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.')
 }),
   "dafo": zod.array(zod.object({
   "quadrant": zod.enum(['debilidades', 'fortalezas', 'amenazas', 'oportunidades']),
@@ -523,6 +560,12 @@ export const createCurrentPicPlanResponseContentCoordinatorPhoneMax = 40;
 
 export const createCurrentPicPlanResponseContentCenterGroupCountMin = 0;
 
+export const createCurrentPicPlanResponseContentCenterFamilyProfilesItemProfessionalFamilyMax = 120;
+
+export const createCurrentPicPlanResponseContentCenterFamilyProfilesItemGroupCountMin = 0;
+
+export const createCurrentPicPlanResponseContentCenterFamilyProfilesMax = 100;
+
 export const createCurrentPicPlanResponseContentProjectsItemNameMax = 200;
 
 export const createCurrentPicPlanResponseContentProjectsItemCoordinatorNameMax = 200;
@@ -544,6 +587,7 @@ export const createCurrentPicPlanResponseContentCalendarCiclopeMeetingDatesItemR
 export const createCurrentPicPlanResponseContentCalendarNotesMax = 1000;
 
 
+
 export const CreateCurrentPicPlanResponse = zod.object({
   "id": zod.string().uuid(),
   "revision": zod.number().int(),
@@ -563,8 +607,13 @@ export const CreateCurrentPicPlanResponse = zod.object({
 }),
   "center": zod.object({
   "professionalFamily": zod.string(),
-  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A', 'B', 'C', 'D)'])),
-  "groupCount": zod.number().int().min(createCurrentPicPlanResponseContentCenterGroupCountMin)
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(createCurrentPicPlanResponseContentCenterGroupCountMin),
+  "familyProfiles": zod.array(zod.object({
+  "professionalFamily": zod.string().min(1).max(createCurrentPicPlanResponseContentCenterFamilyProfilesItemProfessionalFamilyMax),
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(createCurrentPicPlanResponseContentCenterFamilyProfilesItemGroupCountMin)
+})).max(createCurrentPicPlanResponseContentCenterFamilyProfilesMax).optional().describe('Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.')
 }),
   "dafo": zod.array(zod.object({
   "quadrant": zod.enum(['debilidades', 'fortalezas', 'amenazas', 'oportunidades']),
@@ -647,6 +696,12 @@ export const savePicPlanBodyContentCoordinatorPhoneMax = 40;
 
 export const savePicPlanBodyContentCenterGroupCountMin = 0;
 
+export const savePicPlanBodyContentCenterFamilyProfilesItemProfessionalFamilyMax = 120;
+
+export const savePicPlanBodyContentCenterFamilyProfilesItemGroupCountMin = 0;
+
+export const savePicPlanBodyContentCenterFamilyProfilesMax = 100;
+
 export const savePicPlanBodyContentProjectsItemNameMax = 200;
 
 export const savePicPlanBodyContentProjectsItemCoordinatorNameMax = 200;
@@ -668,6 +723,7 @@ export const savePicPlanBodyContentCalendarCiclopeMeetingDatesItemRegExp = new R
 export const savePicPlanBodyContentCalendarNotesMax = 1000;
 
 
+
 export const SavePicPlanBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "content": zod.object({
@@ -681,8 +737,13 @@ export const SavePicPlanBody = zod.object({
 }),
   "center": zod.object({
   "professionalFamily": zod.string(),
-  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A', 'B', 'C', 'D)'])),
-  "groupCount": zod.number().int().min(savePicPlanBodyContentCenterGroupCountMin)
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(savePicPlanBodyContentCenterGroupCountMin),
+  "familyProfiles": zod.array(zod.object({
+  "professionalFamily": zod.string().min(1).max(savePicPlanBodyContentCenterFamilyProfilesItemProfessionalFamilyMax),
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(savePicPlanBodyContentCenterFamilyProfilesItemGroupCountMin)
+})).max(savePicPlanBodyContentCenterFamilyProfilesMax).optional().describe('Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.')
 }),
   "dafo": zod.array(zod.object({
   "quadrant": zod.enum(['debilidades', 'fortalezas', 'amenazas', 'oportunidades']),
@@ -755,6 +816,12 @@ export const savePicPlanResponseContentCoordinatorPhoneMax = 40;
 
 export const savePicPlanResponseContentCenterGroupCountMin = 0;
 
+export const savePicPlanResponseContentCenterFamilyProfilesItemProfessionalFamilyMax = 120;
+
+export const savePicPlanResponseContentCenterFamilyProfilesItemGroupCountMin = 0;
+
+export const savePicPlanResponseContentCenterFamilyProfilesMax = 100;
+
 export const savePicPlanResponseContentProjectsItemNameMax = 200;
 
 export const savePicPlanResponseContentProjectsItemCoordinatorNameMax = 200;
@@ -776,6 +843,7 @@ export const savePicPlanResponseContentCalendarCiclopeMeetingDatesItemRegExp = n
 export const savePicPlanResponseContentCalendarNotesMax = 1000;
 
 
+
 export const SavePicPlanResponse = zod.object({
   "id": zod.string().uuid(),
   "revision": zod.number().int(),
@@ -795,8 +863,13 @@ export const SavePicPlanResponse = zod.object({
 }),
   "center": zod.object({
   "professionalFamily": zod.string(),
-  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A', 'B', 'C', 'D)'])),
-  "groupCount": zod.number().int().min(savePicPlanResponseContentCenterGroupCountMin)
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(savePicPlanResponseContentCenterGroupCountMin),
+  "familyProfiles": zod.array(zod.object({
+  "professionalFamily": zod.string().min(1).max(savePicPlanResponseContentCenterFamilyProfilesItemProfessionalFamilyMax),
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(savePicPlanResponseContentCenterFamilyProfilesItemGroupCountMin)
+})).max(savePicPlanResponseContentCenterFamilyProfilesMax).optional().describe('Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.')
 }),
   "dafo": zod.array(zod.object({
   "quadrant": zod.enum(['debilidades', 'fortalezas', 'amenazas', 'oportunidades']),
@@ -892,6 +965,7 @@ export const createPicSnapshotBodyReasonMin = 4;
 export const createPicSnapshotBodyReasonMax = 400;
 
 
+
 export const CreatePicSnapshotBody = zod.object({
   "reason": zod.string().min(createPicSnapshotBodyReasonMin).max(createPicSnapshotBodyReasonMax)
 })
@@ -940,6 +1014,12 @@ export const getPicSnapshotResponseTwoContentCoordinatorPhoneMax = 40;
 
 export const getPicSnapshotResponseTwoContentCenterGroupCountMin = 0;
 
+export const getPicSnapshotResponseTwoContentCenterFamilyProfilesItemProfessionalFamilyMax = 120;
+
+export const getPicSnapshotResponseTwoContentCenterFamilyProfilesItemGroupCountMin = 0;
+
+export const getPicSnapshotResponseTwoContentCenterFamilyProfilesMax = 100;
+
 export const getPicSnapshotResponseTwoContentProjectsItemNameMax = 200;
 
 export const getPicSnapshotResponseTwoContentProjectsItemCoordinatorNameMax = 200;
@@ -961,6 +1041,7 @@ export const getPicSnapshotResponseTwoContentCalendarCiclopeMeetingDatesItemRegE
 export const getPicSnapshotResponseTwoContentCalendarNotesMax = 1000;
 
 
+
 export const GetPicSnapshotResponse = zod.object({
   "id": zod.string().uuid(),
   "version": zod.number().int(),
@@ -980,8 +1061,13 @@ export const GetPicSnapshotResponse = zod.object({
 }),
   "center": zod.object({
   "professionalFamily": zod.string(),
-  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A', 'B', 'C', 'D)'])),
-  "groupCount": zod.number().int().min(getPicSnapshotResponseTwoContentCenterGroupCountMin)
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(getPicSnapshotResponseTwoContentCenterGroupCountMin),
+  "familyProfiles": zod.array(zod.object({
+  "professionalFamily": zod.string().min(1).max(getPicSnapshotResponseTwoContentCenterFamilyProfilesItemProfessionalFamilyMax),
+  "levels": zod.array(zod.enum(['FP Básica', 'Grado Medio', 'Grado Superior', 'Cursos de especialización', 'Ofertas parciales (Grados A, B, C, D)'])),
+  "groupCount": zod.number().int().min(getPicSnapshotResponseTwoContentCenterFamilyProfilesItemGroupCountMin)
+})).max(getPicSnapshotResponseTwoContentCenterFamilyProfilesMax).optional().describe('Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.')
 }),
   "dafo": zod.array(zod.object({
   "quadrant": zod.enum(['debilidades', 'fortalezas', 'amenazas', 'oportunidades']),
@@ -1085,6 +1171,7 @@ export const recordPicSubmissionBodyExternalIdentifierMax = 200;
 export const recordPicSubmissionBodyEvidenceFileNameMax = 255;
 
 export const recordPicSubmissionBodyEvidenceFileBase64Max = 1400000;
+
 
 
 export const RecordPicSubmissionBody = zod.object({
@@ -1213,6 +1300,7 @@ export const createActivityBodySourceLabelMax = 200;
 export const createActivityBodyIndicatorCodesItemMax = 80;
 
 
+
 export const CreateActivityBody = zod.object({
   "title": zod.string().min(1).max(createActivityBodyTitleMax),
   "description": zod.string().min(1).max(createActivityBodyDescriptionMax),
@@ -1296,6 +1384,7 @@ export const updateActivityBodyProfessionalFamilyMax = 120;
 export const updateActivityBodyIndicatorCodesItemMax = 80;
 
 
+
 export const UpdateActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "title": zod.string().min(1).max(updateActivityBodyTitleMax).optional(),
@@ -1336,6 +1425,8 @@ export const ConfirmActivityParams = zod.object({
 })
 
 
+
+
 export const ConfirmActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "informationStatus": zod.enum(['confirmada', 'sin_informacion', 'no_realizada'])
@@ -1371,6 +1462,8 @@ export const ValidateActivityParams = zod.object({
 })
 
 
+
+
 export const ValidateActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1)
 })
@@ -1403,6 +1496,8 @@ export const ValidateActivityResponse = zod.object({
 export const DiscardActivityParams = zod.object({
   "activityId": zod.coerce.string().uuid()
 })
+
+
 
 
 export const DiscardActivityBody = zod.object({
@@ -1465,6 +1560,7 @@ export const uploadDocumentQueryProfessionalFamilyMax = 120;
 export const uploadDocumentQueryIndicatorCodeMax = 80;
 
 export const uploadDocumentQueryFileNameMax = 255;
+
 
 
 export const UploadDocumentQueryParams = zod.object({
@@ -1546,6 +1642,7 @@ export const AddDocumentVersionParams = zod.object({
 export const addDocumentVersionHeaderXFileNameMax = 255;
 
 
+
 export const AddDocumentVersionHeader = zod.object({
   "X-File-Name": zod.string().max(addDocumentVersionHeaderXFileNameMax).optional()
 })
@@ -1576,6 +1673,8 @@ export const AddDocumentVersionResponse = zod.object({
 export const ApproveDocumentParams = zod.object({
   "documentId": zod.coerce.string().uuid()
 })
+
+
 
 
 export const ApproveDocumentBody = zod.object({
@@ -1631,6 +1730,7 @@ export const linkDocumentEvidenceBodyIndicatorCodeMax = 80;
 export const linkDocumentEvidenceBodyNoteMax = 500;
 
 
+
 export const LinkDocumentEvidenceBody = zod.object({
   "activityId": zod.string().uuid(),
   "indicatorCode": zod.string().max(linkDocumentEvidenceBodyIndicatorCodeMax).nullish(),
@@ -1645,6 +1745,7 @@ export const LinkDocumentEvidenceResponse = zod.object({
 /**
  * @summary Download an authorized document version as an attachment
  */
+
 
 
 export const DownloadDocumentVersionParams = zod.object({
@@ -1685,6 +1786,7 @@ export const createInformationRequestBodyRequestedFieldsItemMax = 80;
 export const createInformationRequestBodyReasonMax = 1000;
 
 
+
 export const CreateInformationRequestBody = zod.object({
   "recipientUserId": zod.string().uuid(),
   "subjectType": zod.enum(['activity', 'project']),
@@ -1721,6 +1823,7 @@ export const RespondToInformationRequestParams = zod.object({
 export const respondToInformationRequestBodyCommentMax = 1000;
 
 
+
 export const RespondToInformationRequestBody = zod.object({
   "responseStatus": zod.enum(['respondida', 'sin_informacion', 'no_realizada']),
   "answers": zod.record(zod.string(), zod.unknown()),
@@ -1750,6 +1853,8 @@ export const RespondToInformationRequestResponse = zod.object({
 export const ValidateInformationResponseParams = zod.object({
   "requestId": zod.coerce.string().uuid()
 })
+
+
 
 
 export const ValidateInformationResponseBody = zod.object({
@@ -1812,6 +1917,7 @@ export const ListCurrentIndicatorsResponse = zod.array(ListCurrentIndicatorsResp
 export const createIndicatorObservationPathIndicatorCodeMax = 80;
 
 
+
 export const CreateIndicatorObservationParams = zod.object({
   "indicatorCode": zod.coerce.string().max(createIndicatorObservationPathIndicatorCodeMax)
 })
@@ -1821,6 +1927,7 @@ export const createIndicatorObservationBodyPeriodMax = 40;
 export const createIndicatorObservationBodyNumeratorMin = 0;
 
 export const createIndicatorObservationBodyDenominatorMin = 0;
+
 
 
 export const CreateIndicatorObservationBody = zod.object({
@@ -1847,18 +1954,3 @@ export const CreateIndicatorObservationResponse = zod.object({
 })
 
 
-export const ChangePasswordResponse = zod.object({
-  "success": zod.boolean(),
-  "noticeSent": zod.boolean()
-})
-
-export const changePasswordBodyCurrentPasswordMax = 1024;
-
-export const changePasswordBodyPasswordMin = 12;
-
-export const changePasswordBodyPasswordMax = 1024;
-
-export const ChangePasswordBody = zod.object({
-  "currentPassword": zod.string().min(1).max(changePasswordBodyCurrentPasswordMax),
-  "password": zod.string().min(changePasswordBodyPasswordMin).max(changePasswordBodyPasswordMax)
-})

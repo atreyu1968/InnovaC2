@@ -47,6 +47,7 @@ import {
   type AuthContext,
 } from "../lib/auth";
 import { dataDirectory } from "../lib/storage";
+import { withDerivedCenterTotals } from "../lib/pic-center-profile";
 import {
   catalogDigest,
 } from "../lib/reference-data";
@@ -309,7 +310,20 @@ router.put(
       res.status(409).json({ error: "El PIC cambió desde que lo abriste. Recarga para evitar perder cambios." });
       return;
     }
-    const content = parsed.data.content as PicPlanContent;
+    const content = withDerivedCenterTotals(parsed.data.content as PicPlanContent);
+    if (content.center.familyProfiles) {
+      const catalog = await loadPlanCatalog(existing.plan.catalogRowId);
+      if (!catalog) {
+        res.status(409).json({ error: "No se encontró el catálogo vinculado al PIC." });
+        return;
+      }
+      const names = content.center.familyProfiles.map(row => row.professionalFamily);
+      if (new Set(names).size !== names.length ||
+          names.some(name => !catalog.familias_profesionales.includes(name))) {
+        res.status(400).json({ error: "El desglose debe usar familias oficiales del Anexo I, sin repetir ninguna." });
+        return;
+      }
+    }
     const { userId, ipHash } = actor(req, context);
     const updated = await db.transaction(async (tx) => {
       const [saved] = await tx

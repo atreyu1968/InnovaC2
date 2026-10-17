@@ -198,8 +198,12 @@ function completePlanContent(catalog) {
     },
     center: {
       professionalFamily: family,
-      levels: ["Grado Superior"],
-      groupCount: 4,
+      levels: ["Grado Superior", "Grado Medio"],
+      groupCount: 7,
+      familyProfiles: [
+        { professionalFamily: family, levels: ["Grado Superior"], groupCount: 4 },
+        { professionalFamily: catalog.familias_profesionales[1], levels: ["Grado Medio", "Grado Superior"], groupCount: 3 },
+      ],
     },
     dafo,
     projectsInCenter: true,
@@ -300,10 +304,24 @@ try {
     method: "PUT",
     cookie: adminCookie,
     csrf: adminCsrf,
-    body: { expectedRevision: 1, content },
+    body: { expectedRevision: 1, content: { ...content, center: { ...content.center, groupCount: 999, levels: ["FP Básica"] } } },
   });
   assert.equal(saved.response.status, 200, JSON.stringify(saved.data));
   assert.equal(saved.data.revision, 2);
+  const reread = await request("/plans/current", { cookie: adminCookie });
+  assert.deepEqual(reread.data.content.center, content.center, "persisted totals are derived from family rows, not caller-supplied totals");
+  for (const badRows of [
+    [content.center.familyProfiles[0], content.center.familyProfiles[0]],
+    [{ ...content.center.familyProfiles[0], professionalFamily: "Familia inventada" }],
+    [{ ...content.center.familyProfiles[0], groupCount: -1 }],
+    [{ ...content.center.familyProfiles[0], groupCount: 1.5 }],
+  ]) {
+    const rejected = await request(`/plans/${planId}`, {
+      method: "PUT", cookie: adminCookie, csrf: adminCsrf,
+      body: { expectedRevision: 2, content: { ...content, center: { ...content.center, familyProfiles: badRows } } },
+    });
+    assert.equal(rejected.response.status, 400, "invalid or duplicate family rows must not change the PIC");
+  }
 
   const concurrentWrite = await request(`/plans/${planId}`, {
     method: "PUT",
@@ -338,6 +356,10 @@ try {
   const laycos = await request(`/plans/${planId}/exports/laycos`, { cookie: c2Cookie });
   assert.equal(laycos.response.status, 200);
   assert.ok(laycos.data.fields.length > 50);
+  const centerFields = laycos.data.fields.filter(field => field.section === 2);
+  assert.ok(centerFields.some(field => field.label === "N.º de grupos de enseñanzas profesionales" && field.value === "7"));
+  assert.ok(centerFields.some(field => field.label === "Familia 2 · nombre" && field.value === content.center.familyProfiles[1].professionalFamily));
+  assert.ok(centerFields.some(field => field.label === "Familia 2 · número de grupos" && field.value === "3"));
   assert.deepEqual(
     [...new Set(laycos.data.fields.map((field) => field.section))].sort((a, b) => a - b),
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
@@ -440,7 +462,34 @@ try {
   assert.equal(Number(stored.rows[0].actions), invalidContent.selectedActions.length);
   assert.equal(Number(stored.rows[0].targets), expectedPersistedTargets);
 
-  console.log("Fase 1 smoke test completado: edición PIC, validación oficial, concurrencia, snapshots inmutables, exportación DOCX/PDF, campos Laycos y justificante.");
+  const legacyContent = structuredClone(content);
+  delete legacyContent.center.familyProfiles;
+  legacyContent.center.groupCount = 12;
+  legacyContent.center.levels = ["FP Básica"];
+  const legacySaved = await request(`/plans/${planId}`, {
+    method: "PUT", cookie: adminCookie, csrf: adminCsrf,
+    body: { expectedRevision: invalidSaved.data.revision, content: legacyContent },
+  });
+  assert.equal(legacySaved.response.status, 200);
+  const legacyRead = await request("/plans/current", { cookie: adminCookie });
+  assert.deepEqual(legacyRead.data.content.center, legacyContent.center, "legacy data is preserved without inventing a family allocation");
+  const legacyValidation = await request(`/plans/${planId}/validation`, { cookie: adminCookie });
+  assert.ok(legacyValidation.data.issues.some(issue => issue.code === "center_breakdown_missing"));
+
+  const reducedContent = structuredClone(content);
+  reducedContent.center.familyProfiles = [reducedContent.center.familyProfiles[1]];
+  const reducedSaved = await request(`/plans/${planId}`, {
+    method: "PUT", cookie: adminCookie, csrf: adminCsrf,
+    body: { expectedRevision: legacySaved.data.revision, content: reducedContent },
+  });
+  assert.equal(reducedSaved.response.status, 200);
+  const reducedRead = await request("/plans/current", { cookie: adminCookie });
+  assert.equal(reducedRead.data.content.center.groupCount, 3, "removing a family updates the persisted total");
+  assert.equal(reducedRead.data.content.center.familyProfiles.length, 1);
+  const unchangedSnapshot = await request(`/plans/${planId}/snapshots/${snapshot.data.snapshotId}`, { cookie: adminCookie });
+  assert.deepEqual(unchangedSnapshot.data.content.center, content.center, "later family changes never rewrite the immutable snapshot");
+
+  console.log("Fase 1 smoke test completado: desglose por familias, totales calculados, rechazo de duplicados, compatibilidad anterior, snapshots inmutables, edición PIC, validación oficial, concurrencia, DOCX/PDF, campos Laycos y justificante.");
 } catch (error) {
   await new Promise((resolve) => setTimeout(resolve, 150));
   console.error(`Fase 1 test failed. Recent API output:\n${serverOutput.slice(-12000)}`);

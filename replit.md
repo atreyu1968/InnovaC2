@@ -64,4 +64,6 @@ Fase 0 cubre la base ejecutable, seguridad, centro/curso, catálogo y administra
 
 ## Fuentes y decisiones técnicas
 
+- Por confirmación del usuario, el apartado 2 del PIC representa al conjunto del centro: desglose por familia profesional y totales del centro. No debe limitarse a la familia de la persona C2. Los datos antiguos no se reparten por inferencia y las versiones históricas permanecen inmutables.
+
 Se mantiene el monorepo pnpm del proyecto (React/TypeScript, Express 5, PostgreSQL/Drizzle y OpenAPI/Orval) como alternativa equivalente al stack de referencia FastAPI, documentando la decisión para poder construir el mismo sistema con Docker sin servicios propios de Replit. El ZIP original y la captura de referencia se conservan en `docs/reference/paquete-original/` y `attached_assets/`.

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { hasCoordinationAccess } from "../lib/role-access";
+import { PicCenterFamilies } from "./PicCenterFamilies";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Download,
@@ -503,8 +504,6 @@ export function PicPlanPage({ user }: { user: User }) {
   const familyOptions = catalog.familias_profesionales;
   const setCoordinator = (key: keyof PicPlanContent["coordinator"], value: string) =>
     patch((valueNow) => ({ ...valueNow, coordinator: { ...valueNow.coordinator, [key]: value } }));
-  const setCenter = (key: "professionalFamily" | "groupCount" | "levels", value: string | number | string[]) =>
-    patch((valueNow) => ({ ...valueNow, center: { ...valueNow.center, [key]: value } }));
   const classPanel = "panel scroll-mt-24 p-5 md:p-7";
 
   return (
@@ -562,11 +561,8 @@ export function PicPlanPage({ user }: { user: User }) {
 
           <section id="pic-section-2" className={classPanel}>
             <SectionHeading number={2} title="Datos del centro" help="El nombre del centro y el curso activo proceden de la configuración institucional y no se duplican en este formulario." />
-            <div className="grid gap-4 md:grid-cols-2">
-              <SelectField label="Familia profesional de coordinación" value={content.center.professionalFamily} values={familyOptions} onChange={(value) => setCenter("professionalFamily", value)} />
-              <TextField label="N.º de grupos de enseñanzas profesionales" type="number" value={content.center.groupCount} onChange={(value) => setCenter("groupCount", value === "" ? 0 : Number(value))} />
-            </div>
-            <div className="mt-5"><CheckList label="Niveles impartidos" options={["FP Básica", "Grado Medio", "Grado Superior", "Cursos de especialización", "Ofertas parciales (Grados A, B, C, D)"]} value={content.center.levels} onChange={(value) => setCenter("levels", value)} /></div>
+            <PicCenterFamilies center={content.center} families={familyOptions} disabled={savePlan.isPending}
+              onChange={center => patch(value => ({ ...value, center }))} />
           </section>
 
           <section id="pic-section-3" className={classPanel}>

@@ -102,6 +102,12 @@ export interface PasswordChangeInput {
      */
   password: string;
 }
+
+export interface PasswordChangeResponse {
+  success: boolean;
+  noticeSent: boolean;
+}
+
 export interface SetupInitializeInput {
   email: string;
   /**
@@ -262,6 +268,28 @@ export interface PicPlanCoordinator {
   professionalFamily: string;
 }
 
+export type PicPlanFamilyProfileLevelsItem = typeof PicPlanFamilyProfileLevelsItem[keyof typeof PicPlanFamilyProfileLevelsItem];
+
+
+export const PicPlanFamilyProfileLevelsItem = {
+  FP_Básica: 'FP Básica',
+  Grado_Medio: 'Grado Medio',
+  Grado_Superior: 'Grado Superior',
+  Cursos_de_especialización: 'Cursos de especialización',
+  'Ofertas_parciales_(Grados_A,_B,_C,_D)': 'Ofertas parciales (Grados A, B, C, D)',
+} as const;
+
+export interface PicPlanFamilyProfile {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  professionalFamily: string;
+  levels: PicPlanFamilyProfileLevelsItem[];
+  /** @minimum 0 */
+  groupCount: number;
+}
+
 export type PicPlanCenterProfileLevelsItem = typeof PicPlanCenterProfileLevelsItem[keyof typeof PicPlanCenterProfileLevelsItem];
 
 
@@ -270,10 +298,7 @@ export const PicPlanCenterProfileLevelsItem = {
   Grado_Medio: 'Grado Medio',
   Grado_Superior: 'Grado Superior',
   Cursos_de_especialización: 'Cursos de especialización',
-  'Ofertas_parciales_(Grados_A': 'Ofertas parciales (Grados A',
-  B: 'B',
-  C: 'C',
-  'D)': 'D)',
+  'Ofertas_parciales_(Grados_A,_B,_C,_D)': 'Ofertas parciales (Grados A, B, C, D)',
 } as const;
 
 export interface PicPlanCenterProfile {
@@ -281,6 +306,11 @@ export interface PicPlanCenterProfile {
   levels: PicPlanCenterProfileLevelsItem[];
   /** @minimum 0 */
   groupCount: number;
+  /**
+     * Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.
+     * @maxItems 100
+     */
+  familyProfiles?: PicPlanFamilyProfile[];
 }
 
 export type PicDafoEntryQuadrant = typeof PicDafoEntryQuadrant[keyof typeof PicDafoEntryQuadrant];
@@ -1004,8 +1034,3 @@ export const UploadDocumentAccessScope = {
   restricted: 'restricted',
 } as const;
 
-
-export interface PasswordChangeResponse {
-  success: boolean;
-  noticeSent: boolean;
-}

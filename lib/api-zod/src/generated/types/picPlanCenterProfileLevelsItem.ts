@@ -14,8 +14,5 @@ export const PicPlanCenterProfileLevelsItem = {
   Grado_Medio: 'Grado Medio',
   Grado_Superior: 'Grado Superior',
   Cursos_de_especialización: 'Cursos de especialización',
-  'Ofertas_parciales_(Grados_A': 'Ofertas parciales (Grados A',
-  B: 'B',
-  C: 'C',
-  'D)': 'D)',
+  'Ofertas_parciales_(Grados_A,_B,_C,_D)': 'Ofertas parciales (Grados A, B, C, D)',
 } as const;

@@ -76,6 +76,8 @@ export * from './picPlanContent';
 export * from './picPlanCoordinator';
 export * from './picPlanCoordinatorProfile';
 export * from './picPlanDiffusion';
+export * from './picPlanFamilyProfile';
+export * from './picPlanFamilyProfileLevelsItem';
 export * from './picPlanIssue';
 export * from './picPlanIssueSeverity';
 export * from './picPlanStatus';

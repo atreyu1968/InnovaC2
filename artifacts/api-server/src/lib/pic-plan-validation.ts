@@ -69,6 +69,7 @@ export function createEmptyPicPlanContent(): PicPlanContent {
       professionalFamily: "",
       levels: [],
       groupCount: 0,
+      familyProfiles: [],
     },
     dafo: [],
     projectsInCenter: false,
@@ -143,6 +144,23 @@ export function validatePicPlan(
   }
   if (center.groupCount < 1) {
     add("center_groups_missing", 2, "error", "Indica el número de grupos de enseñanzas profesionales.");
+  }
+  if (!center.familyProfiles?.length) {
+    add("center_breakdown_missing", 2, "error", "Completa el desglose por familia profesional. Los datos anteriores no se distribuyen automáticamente.");
+  } else {
+    const seen = new Set<string>();
+    center.familyProfiles.forEach((family, index) => {
+      if (!catalog.familias_profesionales.includes(family.professionalFamily)) {
+        add(`center_family_unknown_${index}`, 2, "error", `Familia ${index + 1}: selecciona una familia oficial del Anexo I.`);
+      }
+      if (seen.has(family.professionalFamily)) {
+        add(`center_family_duplicate_${index}`, 2, "error", `La familia ${family.professionalFamily} aparece más de una vez.`);
+      }
+      seen.add(family.professionalFamily);
+      if (!family.levels.length || family.groupCount < 1) {
+        add(`center_family_incomplete_${index}`, 2, "error", `${family.professionalFamily}: indica al menos un nivel y un grupo.`);
+      }
+    });
   }
 
   const dafoRules = catalog.reglas;

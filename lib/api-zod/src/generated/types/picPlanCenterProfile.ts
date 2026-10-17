@@ -6,10 +6,16 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { PicPlanCenterProfileLevelsItem } from './picPlanCenterProfileLevelsItem';
+import type { PicPlanFamilyProfile } from './picPlanFamilyProfile';
 
 export interface PicPlanCenterProfile {
   professionalFamily: string;
   levels: PicPlanCenterProfileLevelsItem[];
   /** @minimum 0 */
   groupCount: number;
+  /**
+     * Desglose por familia; niveles y grupos del centro se calculan en el servidor. Ausente en los PIC antiguos, que conservan sus datos originales.
+     * @maxItems 100
+     */
+  familyProfiles?: PicPlanFamilyProfile[];
 }
