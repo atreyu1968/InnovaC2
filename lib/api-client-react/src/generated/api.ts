@@ -132,6 +132,7 @@ import type {
 
 import { customFetch } from '../custom-fetch';
 import type { ErrorType , BodyType } from '../custom-fetch';
+import { aiProviderCheckOptions } from '../ai-provider-check-options';
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -139,7 +140,6 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
 
 
 const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKey: K } => {
@@ -160,8 +160,6 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
 export const getGetSoftwareProductsUrl = () => {
 
 
-
-
   return `/api/v1/software-products`
 }
 
@@ -175,9 +173,6 @@ export const getSoftwareProducts = async ( options?: Parameters<typeof customFet
 
   }
 );}
-
-
-
 
 
 export const getGetSoftwareProductsQueryKey = () => {
@@ -195,11 +190,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetSoftwareProductsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getSoftwareProducts>>> = ({ signal }) => getSoftwareProducts({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProducts>>, TError, TData> & { queryKey: QueryKey }
@@ -207,7 +198,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetSoftwareProductsQueryResult = NonNullable<Awaited<ReturnType<typeof getSoftwareProducts>>>
 export type GetSoftwareProductsQueryError = ErrorType<unknown>
-
 
 
 export function useGetSoftwareProducts<TData = Awaited<ReturnType<typeof getSoftwareProducts>>, TError = ErrorType<unknown>>(
@@ -223,14 +213,7 @@ export function useGetSoftwareProducts<TData = Awaited<ReturnType<typeof getSoft
 }
 
 
-
-
-
-
-
 export const getCreateSoftwareProductUrl = () => {
-
-
 
 
   return `/api/v1/software-products`
@@ -262,9 +245,6 @@ return customFetch<SoftwareProduct>(getCreateSoftwareProductUrl(),
 );}
 
 
-
-
-
 export const getCreateSoftwareProductMutationKey = () => ['createSoftwareProduct'] as const;
 
 export const getCreateSoftwareProductMutationOptions = <TError = ErrorType<unknown>,
@@ -279,17 +259,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSoftwareProduct>>, CreateSoftwareProductMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createSoftwareProduct(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -313,8 +287,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getInitializeSoftwareProductsUrl = () => {
 
 
-
-
   return `/api/v1/software-products/initialize`
 }
 
@@ -328,9 +300,6 @@ export const initializeSoftwareProducts = async ( options?: Parameters<typeof cu
 
   }
 );}
-
-
-
 
 
 export const getInitializeSoftwareProductsMutationKey = () => ['initializeSoftwareProducts'] as const;
@@ -347,17 +316,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeSoftwareProducts>>, void> = () => {
 
 
           return  initializeSoftwareProducts(requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -379,8 +342,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateSoftwareCatalogUrl = () => {
-
-
 
 
   return `/api/v1/software-products/catalog`
@@ -412,9 +373,6 @@ return customFetch<SoftwareOverview>(getUpdateSoftwareCatalogUrl(),
 );}
 
 
-
-
-
 export const getUpdateSoftwareCatalogMutationKey = () => ['updateSoftwareCatalog'] as const;
 
 export const getUpdateSoftwareCatalogMutationOptions = <TError = ErrorType<unknown>,
@@ -429,17 +387,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSoftwareCatalog>>, UpdateSoftwareCatalogMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  updateSoftwareCatalog(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -463,8 +415,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getSyncSoftwareDeliveriesUrl = () => {
 
 
-
-
   return `/api/v1/software-products/sync-deliveries`
 }
 
@@ -478,9 +428,6 @@ export const syncSoftwareDeliveries = async ( options?: Parameters<typeof custom
 
   }
 );}
-
-
-
 
 
 export const getSyncSoftwareDeliveriesMutationKey = () => ['syncSoftwareDeliveries'] as const;
@@ -497,17 +444,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncSoftwareDeliveries>>, void> = () => {
 
 
           return  syncSoftwareDeliveries(requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -531,8 +472,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetSoftwareProductUrl = (productId: string,) => {
 
 
-
-
   return `/api/v1/software-products/${productId}`
 }
 
@@ -546,9 +485,6 @@ export const getSoftwareProduct = async (productId: string, options?: Parameters
 
   }
 );}
-
-
-
 
 
 export const getGetSoftwareProductQueryKey = (productId: string,) => {
@@ -566,11 +502,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetSoftwareProductQueryKey(productId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getSoftwareProduct>>> = ({ signal }) => getSoftwareProduct(productId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProduct>>, TError, TData> & { queryKey: QueryKey }
@@ -578,7 +510,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetSoftwareProductQueryResult = NonNullable<Awaited<ReturnType<typeof getSoftwareProduct>>>
 export type GetSoftwareProductQueryError = ErrorType<unknown>
-
 
 
 export function useGetSoftwareProduct<TData = Awaited<ReturnType<typeof getSoftwareProduct>>, TError = ErrorType<unknown>>(
@@ -594,14 +525,7 @@ export function useGetSoftwareProduct<TData = Awaited<ReturnType<typeof getSoftw
 }
 
 
-
-
-
-
-
 export const getUpdateSoftwareProductUrl = (productId: string,) => {
-
-
 
 
   return `/api/v1/software-products/${productId}`
@@ -634,9 +558,6 @@ return customFetch<SoftwareProduct>(getUpdateSoftwareProductUrl(productId),
 );}
 
 
-
-
-
 export const getUpdateSoftwareProductMutationKey = () => ['updateSoftwareProduct'] as const;
 
 export const getUpdateSoftwareProductMutationOptions = <TError = ErrorType<unknown>,
@@ -651,17 +572,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSoftwareProduct>>, UpdateSoftwareProductMutationVariables> = (props) => {
           const {productId,data} = props ?? {};
 
           return  updateSoftwareProduct(productId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -683,8 +598,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCreateSoftwareRecordUrl = (productId: string,) => {
-
-
 
 
   return `/api/v1/software-products/${productId}/records`
@@ -717,9 +630,6 @@ return customFetch<SoftwareProductDetail>(getCreateSoftwareRecordUrl(productId),
 );}
 
 
-
-
-
 export const getCreateSoftwareRecordMutationKey = () => ['createSoftwareRecord'] as const;
 
 export const getCreateSoftwareRecordMutationOptions = <TError = ErrorType<unknown>,
@@ -734,17 +644,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSoftwareRecord>>, CreateSoftwareRecordMutationVariables> = (props) => {
           const {productId,data} = props ?? {};
 
           return  createSoftwareRecord(productId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -768,8 +672,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetLearningSpacesUrl = () => {
 
 
-
-
   return `/api/v1/spaces`
 }
 
@@ -783,9 +685,6 @@ export const getLearningSpaces = async ( options?: Parameters<typeof customFetch
 
   }
 );}
-
-
-
 
 
 export const getGetLearningSpacesQueryKey = () => {
@@ -803,11 +702,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetLearningSpacesQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getLearningSpaces>>> = ({ signal }) => getLearningSpaces({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLearningSpaces>>, TError, TData> & { queryKey: QueryKey }
@@ -815,7 +710,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetLearningSpacesQueryResult = NonNullable<Awaited<ReturnType<typeof getLearningSpaces>>>
 export type GetLearningSpacesQueryError = ErrorType<unknown>
-
 
 
 export function useGetLearningSpaces<TData = Awaited<ReturnType<typeof getLearningSpaces>>, TError = ErrorType<unknown>>(
@@ -831,14 +725,7 @@ export function useGetLearningSpaces<TData = Awaited<ReturnType<typeof getLearni
 }
 
 
-
-
-
-
-
 export const getInitializeLearningSpacesUrl = () => {
-
-
 
 
   return `/api/v1/spaces`
@@ -856,9 +743,6 @@ export const initializeLearningSpaces = async ( options?: Parameters<typeof cust
 );}
 
 
-
-
-
 export const getInitializeLearningSpacesMutationKey = () => ['initializeLearningSpaces'] as const;
 
 export const getInitializeLearningSpacesMutationOptions = <TError = ErrorType<unknown>,
@@ -873,17 +757,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeLearningSpaces>>, void> = () => {
 
 
           return  initializeLearningSpaces(requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -905,8 +783,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateLearningSpaceUrl = (spaceId: string,) => {
-
-
 
 
   return `/api/v1/spaces/${spaceId}`
@@ -939,9 +815,6 @@ return customFetch<LearningSpace>(getUpdateLearningSpaceUrl(spaceId),
 );}
 
 
-
-
-
 export const getUpdateLearningSpaceMutationKey = () => ['updateLearningSpace'] as const;
 
 export const getUpdateLearningSpaceMutationOptions = <TError = ErrorType<unknown>,
@@ -956,17 +829,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateLearningSpace>>, UpdateLearningSpaceMutationVariables> = (props) => {
           const {spaceId,data} = props ?? {};
 
           return  updateLearningSpace(spaceId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -988,8 +855,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCreateSpaceReservationUrl = () => {
-
-
 
 
   return `/api/v1/space-reservations`
@@ -1021,9 +886,6 @@ return customFetch<SpaceReservation>(getCreateSpaceReservationUrl(),
 );}
 
 
-
-
-
 export const getCreateSpaceReservationMutationKey = () => ['createSpaceReservation'] as const;
 
 export const getCreateSpaceReservationMutationOptions = <TError = ErrorType<unknown>,
@@ -1038,17 +900,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSpaceReservation>>, CreateSpaceReservationMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createSpaceReservation(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1070,8 +926,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateSpaceReservationUrl = (reservationId: string,) => {
-
-
 
 
   return `/api/v1/space-reservations/${reservationId}`
@@ -1104,9 +958,6 @@ return customFetch<SpaceReservation>(getUpdateSpaceReservationUrl(reservationId)
 );}
 
 
-
-
-
 export const getUpdateSpaceReservationMutationKey = () => ['updateSpaceReservation'] as const;
 
 export const getUpdateSpaceReservationMutationOptions = <TError = ErrorType<unknown>,
@@ -1121,17 +972,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSpaceReservation>>, UpdateSpaceReservationMutationVariables> = (props) => {
           const {reservationId,data} = props ?? {};
 
           return  updateSpaceReservation(reservationId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1155,8 +1000,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetSpaceRecordVersionsUrl = (entityId: string,) => {
 
 
-
-
   return `/api/v1/space-records/${entityId}/versions`
 }
 
@@ -1170,9 +1013,6 @@ export const getSpaceRecordVersions = async (entityId: string, options?: Paramet
 
   }
 );}
-
-
-
 
 
 export const getGetSpaceRecordVersionsQueryKey = (entityId: string,) => {
@@ -1190,11 +1030,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetSpaceRecordVersionsQueryKey(entityId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getSpaceRecordVersions>>> = ({ signal }) => getSpaceRecordVersions(entityId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: entityId !== null && entityId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSpaceRecordVersions>>, TError, TData> & { queryKey: QueryKey }
@@ -1202,7 +1038,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetSpaceRecordVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof getSpaceRecordVersions>>>
 export type GetSpaceRecordVersionsQueryError = ErrorType<unknown>
-
 
 
 export function useGetSpaceRecordVersions<TData = Awaited<ReturnType<typeof getSpaceRecordVersions>>, TError = ErrorType<unknown>>(
@@ -1218,14 +1053,7 @@ export function useGetSpaceRecordVersions<TData = Awaited<ReturnType<typeof getS
 }
 
 
-
-
-
-
-
 export const getGetMailOverviewUrl = () => {
-
-
 
 
   return `/api/v1/mail/overview`
@@ -1243,9 +1071,6 @@ export const getMailOverview = async ( options?: Parameters<typeof customFetch>[
 );}
 
 
-
-
-
 export const getGetMailOverviewQueryKey = () => {
     return [
     `/api/v1/mail/overview`
@@ -1261,11 +1086,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetMailOverviewQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getMailOverview>>> = ({ signal }) => getMailOverview({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMailOverview>>, TError, TData> & { queryKey: QueryKey }
@@ -1273,7 +1094,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetMailOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getMailOverview>>>
 export type GetMailOverviewQueryError = ErrorType<unknown>
-
 
 
 export function useGetMailOverview<TData = Awaited<ReturnType<typeof getMailOverview>>, TError = ErrorType<unknown>>(
@@ -1289,14 +1109,7 @@ export function useGetMailOverview<TData = Awaited<ReturnType<typeof getMailOver
 }
 
 
-
-
-
-
-
 export const getGetMailThreadUrl = (threadId: string,) => {
-
-
 
 
   return `/api/v1/mail/threads/${threadId}`
@@ -1314,9 +1127,6 @@ export const getMailThread = async (threadId: string, options?: Parameters<typeo
 );}
 
 
-
-
-
 export const getGetMailThreadQueryKey = (threadId: string,) => {
     return [
     `/api/v1/mail/threads/${threadId}`
@@ -1332,11 +1142,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetMailThreadQueryKey(threadId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getMailThread>>> = ({ signal }) => getMailThread(threadId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: threadId !== null && threadId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMailThread>>, TError, TData> & { queryKey: QueryKey }
@@ -1344,7 +1150,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetMailThreadQueryResult = NonNullable<Awaited<ReturnType<typeof getMailThread>>>
 export type GetMailThreadQueryError = ErrorType<unknown>
-
 
 
 export function useGetMailThread<TData = Awaited<ReturnType<typeof getMailThread>>, TError = ErrorType<unknown>>(
@@ -1360,14 +1165,7 @@ export function useGetMailThread<TData = Awaited<ReturnType<typeof getMailThread
 }
 
 
-
-
-
-
-
 export const getReplyToMailThreadUrl = (threadId: string,) => {
-
-
 
 
   return `/api/v1/mail/threads/${threadId}/reply`
@@ -1400,9 +1198,6 @@ return customFetch<void>(getReplyToMailThreadUrl(threadId),
 );}
 
 
-
-
-
 export const getReplyToMailThreadMutationKey = () => ['replyToMailThread'] as const;
 
 export const getReplyToMailThreadMutationOptions = <TError = ErrorType<unknown>,
@@ -1417,17 +1212,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof replyToMailThread>>, ReplyToMailThreadMutationVariables> = (props) => {
           const {threadId,data} = props ?? {};
 
           return  replyToMailThread(threadId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1449,8 +1238,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCreateMailContactUrl = () => {
-
-
 
 
   return `/api/v1/mail/contacts`
@@ -1482,9 +1269,6 @@ return customFetch<MailContact>(getCreateMailContactUrl(),
 );}
 
 
-
-
-
 export const getCreateMailContactMutationKey = () => ['createMailContact'] as const;
 
 export const getCreateMailContactMutationOptions = <TError = ErrorType<unknown>,
@@ -1499,17 +1283,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMailContact>>, CreateMailContactMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createMailContact(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1531,8 +1309,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateMailContactUrl = (contactId: string,) => {
-
-
 
 
   return `/api/v1/mail/contacts/${contactId}`
@@ -1565,9 +1341,6 @@ return customFetch<MailContact>(getUpdateMailContactUrl(contactId),
 );}
 
 
-
-
-
 export const getUpdateMailContactMutationKey = () => ['updateMailContact'] as const;
 
 export const getUpdateMailContactMutationOptions = <TError = ErrorType<unknown>,
@@ -1582,17 +1355,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMailContact>>, UpdateMailContactMutationVariables> = (props) => {
           const {contactId,data} = props ?? {};
 
           return  updateMailContact(contactId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1614,8 +1381,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCreateMailTemplateUrl = () => {
-
-
 
 
   return `/api/v1/mail/templates`
@@ -1647,9 +1412,6 @@ return customFetch<MailTemplate>(getCreateMailTemplateUrl(),
 );}
 
 
-
-
-
 export const getCreateMailTemplateMutationKey = () => ['createMailTemplate'] as const;
 
 export const getCreateMailTemplateMutationOptions = <TError = ErrorType<unknown>,
@@ -1664,17 +1426,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMailTemplate>>, CreateMailTemplateMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createMailTemplate(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1696,8 +1452,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateMailTemplateUrl = (templateId: string,) => {
-
-
 
 
   return `/api/v1/mail/templates/${templateId}`
@@ -1730,9 +1484,6 @@ return customFetch<MailTemplate>(getUpdateMailTemplateUrl(templateId),
 );}
 
 
-
-
-
 export const getUpdateMailTemplateMutationKey = () => ['updateMailTemplate'] as const;
 
 export const getUpdateMailTemplateMutationOptions = <TError = ErrorType<unknown>,
@@ -1747,17 +1498,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMailTemplate>>, UpdateMailTemplateMutationVariables> = (props) => {
           const {templateId,data} = props ?? {};
 
           return  updateMailTemplate(templateId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1779,8 +1524,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCreateMailDraftUrl = () => {
-
-
 
 
   return `/api/v1/mail/drafts`
@@ -1812,9 +1555,6 @@ return customFetch<MailDraftResult>(getCreateMailDraftUrl(),
 );}
 
 
-
-
-
 export const getCreateMailDraftMutationKey = () => ['createMailDraft'] as const;
 
 export const getCreateMailDraftMutationOptions = <TError = ErrorType<unknown>,
@@ -1829,17 +1569,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createMailDraft>>, CreateMailDraftMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createMailDraft(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1863,8 +1597,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getSubmitMailDraftUrl = (messageId: string,) => {
 
 
-
-
   return `/api/v1/mail/drafts/${messageId}/submit`
 }
 
@@ -1878,9 +1610,6 @@ export const submitMailDraft = async (messageId: string, options?: Parameters<ty
 
   }
 );}
-
-
-
 
 
 export const getSubmitMailDraftMutationKey = () => ['submitMailDraft'] as const;
@@ -1897,17 +1626,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitMailDraft>>, SubmitMailDraftMutationVariables> = (props) => {
           const {messageId} = props ?? {};
 
           return  submitMailDraft(messageId,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -1929,8 +1652,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateMailDraftUrl = (messageId: string,) => {
-
-
 
 
   return `/api/v1/mail/drafts/${messageId}`
@@ -1963,9 +1684,6 @@ return customFetch<void>(getUpdateMailDraftUrl(messageId),
 );}
 
 
-
-
-
 export const getUpdateMailDraftMutationKey = () => ['updateMailDraft'] as const;
 
 export const getUpdateMailDraftMutationOptions = <TError = ErrorType<unknown>,
@@ -1980,17 +1698,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMailDraft>>, UpdateMailDraftMutationVariables> = (props) => {
           const {messageId,data} = props ?? {};
 
           return  updateMailDraft(messageId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2014,8 +1726,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getApproveMailDraftUrl = (messageId: string,) => {
 
 
-
-
   return `/api/v1/mail/drafts/${messageId}/approve`
 }
 
@@ -2029,9 +1739,6 @@ export const approveMailDraft = async (messageId: string, options?: Parameters<t
 
   }
 );}
-
-
-
 
 
 export const getApproveMailDraftMutationKey = () => ['approveMailDraft'] as const;
@@ -2048,17 +1755,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveMailDraft>>, ApproveMailDraftMutationVariables> = (props) => {
           const {messageId} = props ?? {};
 
           return  approveMailDraft(messageId,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2080,8 +1781,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getQueueMailDraftUrl = (messageId: string,) => {
-
-
 
 
   return `/api/v1/mail/drafts/${messageId}/send`
@@ -2114,9 +1813,6 @@ return customFetch<void>(getQueueMailDraftUrl(messageId),
 );}
 
 
-
-
-
 export const getQueueMailDraftMutationKey = () => ['queueMailDraft'] as const;
 
 export const getQueueMailDraftMutationOptions = <TError = ErrorType<unknown>,
@@ -2131,17 +1827,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof queueMailDraft>>, QueueMailDraftMutationVariables> = (props) => {
           const {messageId,data} = props ?? {};
 
           return  queueMailDraft(messageId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2163,8 +1853,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getAssignMailThreadUrl = (threadId: string,) => {
-
-
 
 
   return `/api/v1/mail/threads/${threadId}/assign`
@@ -2197,9 +1885,6 @@ return customFetch<void>(getAssignMailThreadUrl(threadId),
 );}
 
 
-
-
-
 export const getAssignMailThreadMutationKey = () => ['assignMailThread'] as const;
 
 export const getAssignMailThreadMutationOptions = <TError = ErrorType<unknown>,
@@ -2214,17 +1899,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof assignMailThread>>, AssignMailThreadMutationVariables> = (props) => {
           const {threadId,data} = props ?? {};
 
           return  assignMailThread(threadId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2246,8 +1925,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateMailThreadActionUrl = (threadId: string,) => {
-
-
 
 
   return `/api/v1/mail/threads/${threadId}/action`
@@ -2280,9 +1957,6 @@ return customFetch<MailThreadSummary>(getUpdateMailThreadActionUrl(threadId),
 );}
 
 
-
-
-
 export const getUpdateMailThreadActionMutationKey = () => ['updateMailThreadAction'] as const;
 
 export const getUpdateMailThreadActionMutationOptions = <TError = ErrorType<unknown>,
@@ -2297,17 +1971,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMailThreadAction>>, UpdateMailThreadActionMutationVariables> = (props) => {
           const {threadId,data} = props ?? {};
 
           return  updateMailThreadAction(threadId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2331,8 +1999,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getApproveMailAttachmentUrl = (attachmentId: string,) => {
 
 
-
-
   return `/api/v1/mail/attachments/${attachmentId}/approve`
 }
 
@@ -2346,9 +2012,6 @@ export const approveMailAttachment = async (attachmentId: string, options?: Para
 
   }
 );}
-
-
-
 
 
 export const getApproveMailAttachmentMutationKey = () => ['approveMailAttachment'] as const;
@@ -2365,17 +2028,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveMailAttachment>>, ApproveMailAttachmentMutationVariables> = (props) => {
           const {attachmentId} = props ?? {};
 
           return  approveMailAttachment(attachmentId,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2399,8 +2056,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getDownloadMailAttachmentUrl = (attachmentId: string,) => {
 
 
-
-
   return `/api/v1/mail/attachments/${attachmentId}/download`
 }
 
@@ -2414,9 +2069,6 @@ export const downloadMailAttachment = async (attachmentId: string, options?: Par
 
   }
 );}
-
-
-
 
 
 export const getDownloadMailAttachmentQueryKey = (attachmentId: string,) => {
@@ -2434,11 +2086,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getDownloadMailAttachmentQueryKey(attachmentId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadMailAttachment>>> = ({ signal }) => downloadMailAttachment(attachmentId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: attachmentId !== null && attachmentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadMailAttachment>>, TError, TData> & { queryKey: QueryKey }
@@ -2446,7 +2094,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type DownloadMailAttachmentQueryResult = NonNullable<Awaited<ReturnType<typeof downloadMailAttachment>>>
 export type DownloadMailAttachmentQueryError = ErrorType<unknown>
-
 
 
 export function useDownloadMailAttachment<TData = Awaited<ReturnType<typeof downloadMailAttachment>>, TError = ErrorType<unknown>>(
@@ -2462,14 +2109,7 @@ export function useDownloadMailAttachment<TData = Awaited<ReturnType<typeof down
 }
 
 
-
-
-
-
-
 export const getGetAdminMailSettingsUrl = () => {
-
-
 
 
   return `/api/v1/admin/mail/provider-status`
@@ -2487,9 +2127,6 @@ export const getAdminMailSettings = async ( options?: Parameters<typeof customFe
 );}
 
 
-
-
-
 export const getGetAdminMailSettingsQueryKey = () => {
     return [
     `/api/v1/admin/mail/provider-status`
@@ -2505,11 +2142,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetAdminMailSettingsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminMailSettings>>> = ({ signal }) => getAdminMailSettings({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminMailSettings>>, TError, TData> & { queryKey: QueryKey }
@@ -2517,7 +2150,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetAdminMailSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminMailSettings>>>
 export type GetAdminMailSettingsQueryError = ErrorType<unknown>
-
 
 
 export function useGetAdminMailSettings<TData = Awaited<ReturnType<typeof getAdminMailSettings>>, TError = ErrorType<unknown>>(
@@ -2533,14 +2165,7 @@ export function useGetAdminMailSettings<TData = Awaited<ReturnType<typeof getAdm
 }
 
 
-
-
-
-
-
 export const getVerifyAdminMailProviderUrl = () => {
-
-
 
 
   return `/api/v1/admin/mail/provider-status/verify`
@@ -2558,9 +2183,6 @@ export const verifyAdminMailProvider = async ( options?: Parameters<typeof custo
 );}
 
 
-
-
-
 export const getVerifyAdminMailProviderMutationKey = () => ['verifyAdminMailProvider'] as const;
 
 export const getVerifyAdminMailProviderMutationOptions = <TError = ErrorType<unknown>,
@@ -2575,17 +2197,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof verifyAdminMailProvider>>, void> = () => {
 
 
           return  verifyAdminMailProvider(requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2607,8 +2223,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateAdminMailSettingsUrl = () => {
-
-
 
 
   return `/api/v1/admin/mail/settings`
@@ -2640,9 +2254,6 @@ return customFetch<MailAdminSettings>(getUpdateAdminMailSettingsUrl(),
 );}
 
 
-
-
-
 export const getUpdateAdminMailSettingsMutationKey = () => ['updateAdminMailSettings'] as const;
 
 export const getUpdateAdminMailSettingsMutationOptions = <TError = ErrorType<unknown>,
@@ -2657,17 +2268,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminMailSettings>>, UpdateAdminMailSettingsMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  updateAdminMailSettings(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2691,8 +2296,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetAdminAIProviderSettingsUrl = () => {
 
 
-
-
   return `/api/v1/admin/ai/provider`
 }
 
@@ -2706,9 +2309,6 @@ export const getAdminAIProviderSettings = async ( options?: Parameters<typeof cu
 
   }
 );}
-
-
-
 
 
 export const getGetAdminAIProviderSettingsQueryKey = () => {
@@ -2726,11 +2326,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetAdminAIProviderSettingsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAIProviderSettings>>> = ({ signal }) => getAdminAIProviderSettings({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError, TData> & { queryKey: QueryKey }
@@ -2738,7 +2334,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetAdminAIProviderSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAIProviderSettings>>>
 export type GetAdminAIProviderSettingsQueryError = ErrorType<unknown>
-
 
 
 export function useGetAdminAIProviderSettings<TData = Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError = ErrorType<unknown>>(
@@ -2754,14 +2349,7 @@ export function useGetAdminAIProviderSettings<TData = Awaited<ReturnType<typeof 
 }
 
 
-
-
-
-
-
 export const getUpdateAdminAIProviderSettingsUrl = () => {
-
-
 
 
   return `/api/v1/admin/ai/provider`
@@ -2793,9 +2381,6 @@ return customFetch<AdminAIProviderSettings>(getUpdateAdminAIProviderSettingsUrl(
 );}
 
 
-
-
-
 export const getUpdateAdminAIProviderSettingsMutationKey = () => ['updateAdminAIProviderSettings'] as const;
 
 export const getUpdateAdminAIProviderSettingsMutationOptions = <TError = ErrorType<unknown>,
@@ -2810,17 +2395,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminAIProviderSettings>>, UpdateAdminAIProviderSettingsMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  updateAdminAIProviderSettings(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -2842,8 +2421,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCheckAdminAIProviderUrl = () => {
-
-
 
 
   return `/api/v1/admin/ai/provider/check`
@@ -2878,12 +2455,9 @@ return customFetch<AIProviderCheckResult>(getCheckAdminAIProviderUrl(),
 );}
 
 
-
-
-
 export const getCheckAdminAIProviderMutationKey = () => ['checkAdminAIProvider'] as const;
 
-export const getCheckAdminAIProviderMutationOptions = <TError = ErrorType<void | ErrorResponse>,
+export const useCheckAdminAIProviderMutationOptions = <TError = ErrorType<void | ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext> => {
 
@@ -2895,8 +2469,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkAdminAIProvider>>, CheckAdminAIProviderMutationVariables> = (props) => {
           const {data} = props ?? {};
 
@@ -2904,12 +2476,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         }
 
 
+        const customOptions = aiProviderCheckOptions({...mutationOptions, mutationFn});
 
 
-
-
-  return  { mutationFn, ...mutationOptions }}
-
+  return  customOptions}
     export type CheckAdminAIProviderMutationResult = NonNullable<Awaited<ReturnType<typeof checkAdminAIProvider>>>
     export type CheckAdminAIProviderMutationBody = BodyType<AIProviderCheckInput>
     export type CheckAdminAIProviderMutationError = ErrorType<void | ErrorResponse>
@@ -2923,12 +2493,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         CheckAdminAIProviderMutationVariables,
         TContext
       > => {
-      return useMutation(getCheckAdminAIProviderMutationOptions(options));
+      return useMutation(useCheckAdminAIProviderMutationOptions(options));
     }
 
 export const getReceiveResendWebhookUrl = () => {
-
-
 
 
   return `/api/v1/webhooks/resend`
@@ -2963,9 +2531,6 @@ return customFetch<void>(getReceiveResendWebhookUrl(),
 );}
 
 
-
-
-
 export const getReceiveResendWebhookMutationKey = () => ['receiveResendWebhook'] as const;
 
 export const getReceiveResendWebhookMutationOptions = <TError = ErrorType<void>,
@@ -2980,17 +2545,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof receiveResendWebhook>>, ReceiveResendWebhookMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  receiveResendWebhook(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3014,8 +2573,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetCiclopeUrl = () => {
 
 
-
-
   return `/api/v1/ciclope`
 }
 
@@ -3029,9 +2586,6 @@ export const getCiclope = async ( options?: Parameters<typeof customFetch>[1]): 
 
   }
 );}
-
-
-
 
 
 export const getGetCiclopeQueryKey = () => {
@@ -3049,11 +2603,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetCiclopeQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCiclope>>> = ({ signal }) => getCiclope({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCiclope>>, TError, TData> & { queryKey: QueryKey }
@@ -3061,7 +2611,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetCiclopeQueryResult = NonNullable<Awaited<ReturnType<typeof getCiclope>>>
 export type GetCiclopeQueryError = ErrorType<unknown>
-
 
 
 export function useGetCiclope<TData = Awaited<ReturnType<typeof getCiclope>>, TError = ErrorType<unknown>>(
@@ -3077,14 +2626,7 @@ export function useGetCiclope<TData = Awaited<ReturnType<typeof getCiclope>>, TE
 }
 
 
-
-
-
-
-
 export const getUpdateCiclopePolicyUrl = () => {
-
-
 
 
   return `/api/v1/ciclope/policy`
@@ -3116,9 +2658,6 @@ return customFetch<void>(getUpdateCiclopePolicyUrl(),
 );}
 
 
-
-
-
 export const getUpdateCiclopePolicyMutationKey = () => ['updateCiclopePolicy'] as const;
 
 export const getUpdateCiclopePolicyMutationOptions = <TError = ErrorType<unknown>,
@@ -3133,17 +2672,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCiclopePolicy>>, UpdateCiclopePolicyMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  updateCiclopePolicy(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3165,8 +2698,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getCreateCiclopeMeetingUrl = () => {
-
-
 
 
   return `/api/v1/ciclope/meetings`
@@ -3198,9 +2729,6 @@ return customFetch<CiclopeMeeting>(getCreateCiclopeMeetingUrl(),
 );}
 
 
-
-
-
 export const getCreateCiclopeMeetingMutationKey = () => ['createCiclopeMeeting'] as const;
 
 export const getCreateCiclopeMeetingMutationOptions = <TError = ErrorType<unknown>,
@@ -3215,17 +2743,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCiclopeMeeting>>, CreateCiclopeMeetingMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createCiclopeMeeting(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3247,8 +2769,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getUpdateCiclopeMeetingUrl = (meetingId: string,) => {
-
-
 
 
   return `/api/v1/ciclope/meetings/${meetingId}`
@@ -3281,9 +2801,6 @@ return customFetch<CiclopeMeeting>(getUpdateCiclopeMeetingUrl(meetingId),
 );}
 
 
-
-
-
 export const getUpdateCiclopeMeetingMutationKey = () => ['updateCiclopeMeeting'] as const;
 
 export const getUpdateCiclopeMeetingMutationOptions = <TError = ErrorType<unknown>,
@@ -3298,17 +2815,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCiclopeMeeting>>, UpdateCiclopeMeetingMutationVariables> = (props) => {
           const {meetingId,data} = props ?? {};
 
           return  updateCiclopeMeeting(meetingId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3330,8 +2841,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getTranscribeCiclopeMeetingAudioUrl = (meetingId: string,) => {
-
-
 
 
   return `/api/v1/ciclope/meetings/${meetingId}/transcription`
@@ -3364,9 +2873,6 @@ return customFetch<CiclopeMeeting>(getTranscribeCiclopeMeetingAudioUrl(meetingId
 );}
 
 
-
-
-
 export const getTranscribeCiclopeMeetingAudioMutationKey = () => ['transcribeCiclopeMeetingAudio'] as const;
 
 export const getTranscribeCiclopeMeetingAudioMutationOptions = <TError = ErrorType<unknown>,
@@ -3381,17 +2887,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>, TranscribeCiclopeMeetingAudioMutationVariables> = (props) => {
           const {meetingId,data} = props ?? {};
 
           return  transcribeCiclopeMeetingAudio(meetingId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3413,8 +2913,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     }
 
 export const getActCiclopeMeetingUrl = (meetingId: string,) => {
-
-
 
 
   return `/api/v1/ciclope/meetings/${meetingId}/action`
@@ -3447,9 +2945,6 @@ return customFetch<void>(getActCiclopeMeetingUrl(meetingId),
 );}
 
 
-
-
-
 export const getActCiclopeMeetingMutationKey = () => ['actCiclopeMeeting'] as const;
 
 export const getActCiclopeMeetingMutationOptions = <TError = ErrorType<unknown>,
@@ -3464,17 +2959,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof actCiclopeMeeting>>, ActCiclopeMeetingMutationVariables> = (props) => {
           const {meetingId,data} = props ?? {};
 
           return  actCiclopeMeeting(meetingId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3498,8 +2987,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getListCiclopeVersionsUrl = (meetingId: string,) => {
 
 
-
-
   return `/api/v1/ciclope/meetings/${meetingId}/versions`
 }
 
@@ -3513,9 +3000,6 @@ export const listCiclopeVersions = async (meetingId: string, options?: Parameter
 
   }
 );}
-
-
-
 
 
 export const getListCiclopeVersionsQueryKey = (meetingId: string,) => {
@@ -3533,11 +3017,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListCiclopeVersionsQueryKey(meetingId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listCiclopeVersions>>> = ({ signal }) => listCiclopeVersions(meetingId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: meetingId !== null && meetingId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCiclopeVersions>>, TError, TData> & { queryKey: QueryKey }
@@ -3545,7 +3025,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ListCiclopeVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof listCiclopeVersions>>>
 export type ListCiclopeVersionsQueryError = ErrorType<unknown>
-
 
 
 export function useListCiclopeVersions<TData = Awaited<ReturnType<typeof listCiclopeVersions>>, TError = ErrorType<unknown>>(
@@ -3561,17 +3040,10 @@ export function useListCiclopeVersions<TData = Awaited<ReturnType<typeof listCic
 }
 
 
-
-
-
-
-
 export const getExportCiclopeMeetingUrl = (meetingId: string,
     document: 'convocatoria' | 'acta',
     revision: number,
     format: 'docx' | 'pdf',) => {
-
-
 
 
   return `/api/v1/ciclope/meetings/${meetingId}/export/${document}/${revision}/${format}`
@@ -3590,9 +3062,6 @@ export const exportCiclopeMeeting = async (meetingId: string,
 
   }
 );}
-
-
-
 
 
 export const getExportCiclopeMeetingQueryKey = (meetingId: string,
@@ -3616,11 +3085,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportCiclopeMeetingQueryKey(meetingId,document,revision,format);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportCiclopeMeeting>>> = ({ signal }) => exportCiclopeMeeting(meetingId,document,revision,format, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: meetingId !== null && meetingId !== undefined && document !== null && document !== undefined && revision !== null && revision !== undefined && format !== null && format !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError, TData> & { queryKey: QueryKey }
@@ -3628,7 +3093,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ExportCiclopeMeetingQueryResult = NonNullable<Awaited<ReturnType<typeof exportCiclopeMeeting>>>
 export type ExportCiclopeMeetingQueryError = ErrorType<unknown>
-
 
 
 export function useExportCiclopeMeeting<TData = Awaited<ReturnType<typeof exportCiclopeMeeting>>, TError = ErrorType<unknown>>(
@@ -3647,14 +3111,7 @@ export function useExportCiclopeMeeting<TData = Awaited<ReturnType<typeof export
 }
 
 
-
-
-
-
-
 export const getActCiclopeTaskUrl = (taskId: string,) => {
-
-
 
 
   return `/api/v1/ciclope/tasks/${taskId}/action`
@@ -3687,9 +3144,6 @@ return customFetch<void>(getActCiclopeTaskUrl(taskId),
 );}
 
 
-
-
-
 export const getActCiclopeTaskMutationKey = () => ['actCiclopeTask'] as const;
 
 export const getActCiclopeTaskMutationOptions = <TError = ErrorType<unknown>,
@@ -3704,17 +3158,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof actCiclopeTask>>, ActCiclopeTaskMutationVariables> = (props) => {
           const {taskId,data} = props ?? {};
 
           return  actCiclopeTask(taskId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3738,8 +3186,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getHealthCheckUrl = () => {
 
 
-
-
   return `/api/v1/health`
 }
 
@@ -3759,9 +3205,6 @@ export const healthCheck = async ( options?: Parameters<typeof customFetch>[1]):
 );}
 
 
-
-
-
 export const getHealthCheckQueryKey = () => {
     return [
     `/api/v1/health`
@@ -3777,11 +3220,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getHealthCheckQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheck>>> = ({ signal }) => healthCheck({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheck>>, TError, TData> & { queryKey: QueryKey }
@@ -3808,14 +3247,7 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
 }
 
 
-
-
-
-
-
 export const getGetSetupStatusUrl = () => {
-
-
 
 
   return `/api/v1/setup/status`
@@ -3836,9 +3268,6 @@ export const getSetupStatus = async ( options?: Parameters<typeof customFetch>[1
 );}
 
 
-
-
-
 export const getGetSetupStatusQueryKey = () => {
     return [
     `/api/v1/setup/status`
@@ -3854,11 +3283,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetSetupStatusQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getSetupStatus>>> = ({ signal }) => getSetupStatus({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSetupStatus>>, TError, TData> & { queryKey: QueryKey }
@@ -3885,14 +3310,7 @@ export function useGetSetupStatus<TData = Awaited<ReturnType<typeof getSetupStat
 }
 
 
-
-
-
-
-
 export const getInitializeSetupUrl = () => {
-
-
 
 
   return `/api/v1/setup/initialize`
@@ -3927,9 +3345,6 @@ return customFetch<AuthSession>(getInitializeSetupUrl(),
 );}
 
 
-
-
-
 export const getInitializeSetupMutationKey = () => ['initializeSetup'] as const;
 
 export const getInitializeSetupMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -3944,17 +3359,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeSetup>>, InitializeSetupMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  initializeSetup(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -3979,8 +3388,6 @@ export const useInitializeSetup = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getLoginUrl = () => {
-
-
 
 
   return `/api/v1/auth/login`
@@ -4015,9 +3422,6 @@ return customFetch<AuthSession>(getLoginUrl(),
 );}
 
 
-
-
-
 export const getLoginMutationKey = () => ['login'] as const;
 
 export const getLoginMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4032,17 +3436,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof login>>, LoginMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  login(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4067,8 +3465,6 @@ export const useLogin = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getRequestPasswordResetUrl = () => {
-
-
 
 
   return `/api/v1/auth/password-reset/request`
@@ -4103,9 +3499,6 @@ return customFetch<PasswordResetRequestResponse>(getRequestPasswordResetUrl(),
 );}
 
 
-
-
-
 export const getRequestPasswordResetMutationKey = () => ['requestPasswordReset'] as const;
 
 export const getRequestPasswordResetMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4120,17 +3513,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestPasswordReset>>, RequestPasswordResetMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  requestPasswordReset(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4155,8 +3542,6 @@ export const useRequestPasswordReset = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getCompletePasswordResetUrl = () => {
-
-
 
 
   return `/api/v1/auth/password-reset/complete`
@@ -4191,9 +3576,6 @@ return customFetch<SuccessResponse>(getCompletePasswordResetUrl(),
 );}
 
 
-
-
-
 export const getCompletePasswordResetMutationKey = () => ['completePasswordReset'] as const;
 
 export const getCompletePasswordResetMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4208,17 +3590,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof completePasswordReset>>, CompletePasswordResetMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  completePasswordReset(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4243,8 +3619,6 @@ export const useCompletePasswordReset = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getChangePasswordUrl = () => {
-
-
 
 
   return `/api/v1/auth/password/change`
@@ -4279,9 +3653,6 @@ return customFetch<PasswordChangeResponse>(getChangePasswordUrl(),
 );}
 
 
-
-
-
 export const getChangePasswordMutationKey = () => ['changePassword'] as const;
 
 export const getChangePasswordMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4296,17 +3667,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof changePassword>>, ChangePasswordMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  changePassword(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4333,8 +3698,6 @@ export const useChangePassword = <TError = ErrorType<ErrorResponse>,
 export const getLogoutUrl = () => {
 
 
-
-
   return `/api/v1/auth/logout`
 }
 
@@ -4353,9 +3716,6 @@ export const logout = async ( options?: Parameters<typeof customFetch>[1]): Prom
 );}
 
 
-
-
-
 export const getLogoutMutationKey = () => ['logout'] as const;
 
 export const getLogoutMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4370,17 +3730,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof logout>>, void> = () => {
 
 
           return  logout(requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4407,8 +3761,6 @@ export const useLogout = <TError = ErrorType<ErrorResponse>,
 export const getGetCurrentUserUrl = () => {
 
 
-
-
   return `/api/v1/auth/me`
 }
 
@@ -4427,9 +3779,6 @@ export const getCurrentUser = async ( options?: Parameters<typeof customFetch>[1
 );}
 
 
-
-
-
 export const getGetCurrentUserQueryKey = () => {
     return [
     `/api/v1/auth/me`
@@ -4445,11 +3794,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetCurrentUserQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentUser>>> = ({ signal }) => getCurrentUser({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey }
@@ -4476,14 +3821,7 @@ export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUs
 }
 
 
-
-
-
-
-
 export const getGetDashboardSummaryUrl = () => {
-
-
 
 
   return `/api/v1/dashboard/summary`
@@ -4504,9 +3842,6 @@ export const getDashboardSummary = async ( options?: Parameters<typeof customFet
 );}
 
 
-
-
-
 export const getGetDashboardSummaryQueryKey = () => {
     return [
     `/api/v1/dashboard/summary`
@@ -4522,11 +3857,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetDashboardSummaryQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboardSummary>>> = ({ signal }) => getDashboardSummary({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDashboardSummary>>, TError, TData> & { queryKey: QueryKey }
@@ -4553,14 +3884,7 @@ export function useGetDashboardSummary<TData = Awaited<ReturnType<typeof getDash
 }
 
 
-
-
-
-
-
 export const getListUsersUrl = () => {
-
-
 
 
   return `/api/v1/users`
@@ -4581,9 +3905,6 @@ export const listUsers = async ( options?: Parameters<typeof customFetch>[1]): P
 );}
 
 
-
-
-
 export const getListUsersQueryKey = () => {
     return [
     `/api/v1/users`
@@ -4599,11 +3920,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListUsersQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listUsers>>> = ({ signal }) => listUsers({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listUsers>>, TError, TData> & { queryKey: QueryKey }
@@ -4630,14 +3947,7 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
 }
 
 
-
-
-
-
-
 export const getCreateUserUrl = () => {
-
-
 
 
   return `/api/v1/users`
@@ -4672,9 +3982,6 @@ return customFetch<User>(getCreateUserUrl(),
 );}
 
 
-
-
-
 export const getCreateUserMutationKey = () => ['createUser'] as const;
 
 export const getCreateUserMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4689,17 +3996,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createUser>>, CreateUserMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createUser(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4724,8 +4025,6 @@ export const useCreateUser = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getUpdateUserFamilyUrl = (userId: string,) => {
-
-
 
 
   return `/api/v1/users/${userId}/family`
@@ -4761,9 +4060,6 @@ return customFetch<User>(getUpdateUserFamilyUrl(userId),
 );}
 
 
-
-
-
 export const getUpdateUserFamilyMutationKey = () => ['updateUserFamily'] as const;
 
 export const getUpdateUserFamilyMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -4778,17 +4074,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserFamily>>, UpdateUserFamilyMutationVariables> = (props) => {
           const {userId,data} = props ?? {};
 
           return  updateUserFamily(userId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -4815,8 +4105,6 @@ export const useUpdateUserFamily = <TError = ErrorType<ErrorResponse>,
 export const getListStaffOptionsUrl = () => {
 
 
-
-
   return `/api/v1/staff/options`
 }
 
@@ -4835,9 +4123,6 @@ export const listStaffOptions = async ( options?: Parameters<typeof customFetch>
 );}
 
 
-
-
-
 export const getListStaffOptionsQueryKey = () => {
     return [
     `/api/v1/staff/options`
@@ -4853,11 +4138,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListStaffOptionsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listStaffOptions>>> = ({ signal }) => listStaffOptions({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listStaffOptions>>, TError, TData> & { queryKey: QueryKey }
@@ -4884,14 +4165,7 @@ export function useListStaffOptions<TData = Awaited<ReturnType<typeof listStaffO
 }
 
 
-
-
-
-
-
 export const getGetCurrentCatalogUrl = () => {
-
-
 
 
   return `/api/v1/catalogs/current`
@@ -4912,9 +4186,6 @@ export const getCurrentCatalog = async ( options?: Parameters<typeof customFetch
 );}
 
 
-
-
-
 export const getGetCurrentCatalogQueryKey = () => {
     return [
     `/api/v1/catalogs/current`
@@ -4930,11 +4201,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetCurrentCatalogQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentCatalog>>> = ({ signal }) => getCurrentCatalog({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentCatalog>>, TError, TData> & { queryKey: QueryKey }
@@ -4961,14 +4228,7 @@ export function useGetCurrentCatalog<TData = Awaited<ReturnType<typeof getCurren
 }
 
 
-
-
-
-
-
 export const getImportCatalogUrl = () => {
-
-
 
 
   return `/api/v1/admin/catalogs/import`
@@ -5003,9 +4263,6 @@ return customFetch<CatalogImportResult>(getImportCatalogUrl(),
 );}
 
 
-
-
-
 export const getImportCatalogMutationKey = () => ['importCatalog'] as const;
 
 export const getImportCatalogMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -5020,17 +4277,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof importCatalog>>, ImportCatalogMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  importCatalog(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -5057,8 +4308,6 @@ export const useImportCatalog = <TError = ErrorType<ErrorResponse>,
 export const getGetCurrentPicPlanUrl = () => {
 
 
-
-
   return `/api/v1/plans/current`
 }
 
@@ -5077,9 +4326,6 @@ export const getCurrentPicPlan = async ( options?: Parameters<typeof customFetch
 );}
 
 
-
-
-
 export const getGetCurrentPicPlanQueryKey = () => {
     return [
     `/api/v1/plans/current`
@@ -5095,11 +4341,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetCurrentPicPlanQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getCurrentPicPlan>>> = ({ signal }) => getCurrentPicPlan({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentPicPlan>>, TError, TData> & { queryKey: QueryKey }
@@ -5126,14 +4368,7 @@ export function useGetCurrentPicPlan<TData = Awaited<ReturnType<typeof getCurren
 }
 
 
-
-
-
-
-
 export const getCreateCurrentPicPlanUrl = () => {
-
-
 
 
   return `/api/v1/plans/current`
@@ -5154,9 +4389,6 @@ export const createCurrentPicPlan = async ( options?: Parameters<typeof customFe
 );}
 
 
-
-
-
 export const getCreateCurrentPicPlanMutationKey = () => ['createCurrentPicPlan'] as const;
 
 export const getCreateCurrentPicPlanMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -5171,17 +4403,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCurrentPicPlan>>, void> = () => {
 
 
           return  createCurrentPicPlan(requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -5206,8 +4432,6 @@ export const useCreateCurrentPicPlan = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getSavePicPlanUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}`
@@ -5243,9 +4467,6 @@ return customFetch<PicPlan>(getSavePicPlanUrl(planId),
 );}
 
 
-
-
-
 export const getSavePicPlanMutationKey = () => ['savePicPlan'] as const;
 
 export const getSavePicPlanMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -5260,17 +4481,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof savePicPlan>>, SavePicPlanMutationVariables> = (props) => {
           const {planId,data} = props ?? {};
 
           return  savePicPlan(planId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -5297,8 +4512,6 @@ export const useSavePicPlan = <TError = ErrorType<ErrorResponse>,
 export const getValidatePicPlanUrl = (planId: string,) => {
 
 
-
-
   return `/api/v1/plans/${planId}/validation`
 }
 
@@ -5317,9 +4530,6 @@ export const validatePicPlan = async (planId: string, options?: Parameters<typeo
 );}
 
 
-
-
-
 export const getValidatePicPlanQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/validation`
@@ -5335,11 +4545,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getValidatePicPlanQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof validatePicPlan>>> = ({ signal }) => validatePicPlan(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof validatePicPlan>>, TError, TData> & { queryKey: QueryKey }
@@ -5366,14 +4572,7 @@ export function useValidatePicPlan<TData = Awaited<ReturnType<typeof validatePic
 }
 
 
-
-
-
-
-
 export const getCreatePicSnapshotUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/snapshot`
@@ -5409,9 +4608,6 @@ return customFetch<PicSnapshotResponse>(getCreatePicSnapshotUrl(planId),
 );}
 
 
-
-
-
 export const getCreatePicSnapshotMutationKey = () => ['createPicSnapshot'] as const;
 
 export const getCreatePicSnapshotMutationOptions = <TError = ErrorType<PicPlanValidation>,
@@ -5426,17 +4622,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPicSnapshot>>, CreatePicSnapshotMutationVariables> = (props) => {
           const {planId,data} = props ?? {};
 
           return  createPicSnapshot(planId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -5463,8 +4653,6 @@ export const useCreatePicSnapshot = <TError = ErrorType<PicPlanValidation>,
 export const getListPicSnapshotsUrl = (planId: string,) => {
 
 
-
-
   return `/api/v1/plans/${planId}/snapshots`
 }
 
@@ -5483,9 +4671,6 @@ export const listPicSnapshots = async (planId: string, options?: Parameters<type
 );}
 
 
-
-
-
 export const getListPicSnapshotsQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/snapshots`
@@ -5501,11 +4686,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListPicSnapshotsQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listPicSnapshots>>> = ({ signal }) => listPicSnapshots(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPicSnapshots>>, TError, TData> & { queryKey: QueryKey }
@@ -5532,15 +4713,8 @@ export function useListPicSnapshots<TData = Awaited<ReturnType<typeof listPicSna
 }
 
 
-
-
-
-
-
 export const getGetPicSnapshotUrl = (planId: string,
     snapshotId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/snapshots/${snapshotId}`
@@ -5562,9 +4736,6 @@ export const getPicSnapshot = async (planId: string,
 );}
 
 
-
-
-
 export const getGetPicSnapshotQueryKey = (planId: string,
     snapshotId: string,) => {
     return [
@@ -5582,11 +4753,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetPicSnapshotQueryKey(planId,snapshotId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getPicSnapshot>>> = ({ signal }) => getPicSnapshot(planId,snapshotId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && snapshotId !== null && snapshotId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPicSnapshot>>, TError, TData> & { queryKey: QueryKey }
@@ -5614,14 +4781,7 @@ export function useGetPicSnapshot<TData = Awaited<ReturnType<typeof getPicSnapsh
 }
 
 
-
-
-
-
-
 export const getGetPicSubmissionUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/submission`
@@ -5642,9 +4802,6 @@ export const getPicSubmission = async (planId: string, options?: Parameters<type
 );}
 
 
-
-
-
 export const getGetPicSubmissionQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/submission`
@@ -5660,11 +4817,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetPicSubmissionQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getPicSubmission>>> = ({ signal }) => getPicSubmission(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPicSubmission>>, TError, TData> & { queryKey: QueryKey }
@@ -5691,14 +4844,7 @@ export function useGetPicSubmission<TData = Awaited<ReturnType<typeof getPicSubm
 }
 
 
-
-
-
-
-
 export const getRecordPicSubmissionUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/submission`
@@ -5734,9 +4880,6 @@ return customFetch<PicSubmissionResponse>(getRecordPicSubmissionUrl(planId),
 );}
 
 
-
-
-
 export const getRecordPicSubmissionMutationKey = () => ['recordPicSubmission'] as const;
 
 export const getRecordPicSubmissionMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -5751,17 +4894,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordPicSubmission>>, RecordPicSubmissionMutationVariables> = (props) => {
           const {planId,data} = props ?? {};
 
           return  recordPicSubmission(planId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -5789,8 +4926,6 @@ export const getGetPicSubmissionEvidenceUrl = (planId: string,
     submissionId: string,) => {
 
 
-
-
   return `/api/v1/plans/${planId}/submission/${submissionId}/evidence`
 }
 
@@ -5810,9 +4945,6 @@ export const getPicSubmissionEvidence = async (planId: string,
 );}
 
 
-
-
-
 export const getGetPicSubmissionEvidenceQueryKey = (planId: string,
     submissionId: string,) => {
     return [
@@ -5830,11 +4962,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetPicSubmissionEvidenceQueryKey(planId,submissionId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getPicSubmissionEvidence>>> = ({ signal }) => getPicSubmissionEvidence(planId,submissionId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && submissionId !== null && submissionId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPicSubmissionEvidence>>, TError, TData> & { queryKey: QueryKey }
@@ -5862,14 +4990,7 @@ export function useGetPicSubmissionEvidence<TData = Awaited<ReturnType<typeof ge
 }
 
 
-
-
-
-
-
 export const getExportPicLaycosUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/exports/laycos`
@@ -5890,9 +5011,6 @@ export const exportPicLaycos = async (planId: string, options?: Parameters<typeo
 );}
 
 
-
-
-
 export const getExportPicLaycosQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/exports/laycos`
@@ -5908,11 +5026,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportPicLaycosQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicLaycos>>> = ({ signal }) => exportPicLaycos(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicLaycos>>, TError, TData> & { queryKey: QueryKey }
@@ -5939,14 +5053,7 @@ export function useExportPicLaycos<TData = Awaited<ReturnType<typeof exportPicLa
 }
 
 
-
-
-
-
-
 export const getExportPicDocxUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/exports/docx`
@@ -5967,9 +5074,6 @@ export const exportPicDocx = async (planId: string, options?: Parameters<typeof 
 );}
 
 
-
-
-
 export const getExportPicDocxQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/exports/docx`
@@ -5985,11 +5089,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportPicDocxQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicDocx>>> = ({ signal }) => exportPicDocx(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicDocx>>, TError, TData> & { queryKey: QueryKey }
@@ -6016,14 +5116,7 @@ export function useExportPicDocx<TData = Awaited<ReturnType<typeof exportPicDocx
 }
 
 
-
-
-
-
-
 export const getExportPicPdfUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/exports/pdf`
@@ -6044,9 +5137,6 @@ export const exportPicPdf = async (planId: string, options?: Parameters<typeof c
 );}
 
 
-
-
-
 export const getExportPicPdfQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/exports/pdf`
@@ -6062,11 +5152,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportPicPdfQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicPdf>>> = ({ signal }) => exportPicPdf(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicPdf>>, TError, TData> & { queryKey: QueryKey }
@@ -6093,14 +5179,7 @@ export function useExportPicPdf<TData = Awaited<ReturnType<typeof exportPicPdf>>
 }
 
 
-
-
-
-
-
 export const getListPicFollowupsUrl = (planId: string,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/followups`
@@ -6121,9 +5200,6 @@ export const listPicFollowups = async (planId: string, options?: Parameters<type
 );}
 
 
-
-
-
 export const getListPicFollowupsQueryKey = (planId: string,) => {
     return [
     `/api/v1/plans/${planId}/followups`
@@ -6139,11 +5215,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListPicFollowupsQueryKey(planId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listPicFollowups>>> = ({ signal }) => listPicFollowups(planId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPicFollowups>>, TError, TData> & { queryKey: QueryKey }
@@ -6170,15 +5242,8 @@ export function useListPicFollowups<TData = Awaited<ReturnType<typeof listPicFol
 }
 
 
-
-
-
-
-
 export const getSavePicFollowupUrl = (planId: string,
     reportType: PicFollowupType,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/followups/${reportType}`
@@ -6215,9 +5280,6 @@ return customFetch<PicFollowupReport>(getSavePicFollowupUrl(planId,reportType),
 );}
 
 
-
-
-
 export const getSavePicFollowupMutationKey = () => ['savePicFollowup'] as const;
 
 export const getSavePicFollowupMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -6232,17 +5294,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof savePicFollowup>>, SavePicFollowupMutationVariables> = (props) => {
           const {planId,reportType,data} = props ?? {};
 
           return  savePicFollowup(planId,reportType,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -6270,8 +5326,6 @@ export const getGetPicFollowupUrl = (planId: string,
     reportType: PicFollowupType,) => {
 
 
-
-
   return `/api/v1/plans/${planId}/followups/${reportType}`
 }
 
@@ -6291,9 +5345,6 @@ export const getPicFollowup = async (planId: string,
 );}
 
 
-
-
-
 export const getGetPicFollowupQueryKey = (planId: string,
     reportType: PicFollowupType,) => {
     return [
@@ -6311,11 +5362,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetPicFollowupQueryKey(planId,reportType);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getPicFollowup>>> = ({ signal }) => getPicFollowup(planId,reportType, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPicFollowup>>, TError, TData> & { queryKey: QueryKey }
@@ -6343,15 +5390,8 @@ export function useGetPicFollowup<TData = Awaited<ReturnType<typeof getPicFollow
 }
 
 
-
-
-
-
-
 export const getCreatePicFollowupSnapshotUrl = (planId: string,
     reportType: PicFollowupType,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/followups/${reportType}/snapshots`
@@ -6388,9 +5428,6 @@ return customFetch<PicFollowupSnapshot>(getCreatePicFollowupSnapshotUrl(planId,r
 );}
 
 
-
-
-
 export const getCreatePicFollowupSnapshotMutationKey = () => ['createPicFollowupSnapshot'] as const;
 
 export const getCreatePicFollowupSnapshotMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -6405,17 +5442,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPicFollowupSnapshot>>, CreatePicFollowupSnapshotMutationVariables> = (props) => {
           const {planId,reportType,data} = props ?? {};
 
           return  createPicFollowupSnapshot(planId,reportType,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -6443,8 +5474,6 @@ export const getListPicFollowupDeliveriesUrl = (planId: string,
     reportType: PicFollowupType,) => {
 
 
-
-
   return `/api/v1/plans/${planId}/followups/${reportType}/deliveries`
 }
 
@@ -6464,9 +5493,6 @@ export const listPicFollowupDeliveries = async (planId: string,
 );}
 
 
-
-
-
 export const getListPicFollowupDeliveriesQueryKey = (planId: string,
     reportType: PicFollowupType,) => {
     return [
@@ -6484,11 +5510,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListPicFollowupDeliveriesQueryKey(planId,reportType);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listPicFollowupDeliveries>>> = ({ signal }) => listPicFollowupDeliveries(planId,reportType, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPicFollowupDeliveries>>, TError, TData> & { queryKey: QueryKey }
@@ -6516,15 +5538,8 @@ export function useListPicFollowupDeliveries<TData = Awaited<ReturnType<typeof l
 }
 
 
-
-
-
-
-
 export const getRecordPicFollowupDeliveryUrl = (planId: string,
     reportType: PicFollowupType,) => {
-
-
 
 
   return `/api/v1/plans/${planId}/followups/${reportType}/deliveries`
@@ -6561,9 +5576,6 @@ return customFetch<PicFollowupDelivery>(getRecordPicFollowupDeliveryUrl(planId,r
 );}
 
 
-
-
-
 export const getRecordPicFollowupDeliveryMutationKey = () => ['recordPicFollowupDelivery'] as const;
 
 export const getRecordPicFollowupDeliveryMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -6578,17 +5590,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordPicFollowupDelivery>>, RecordPicFollowupDeliveryMutationVariables> = (props) => {
           const {planId,reportType,data} = props ?? {};
 
           return  recordPicFollowupDelivery(planId,reportType,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -6617,8 +5623,6 @@ export const getExportPicFollowupLaycosUrl = (planId: string,
     snapshotId: string,) => {
 
 
-
-
   return `/api/v1/plans/${planId}/followups/${reportType}/snapshots/${snapshotId}/exports/laycos`
 }
 
@@ -6637,9 +5641,6 @@ export const exportPicFollowupLaycos = async (planId: string,
 
   }
 );}
-
-
-
 
 
 export const getExportPicFollowupLaycosQueryKey = (planId: string,
@@ -6661,11 +5662,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportPicFollowupLaycosQueryKey(planId,reportType,snapshotId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicFollowupLaycos>>> = ({ signal }) => exportPicFollowupLaycos(planId,reportType,snapshotId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined && snapshotId !== null && snapshotId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupLaycos>>, TError, TData> & { queryKey: QueryKey }
@@ -6694,17 +5691,10 @@ export function useExportPicFollowupLaycos<TData = Awaited<ReturnType<typeof exp
 }
 
 
-
-
-
-
-
 export const getExportPicFollowupDocumentUrl = (planId: string,
     reportType: PicFollowupType,
     snapshotId: string,
     format: 'docx' | 'pdf' | 'json',) => {
-
-
 
 
   return `/api/v1/plans/${planId}/followups/${reportType}/snapshots/${snapshotId}/exports/${format}`
@@ -6728,9 +5718,6 @@ export const exportPicFollowupDocument = async (planId: string,
 );}
 
 
-
-
-
 export const getExportPicFollowupDocumentQueryKey = (planId: string,
     reportType: PicFollowupType,
     snapshotId: string,
@@ -6752,11 +5739,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportPicFollowupDocumentQueryKey(planId,reportType,snapshotId,format);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicFollowupDocument>>> = ({ signal }) => exportPicFollowupDocument(planId,reportType,snapshotId,format, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined && snapshotId !== null && snapshotId !== undefined && format !== null && format !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupDocument>>, TError, TData> & { queryKey: QueryKey }
@@ -6786,14 +5769,7 @@ export function useExportPicFollowupDocument<TData = Awaited<ReturnType<typeof e
 }
 
 
-
-
-
-
-
 export const getListActivitiesUrl = () => {
-
-
 
 
   return `/api/v1/activities`
@@ -6814,9 +5790,6 @@ export const listActivities = async ( options?: Parameters<typeof customFetch>[1
 );}
 
 
-
-
-
 export const getListActivitiesQueryKey = () => {
     return [
     `/api/v1/activities`
@@ -6832,11 +5805,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListActivitiesQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listActivities>>> = ({ signal }) => listActivities({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listActivities>>, TError, TData> & { queryKey: QueryKey }
@@ -6863,14 +5832,7 @@ export function useListActivities<TData = Awaited<ReturnType<typeof listActiviti
 }
 
 
-
-
-
-
-
 export const getCreateActivityUrl = () => {
-
-
 
 
   return `/api/v1/activities`
@@ -6905,9 +5867,6 @@ return customFetch<ActivityCreateResult>(getCreateActivityUrl(),
 );}
 
 
-
-
-
 export const getCreateActivityMutationKey = () => ['createActivity'] as const;
 
 export const getCreateActivityMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -6922,17 +5881,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createActivity>>, CreateActivityMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createActivity(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -6959,8 +5912,6 @@ export const useCreateActivity = <TError = ErrorType<ErrorResponse>,
 export const getGetActivityUrl = (activityId: string,) => {
 
 
-
-
   return `/api/v1/activities/${activityId}`
 }
 
@@ -6979,9 +5930,6 @@ export const getActivity = async (activityId: string, options?: Parameters<typeo
 );}
 
 
-
-
-
 export const getGetActivityQueryKey = (activityId: string,) => {
     return [
     `/api/v1/activities/${activityId}`
@@ -6997,11 +5945,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetActivityQueryKey(activityId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getActivity>>> = ({ signal }) => getActivity(activityId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: activityId !== null && activityId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
@@ -7028,14 +5972,7 @@ export function useGetActivity<TData = Awaited<ReturnType<typeof getActivity>>, 
 }
 
 
-
-
-
-
-
 export const getUpdateActivityUrl = (activityId: string,) => {
-
-
 
 
   return `/api/v1/activities/${activityId}`
@@ -7071,9 +6008,6 @@ return customFetch<Activity>(getUpdateActivityUrl(activityId),
 );}
 
 
-
-
-
 export const getUpdateActivityMutationKey = () => ['updateActivity'] as const;
 
 export const getUpdateActivityMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7088,17 +6022,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateActivity>>, UpdateActivityMutationVariables> = (props) => {
           const {activityId,data} = props ?? {};
 
           return  updateActivity(activityId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7123,8 +6051,6 @@ export const useUpdateActivity = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getConfirmActivityUrl = (activityId: string,) => {
-
-
 
 
   return `/api/v1/activities/${activityId}/confirm`
@@ -7160,9 +6086,6 @@ return customFetch<Activity>(getConfirmActivityUrl(activityId),
 );}
 
 
-
-
-
 export const getConfirmActivityMutationKey = () => ['confirmActivity'] as const;
 
 export const getConfirmActivityMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7177,17 +6100,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmActivity>>, ConfirmActivityMutationVariables> = (props) => {
           const {activityId,data} = props ?? {};
 
           return  confirmActivity(activityId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7212,8 +6129,6 @@ export const useConfirmActivity = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getValidateActivityUrl = (activityId: string,) => {
-
-
 
 
   return `/api/v1/activities/${activityId}/validate`
@@ -7249,9 +6164,6 @@ return customFetch<Activity>(getValidateActivityUrl(activityId),
 );}
 
 
-
-
-
 export const getValidateActivityMutationKey = () => ['validateActivity'] as const;
 
 export const getValidateActivityMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7266,17 +6178,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof validateActivity>>, ValidateActivityMutationVariables> = (props) => {
           const {activityId,data} = props ?? {};
 
           return  validateActivity(activityId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7301,8 +6207,6 @@ export const useValidateActivity = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getDiscardActivityUrl = (activityId: string,) => {
-
-
 
 
   return `/api/v1/activities/${activityId}/discard`
@@ -7338,9 +6242,6 @@ return customFetch<Activity>(getDiscardActivityUrl(activityId),
 );}
 
 
-
-
-
 export const getDiscardActivityMutationKey = () => ['discardActivity'] as const;
 
 export const getDiscardActivityMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7355,17 +6256,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof discardActivity>>, DiscardActivityMutationVariables> = (props) => {
           const {activityId,data} = props ?? {};
 
           return  discardActivity(activityId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7392,8 +6287,6 @@ export const useDiscardActivity = <TError = ErrorType<ErrorResponse>,
 export const getListDocumentsUrl = () => {
 
 
-
-
   return `/api/v1/documents`
 }
 
@@ -7412,9 +6305,6 @@ export const listDocuments = async ( options?: Parameters<typeof customFetch>[1]
 );}
 
 
-
-
-
 export const getListDocumentsQueryKey = () => {
     return [
     `/api/v1/documents`
@@ -7430,11 +6320,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListDocumentsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listDocuments>>> = ({ signal }) => listDocuments({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDocuments>>, TError, TData> & { queryKey: QueryKey }
@@ -7459,11 +6345,6 @@ export function useListDocuments<TData = Awaited<ReturnType<typeof listDocuments
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
 
 
 export const getUploadDocumentUrl = (params: UploadDocumentParams,) => {
@@ -7511,9 +6392,6 @@ return customFetch<Document>(getUploadDocumentUrl(params),
 );}
 
 
-
-
-
 export const getUploadDocumentMutationKey = () => ['uploadDocument'] as const;
 
 export const getUploadDocumentMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7528,17 +6406,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof uploadDocument>>, UploadDocumentMutationVariables> = (props) => {
           const {data,params} = props ?? {};
 
           return  uploadDocument(data,params,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7565,8 +6437,6 @@ export const useUploadDocument = <TError = ErrorType<ErrorResponse>,
 export const getGetDocumentUrl = (documentId: string,) => {
 
 
-
-
   return `/api/v1/documents/${documentId}`
 }
 
@@ -7585,9 +6455,6 @@ export const getDocument = async (documentId: string, options?: Parameters<typeo
 );}
 
 
-
-
-
 export const getGetDocumentQueryKey = (documentId: string,) => {
     return [
     `/api/v1/documents/${documentId}`
@@ -7603,11 +6470,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetDocumentQueryKey(documentId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getDocument>>> = ({ signal }) => getDocument(documentId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: documentId !== null && documentId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDocument>>, TError, TData> & { queryKey: QueryKey }
@@ -7634,14 +6497,7 @@ export function useGetDocument<TData = Awaited<ReturnType<typeof getDocument>>, 
 }
 
 
-
-
-
-
-
 export const getAddDocumentVersionUrl = (documentId: string,) => {
-
-
 
 
   return `/api/v1/documents/${documentId}/versions`
@@ -7677,9 +6533,6 @@ return customFetch<Document>(getAddDocumentVersionUrl(documentId),
 );}
 
 
-
-
-
 export const getAddDocumentVersionMutationKey = () => ['addDocumentVersion'] as const;
 
 export const getAddDocumentVersionMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7694,17 +6547,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof addDocumentVersion>>, AddDocumentVersionMutationVariables> = (props) => {
           const {documentId,data} = props ?? {};
 
           return  addDocumentVersion(documentId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7730,8 +6577,6 @@ export const useAddDocumentVersion = <TError = ErrorType<ErrorResponse>,
 
 export const getRescanDocumentVersionUrl = (documentId: string,
     version: number,) => {
-
-
 
 
   return `/api/v1/documents/${documentId}/versions/${version}/rescan`
@@ -7768,9 +6613,6 @@ return customFetch<Document>(getRescanDocumentVersionUrl(documentId,version),
 );}
 
 
-
-
-
 export const getRescanDocumentVersionMutationKey = () => ['rescanDocumentVersion'] as const;
 
 export const getRescanDocumentVersionMutationOptions = <TError = ErrorType<void>,
@@ -7785,17 +6627,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof rescanDocumentVersion>>, RescanDocumentVersionMutationVariables> = (props) => {
           const {documentId,version,data} = props ?? {};
 
           return  rescanDocumentVersion(documentId,version,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7820,8 +6656,6 @@ export const useRescanDocumentVersion = <TError = ErrorType<void>,
     }
 
 export const getApproveDocumentUrl = (documentId: string,) => {
-
-
 
 
   return `/api/v1/documents/${documentId}/approve`
@@ -7857,9 +6691,6 @@ return customFetch<Document>(getApproveDocumentUrl(documentId),
 );}
 
 
-
-
-
 export const getApproveDocumentMutationKey = () => ['approveDocument'] as const;
 
 export const getApproveDocumentMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7874,17 +6705,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveDocument>>, ApproveDocumentMutationVariables> = (props) => {
           const {documentId,data} = props ?? {};
 
           return  approveDocument(documentId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7909,8 +6734,6 @@ export const useApproveDocument = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getSetDocumentAccessUrl = (documentId: string,) => {
-
-
 
 
   return `/api/v1/documents/${documentId}/access`
@@ -7946,9 +6769,6 @@ return customFetch<SuccessResponse>(getSetDocumentAccessUrl(documentId),
 );}
 
 
-
-
-
 export const getSetDocumentAccessMutationKey = () => ['setDocumentAccess'] as const;
 
 export const getSetDocumentAccessMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -7963,17 +6783,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof setDocumentAccess>>, SetDocumentAccessMutationVariables> = (props) => {
           const {documentId,data} = props ?? {};
 
           return  setDocumentAccess(documentId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -7998,8 +6812,6 @@ export const useSetDocumentAccess = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getLinkDocumentEvidenceUrl = (documentId: string,) => {
-
-
 
 
   return `/api/v1/documents/${documentId}/links`
@@ -8035,9 +6847,6 @@ return customFetch<SuccessResponse>(getLinkDocumentEvidenceUrl(documentId),
 );}
 
 
-
-
-
 export const getLinkDocumentEvidenceMutationKey = () => ['linkDocumentEvidence'] as const;
 
 export const getLinkDocumentEvidenceMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -8052,17 +6861,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof linkDocumentEvidence>>, LinkDocumentEvidenceMutationVariables> = (props) => {
           const {documentId,data} = props ?? {};
 
           return  linkDocumentEvidence(documentId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -8090,8 +6893,6 @@ export const getDownloadDocumentVersionUrl = (documentId: string,
     version: number,) => {
 
 
-
-
   return `/api/v1/documents/${documentId}/versions/${version}/content`
 }
 
@@ -8111,9 +6912,6 @@ export const downloadDocumentVersion = async (documentId: string,
 );}
 
 
-
-
-
 export const getDownloadDocumentVersionQueryKey = (documentId: string,
     version: number,) => {
     return [
@@ -8131,11 +6929,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getDownloadDocumentVersionQueryKey(documentId,version);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadDocumentVersion>>> = ({ signal }) => downloadDocumentVersion(documentId,version, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: documentId !== null && documentId !== undefined && version !== null && version !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadDocumentVersion>>, TError, TData> & { queryKey: QueryKey }
@@ -8163,14 +6957,7 @@ export function useDownloadDocumentVersion<TData = Awaited<ReturnType<typeof dow
 }
 
 
-
-
-
-
-
 export const getListInformationRequestsUrl = () => {
-
-
 
 
   return `/api/v1/information-requests`
@@ -8191,9 +6978,6 @@ export const listInformationRequests = async ( options?: Parameters<typeof custo
 );}
 
 
-
-
-
 export const getListInformationRequestsQueryKey = () => {
     return [
     `/api/v1/information-requests`
@@ -8209,11 +6993,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListInformationRequestsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listInformationRequests>>> = ({ signal }) => listInformationRequests({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listInformationRequests>>, TError, TData> & { queryKey: QueryKey }
@@ -8240,14 +7020,7 @@ export function useListInformationRequests<TData = Awaited<ReturnType<typeof lis
 }
 
 
-
-
-
-
-
 export const getCreateInformationRequestUrl = () => {
-
-
 
 
   return `/api/v1/information-requests`
@@ -8282,9 +7055,6 @@ return customFetch<InformationRequest>(getCreateInformationRequestUrl(),
 );}
 
 
-
-
-
 export const getCreateInformationRequestMutationKey = () => ['createInformationRequest'] as const;
 
 export const getCreateInformationRequestMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -8299,17 +7069,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createInformationRequest>>, CreateInformationRequestMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  createInformationRequest(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -8334,8 +7098,6 @@ export const useCreateInformationRequest = <TError = ErrorType<ErrorResponse>,
     }
 
 export const getRespondToInformationRequestUrl = (requestId: string,) => {
-
-
 
 
   return `/api/v1/information-requests/${requestId}/respond`
@@ -8371,9 +7133,6 @@ return customFetch<InformationRequest>(getRespondToInformationRequestUrl(request
 );}
 
 
-
-
-
 export const getRespondToInformationRequestMutationKey = () => ['respondToInformationRequest'] as const;
 
 export const getRespondToInformationRequestMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -8388,17 +7147,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondToInformationRequest>>, RespondToInformationRequestMutationVariables> = (props) => {
           const {requestId,data} = props ?? {};
 
           return  respondToInformationRequest(requestId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -8423,8 +7176,6 @@ export const useRespondToInformationRequest = <TError = ErrorType<ErrorResponse>
     }
 
 export const getValidateInformationResponseUrl = (requestId: string,) => {
-
-
 
 
   return `/api/v1/information-requests/${requestId}/validate`
@@ -8460,9 +7211,6 @@ return customFetch<InformationRequest>(getValidateInformationResponseUrl(request
 );}
 
 
-
-
-
 export const getValidateInformationResponseMutationKey = () => ['validateInformationResponse'] as const;
 
 export const getValidateInformationResponseMutationOptions = <TError = ErrorType<unknown>,
@@ -8477,17 +7225,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof validateInformationResponse>>, ValidateInformationResponseMutationVariables> = (props) => {
           const {requestId,data} = props ?? {};
 
           return  validateInformationResponse(requestId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -8514,8 +7256,6 @@ export const useValidateInformationResponse = <TError = ErrorType<unknown>,
 export const getListCurrentIndicatorsUrl = () => {
 
 
-
-
   return `/api/v1/indicators/current`
 }
 
@@ -8534,9 +7274,6 @@ export const listCurrentIndicators = async ( options?: Parameters<typeof customF
 );}
 
 
-
-
-
 export const getListCurrentIndicatorsQueryKey = () => {
     return [
     `/api/v1/indicators/current`
@@ -8552,11 +7289,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListCurrentIndicatorsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listCurrentIndicators>>> = ({ signal }) => listCurrentIndicators({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCurrentIndicators>>, TError, TData> & { queryKey: QueryKey }
@@ -8583,14 +7316,7 @@ export function useListCurrentIndicators<TData = Awaited<ReturnType<typeof listC
 }
 
 
-
-
-
-
-
 export const getCreateIndicatorObservationUrl = (indicatorCode: string,) => {
-
-
 
 
   return `/api/v1/indicators/${indicatorCode}/observations`
@@ -8626,9 +7352,6 @@ return customFetch<IndicatorObservation>(getCreateIndicatorObservationUrl(indica
 );}
 
 
-
-
-
 export const getCreateIndicatorObservationMutationKey = () => ['createIndicatorObservation'] as const;
 
 export const getCreateIndicatorObservationMutationOptions = <TError = ErrorType<ErrorResponse>,
@@ -8643,17 +7366,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createIndicatorObservation>>, CreateIndicatorObservationMutationVariables> = (props) => {
           const {indicatorCode,data} = props ?? {};
 
           return  createIndicatorObservation(indicatorCode,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -8680,8 +7397,6 @@ export const useCreateIndicatorObservation = <TError = ErrorType<ErrorResponse>,
 export const getListSchoolYearsUrl = () => {
 
 
-
-
   return `/api/v1/school-years`
 }
 
@@ -8695,9 +7410,6 @@ export const listSchoolYears = async ( options?: Parameters<typeof customFetch>[
 
   }
 );}
-
-
-
 
 
 export const getListSchoolYearsQueryKey = () => {
@@ -8715,11 +7427,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getListSchoolYearsQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof listSchoolYears>>> = ({ signal }) => listSchoolYears({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSchoolYears>>, TError, TData> & { queryKey: QueryKey }
@@ -8727,7 +7435,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ListSchoolYearsQueryResult = NonNullable<Awaited<ReturnType<typeof listSchoolYears>>>
 export type ListSchoolYearsQueryError = ErrorType<unknown>
-
 
 
 export function useListSchoolYears<TData = Awaited<ReturnType<typeof listSchoolYears>>, TError = ErrorType<unknown>>(
@@ -8743,14 +7450,7 @@ export function useListSchoolYears<TData = Awaited<ReturnType<typeof listSchoolY
 }
 
 
-
-
-
-
-
 export const getOpenSchoolYearUrl = () => {
-
-
 
 
   return `/api/v1/school-years`
@@ -8782,9 +7482,6 @@ return customFetch<SchoolYear>(getOpenSchoolYearUrl(),
 );}
 
 
-
-
-
 export const getOpenSchoolYearMutationKey = () => ['openSchoolYear'] as const;
 
 export const getOpenSchoolYearMutationOptions = <TError = ErrorType<unknown>,
@@ -8799,17 +7496,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof openSchoolYear>>, OpenSchoolYearMutationVariables> = (props) => {
           const {data} = props ?? {};
 
           return  openSchoolYear(data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -8833,8 +7524,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetSchoolYearReviewUrl = () => {
 
 
-
-
   return `/api/v1/school-years/review`
 }
 
@@ -8848,9 +7537,6 @@ export const getSchoolYearReview = async ( options?: Parameters<typeof customFet
 
   }
 );}
-
-
-
 
 
 export const getGetSchoolYearReviewQueryKey = () => {
@@ -8868,11 +7554,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetSchoolYearReviewQueryKey();
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getSchoolYearReview>>> = ({ signal }) => getSchoolYearReview({ signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSchoolYearReview>>, TError, TData> & { queryKey: QueryKey }
@@ -8880,7 +7562,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetSchoolYearReviewQueryResult = NonNullable<Awaited<ReturnType<typeof getSchoolYearReview>>>
 export type GetSchoolYearReviewQueryError = ErrorType<unknown>
-
 
 
 export function useGetSchoolYearReview<TData = Awaited<ReturnType<typeof getSchoolYearReview>>, TError = ErrorType<unknown>>(
@@ -8896,14 +7577,7 @@ export function useGetSchoolYearReview<TData = Awaited<ReturnType<typeof getScho
 }
 
 
-
-
-
-
-
 export const getValidateSchoolYearClosureUrl = (yearId: string,) => {
-
-
 
 
   return `/api/v1/school-years/${yearId}/validation`
@@ -8921,9 +7595,6 @@ export const validateSchoolYearClosure = async (yearId: string, options?: Parame
 );}
 
 
-
-
-
 export const getValidateSchoolYearClosureQueryKey = (yearId: string,) => {
     return [
     `/api/v1/school-years/${yearId}/validation`
@@ -8939,11 +7610,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getValidateSchoolYearClosureQueryKey(yearId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof validateSchoolYearClosure>>> = ({ signal }) => validateSchoolYearClosure(yearId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: yearId !== null && yearId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof validateSchoolYearClosure>>, TError, TData> & { queryKey: QueryKey }
@@ -8951,7 +7618,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ValidateSchoolYearClosureQueryResult = NonNullable<Awaited<ReturnType<typeof validateSchoolYearClosure>>>
 export type ValidateSchoolYearClosureQueryError = ErrorType<unknown>
-
 
 
 export function useValidateSchoolYearClosure<TData = Awaited<ReturnType<typeof validateSchoolYearClosure>>, TError = ErrorType<unknown>>(
@@ -8967,14 +7633,7 @@ export function useValidateSchoolYearClosure<TData = Awaited<ReturnType<typeof v
 }
 
 
-
-
-
-
-
 export const getCloseSchoolYearUrl = (yearId: string,) => {
-
-
 
 
   return `/api/v1/school-years/${yearId}/close`
@@ -9007,9 +7666,6 @@ return customFetch<SchoolYear>(getCloseSchoolYearUrl(yearId),
 );}
 
 
-
-
-
 export const getCloseSchoolYearMutationKey = () => ['closeSchoolYear'] as const;
 
 export const getCloseSchoolYearMutationOptions = <TError = ErrorType<unknown>,
@@ -9024,17 +7680,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       : {mutation: { mutationKey, }, request: undefined};
 
 
-
-
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof closeSchoolYear>>, CloseSchoolYearMutationVariables> = (props) => {
           const {yearId,data} = props ?? {};
 
           return  closeSchoolYear(yearId,data,requestOptions)
         }
-
-
-
-
 
 
   return  { mutationFn, ...mutationOptions }}
@@ -9058,8 +7708,6 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 export const getGetSchoolYearHistoryUrl = (yearId: string,) => {
 
 
-
-
   return `/api/v1/school-years/${yearId}/history`
 }
 
@@ -9073,9 +7721,6 @@ export const getSchoolYearHistory = async (yearId: string, options?: Parameters<
 
   }
 );}
-
-
-
 
 
 export const getGetSchoolYearHistoryQueryKey = (yearId: string,) => {
@@ -9093,11 +7738,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getGetSchoolYearHistoryQueryKey(yearId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof getSchoolYearHistory>>> = ({ signal }) => getSchoolYearHistory(yearId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: yearId !== null && yearId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSchoolYearHistory>>, TError, TData> & { queryKey: QueryKey }
@@ -9105,7 +7746,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type GetSchoolYearHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getSchoolYearHistory>>>
 export type GetSchoolYearHistoryQueryError = ErrorType<unknown>
-
 
 
 export function useGetSchoolYearHistory<TData = Awaited<ReturnType<typeof getSchoolYearHistory>>, TError = ErrorType<unknown>>(
@@ -9121,14 +7761,7 @@ export function useGetSchoolYearHistory<TData = Awaited<ReturnType<typeof getSch
 }
 
 
-
-
-
-
-
 export const getExportSchoolYearUrl = (yearId: string,) => {
-
-
 
 
   return `/api/v1/school-years/${yearId}/export`
@@ -9149,9 +7782,6 @@ export const exportSchoolYear = async (yearId: string, options?: Parameters<type
 );}
 
 
-
-
-
 export const getExportSchoolYearQueryKey = (yearId: string,) => {
     return [
     `/api/v1/school-years/${yearId}/export`
@@ -9167,11 +7797,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportSchoolYearQueryKey(yearId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportSchoolYear>>> = ({ signal }) => exportSchoolYear(yearId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: yearId !== null && yearId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYear>>, TError, TData> & { queryKey: QueryKey }
@@ -9179,7 +7805,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ExportSchoolYearQueryResult = NonNullable<Awaited<ReturnType<typeof exportSchoolYear>>>
 export type ExportSchoolYearQueryError = ErrorType<ErrorResponse>
-
 
 
 export function useExportSchoolYear<TData = Awaited<ReturnType<typeof exportSchoolYear>>, TError = ErrorType<ErrorResponse>>(
@@ -9195,14 +7820,7 @@ export function useExportSchoolYear<TData = Awaited<ReturnType<typeof exportScho
 }
 
 
-
-
-
-
-
 export const getExportSchoolYearOriginalsUrl = (yearId: string,) => {
-
-
 
 
   return `/api/v1/school-years/${yearId}/originals`
@@ -9223,9 +7841,6 @@ export const exportSchoolYearOriginals = async (yearId: string, options?: Parame
 );}
 
 
-
-
-
 export const getExportSchoolYearOriginalsQueryKey = (yearId: string,) => {
     return [
     `/api/v1/school-years/${yearId}/originals`
@@ -9241,11 +7856,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
   const queryKey =  queryOptions?.queryKey ?? getExportSchoolYearOriginalsQueryKey(yearId);
 
 
-
     const queryFn: QueryFunction<Awaited<ReturnType<typeof exportSchoolYearOriginals>>> = ({ signal }) => exportSchoolYearOriginals(yearId, { signal, ...requestOptions });
-
-
-
 
 
    return  { queryKey, queryFn, enabled: yearId !== null && yearId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError, TData> & { queryKey: QueryKey }
@@ -9253,7 +7864,6 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
 export type ExportSchoolYearOriginalsQueryResult = NonNullable<Awaited<ReturnType<typeof exportSchoolYearOriginals>>>
 export type ExportSchoolYearOriginalsQueryError = ErrorType<void>
-
 
 
 export function useExportSchoolYearOriginals<TData = Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError = ErrorType<void>>(
@@ -9267,10 +7877,4 @@ export function useExportSchoolYearOriginals<TData = Awaited<ReturnType<typeof e
 
   return withQueryKey(query, queryOptions.queryKey);
 }
-
-
-
-
-
-
 

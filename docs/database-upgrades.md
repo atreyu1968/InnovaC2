@@ -7,8 +7,8 @@ que administra esa base, desde la raíz de la instalación.
 
 ## Qué se comprueba
 
-`lib/db/drizzle/meta/_journal.json` es el orden autorizado: actualmente contiene
-16 entradas. Hay prefijos numéricos repetidos de ramas anteriores; **no ordenar
+`lib/db/drizzle/meta/_journal.json` contiene el orden autorizado de todas las
+migraciones. Hay prefijos numéricos repetidos de ramas anteriores; **no ordenar
 los archivos por nombre ni renombrar migraciones ya aplicadas**. Se verifica que
 todos los SQL estén registrados, que los índices y fechas sean crecientes y que
 los hashes de los archivos coincidan con la referencia.
@@ -23,6 +23,10 @@ diario, no datos de usuarios. El preflight compara:
   diferencia: un `push` puede crearlas en otro orden sin cambiar sus nombres ni
   su significado.
 - Restricciones (incluida su validación y aplazamiento), índices y su estado.
+  Los `CHECK` usan la representación simplificada de PostgreSQL: una restauración
+  puede reorganizar paréntesis redundantes de `AND` sin cambiar la condición.
+  No se eliminan paréntesis mediante sustituciones de texto; se conserva la
+  precedencia y se siguen rechazando cambios de límites, lógica o validación.
 - Funciones completas y triggers, también el estado de los triggers internos de
   las claves externas; no basta con que exista un trigger con el mismo nombre.
 - Enumerados/dominios, secuencias y su propiedad, reglas/vistas, políticas RLS,

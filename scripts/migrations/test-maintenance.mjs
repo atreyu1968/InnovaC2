@@ -7,7 +7,7 @@ import { cp, mkdir, readFile, writeFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { verifyBackup } from "./backup-proof.mjs";
-import { ledger, catalog } from "./core.mjs";
+import { inspect, ledger, catalog } from "./core.mjs";
 
 const adapter = `#!/usr/bin/env node
 const {spawnSync}=require("node:child_process"),fs=require("node:fs"),path=require("node:path");
@@ -108,11 +108,19 @@ BACKUP_ENCRYPTION_KEY=${key}
   const backup = await connect("maintenance_backup");
   assert.equal((await ledger(backup)).length, 0, "Backup is the pre-update state");
   assert.equal((await backup.query("SELECT name FROM centers")).rows[0].name, "Centro conservado");
+  // Verify the whole pre-update prefix, not the absence of a once-last table:
+  // future migrations can follow AI settings without changing backup semantics.
   await backup.query("BEGIN");
   try {
     assert.deepEqual(await catalog(backup), reference.states[legacyPrefix],
-      "The restored backup must retain the complete pre-update schema, not assume AI settings is always the last migration.");
-  } finally { await backup.query("ROLLBACK"); }
+      "The restored backup must retain the complete pre-update schema.");
+    const backupPlan = await inspect(backup, all, reference);
+    assert.equal(backupPlan.status, plan.status);
+    assert.equal(backupPlan.prefix, plan.prefix);
+    assert.deepEqual(backupPlan.pending, plan.pending);
+  } finally {
+    await backup.query("ROLLBACK");
+  }
   const calls = await readFile(path.join(sandbox, "calls"), "utf8");
   assert.ok(!calls.includes('"start"') && !calls.includes('"up"'), "API must not auto-restart");
   console.log("PASS: staged maintenance scripts run real encrypted backup and migration, retain a restorable pre-update dump; failed backup blocks updates, bad checksum is rejected, API stays stopped (local Docker adapter).");

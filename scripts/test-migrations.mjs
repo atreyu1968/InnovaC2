@@ -107,7 +107,7 @@ try {
   assert.deepEqual(await ledger(fresh), beforeLedger);
   console.log("PASS: clean installation and second update do not repeat migrations.");
 
-  // Legacy deployment at the prefix before AI settings, genuinely populated,
+  // Legacy deployment at the prefix before the final migration, populated,
   // empty (but valid) Drizzle ledger. Dump then restore into a DIFFERENT DB.
   await admin.query("CREATE DATABASE legacy");
   const legacy = await connect("legacy");
@@ -150,7 +150,7 @@ try {
   assert.deepEqual(await rows(restored), original);
   assert.equal((await ledger(legacy)).length, 0, "Source database is not upgraded");
   assert.deepEqual(await rows(legacy), original, "Source dump remains unchanged");
-  console.log("PASS: backup restored into isolated copy; verified baseline + additive AI update preserve every existing row; idempotent.");
+  console.log("PASS: backup restored into isolated copy; verified baseline + remaining update preserve every existing row; idempotent.");
 
   // Full current schema, ledger absent, and a genuine tracked intermediate DB.
   await referenceDb.end();
@@ -174,11 +174,35 @@ try {
   await transaction(intermediate, () => upgrade(intermediate, all, reference));
   console.log("PASS: full schema baselining and ordinary tracked-prefix upgrade.");
 
+  // Keep the fixed pre-AI legacy fixture above, but also restore the full schema
+  // so the BETWEEN/AND CHECK introduced by learning spaces is exercised.
+  const fullDump = path.join(directory, "full-roundtrip.dump");
+  run("pg_dump", ["-h", socket, "-U", "migration_test", "-Fc", "-f", fullDump, "restored"]);
+  await admin.query("CREATE DATABASE full_roundtrip");
+  run("pg_restore", ["-h", socket, "-U", "migration_test", "--exit-on-error", "-d", "full_roundtrip", fullDump]);
+  const roundtrip = await connect("full_roundtrip");
+  await transaction(roundtrip, async () => {
+    assert.equal((await inspect(roundtrip, all, reference)).status, "tracked");
+    assert.deepEqual(difference(reference.states.at(-1), await catalog(roundtrip)), []);
+  });
+
+  // A restored BETWEEN/AND check must match, but different bounds, precedence
+  // or validation state must still fail closed. Do not canonicalize SQL by
+  // removing parentheses or accepting only a constraint's name.
+  const spaceCheck = (await restored.query(`SELECT pg_get_constraintdef(oid,true) AS definition
+    FROM pg_constraint WHERE conname='space_reservations_space_kinds_check'`)).rows[0].definition;
+  assert.ok(spaceCheck.includes("<= 2") && spaceCheck.includes(" AND space_kinds <@"));
+  const replaceSpaceCheck = definition => `ALTER TABLE space_reservations
+    DROP CONSTRAINT space_reservations_space_kinds_check;
+    ALTER TABLE space_reservations ADD CONSTRAINT space_reservations_space_kinds_check ${definition}`;
   const drifts = [
     ["space-range", `ALTER TABLE space_reservations DROP CONSTRAINT space_reservations_space_kinds_check;
       ALTER TABLE space_reservations ADD CONSTRAINT space_reservations_space_kinds_check
       CHECK (cardinality(space_kinds) BETWEEN 0 AND 2 AND space_kinds <@ ARRAY['ateca','fablab']::text[]
         AND (cardinality(space_kinds)=1 OR space_kinds[1]<>space_kinds[2]))`],
+    ["check-bound", replaceSpaceCheck(spaceCheck.replace("<= 2", "<= 3"))],
+    ["check-logic", replaceSpaceCheck(spaceCheck.replace(" AND space_kinds <@", " OR space_kinds <@"))],
+    ["check-validation", replaceSpaceCheck(`${spaceCheck} NOT VALID`)],
     ["column", `ALTER TABLE centers ALTER COLUMN name DROP NOT NULL`],
     ["extra", `CREATE TABLE unexpected_data(id integer)`],
     ["index", `CREATE INDEX extra_index ON centers(name)`],

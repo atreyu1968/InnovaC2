@@ -30,6 +30,16 @@ export default defineConfig({
       clean: true,
       prettier: true,
       override: {
+        operations: {
+          checkAdminAIProvider: {
+            query: {
+              mutationOptions: {
+                path: path.resolve(apiClientReactSrc, "ai-provider-check-options.ts"),
+                name: "aiProviderCheckOptions",
+              },
+            },
+          },
+        },
         fetch: {
           includeHttpResponseReturnType: false,
         },

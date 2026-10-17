@@ -25,7 +25,11 @@ Dump/restore can flatten equivalent nested `AND` clauses produced by `BETWEEN`. 
 
 **Why:** A restored database can otherwise be rejected as drift despite having the same constraints. Removing SQL parentheses indiscriminately would instead hide real logic changes.
 
-**How to apply:** Keep any canonicalization narrowly scoped to a reviewed equivalent expression, preserve every bound and predicate, regenerate the isolated reference, and test both dump/restore equivalence and rejection of changed bounds.
+**How to apply:** Prefer PostgreSQL's stable CHECK representation over text
+substitutions. Preserve every bound, predicate, operator precedence and
+validation/inheritance flag. Regenerate the isolated reference, and pair full
+dump/restore equivalence tests with rejection of changed bounds, boolean logic
+and validation state.
 
 Schema synchronization can create PIC follow-up tables without installing their
 hand-written immutability and course-scope guards. Their existence is not proof

@@ -24,7 +24,10 @@ WITH objects AS (
  AND c.relkind NOT IN ('i','I','S')
  UNION ALL
  SELECT 'constraint:'||COALESCE(c.relname,t.typname)||'.'||x.conname,
- jsonb_build_object('definition',pg_get_constraintdef(x.oid,false),
+ -- pg_dump/restore can flatten nested AND groups (e.g. BETWEEN AND another
+ -- predicate). PostgreSQL's pretty deparser removes redundant grouping while
+ -- retaining precedence and required parentheses; never strip SQL text by regex.
+ jsonb_build_object('definition',pg_get_constraintdef(x.oid,x.contype='c'),
  'validated',x.convalidated,'deferred',x.condeferred,'deferrable',x.condeferrable,
  'local',x.conislocal,'inherit',x.connoinherit)
  FROM pg_constraint x JOIN pg_namespace n ON n.oid=x.connamespace

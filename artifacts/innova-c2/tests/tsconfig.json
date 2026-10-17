@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["../src/components/AdminAIProviderConfiguration.tsx", "./**/*.ts", "./**/*.tsx"],
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  }
+}
