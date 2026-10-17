@@ -53,7 +53,7 @@ Las copias incluyen PostgreSQL y el volumen documental, cifrados con `BACKUP_ENC
 ## Seguridad y alcance por fases
 
 - Sesiones opacas persistidas, contraseñas Argon2id, cookies HttpOnly/SameSite, token CSRF, caducidad y bloqueo persistente por intentos.
-- RBAC comprobado en la API; permisos de administración técnica separados de coordinación C2.
+- RBAC comprobado en la API. Por indicación del usuario, `admin_tecnico` acumula los permisos de todos los roles, incluida coordinación C2, sin cambiar de cuenta ni suplantar identidades. Esta decisión sustituye la separación funcional inicial de la especificación; conserva el ámbito del centro, la auditoría, CSRF, los controles de integridad y el bloqueo de archivos en cuarentena.
 - Catálogo importado a PostgreSQL con hash SHA-256, validación de 6 objetivos, 24 acciones, 31 indicadores y conservación de versiones previas.
 - Se auditan altas, accesos y cambios de catálogo. No almacenar contraseñas en texto claro ni en logs.
 - La aplicación no se integra con Laycos: prepara exportaciones/campos para entrega manual.

@@ -233,6 +233,11 @@ try {
     cookie: cookieFrom(initialized.response),
     csrf: initialized.data.csrfToken,
   };
+  const missingAdminPermissions = await pool.query(`
+    SELECT DISTINCT permission FROM role_permissions
+    EXCEPT SELECT permission FROM role_permissions WHERE role = 'admin_tecnico'
+  `);
+  assert.equal(missingAdminPermissions.rowCount, 0, "technical admin inherits every role permission");
 
   const c2 = await createStaff(
     admin,
@@ -302,8 +307,8 @@ try {
 
   const createdPlan = await request("/plans/current", {
     method: "POST",
-    cookie: c2Session.cookie,
-    csrf: c2Session.csrf,
+    cookie: admin.cookie,
+    csrf: admin.csrf,
   });
   expectStatus(createdPlan, 201, "create course PIC");
   const planId = createdPlan.data.id;
@@ -406,8 +411,8 @@ try {
   async function requestMissingDate() {
     const result = await request("/information-requests", {
       method: "POST",
-      cookie: c2Session.cookie,
-      csrf: c2Session.csrf,
+      cookie: admin.cookie,
+      csrf: admin.csrf,
       body: {
         recipientUserId: teacherA.id,
         subjectType: "activity",
@@ -419,14 +424,14 @@ try {
     expectStatus(result, 201, "create minimal information request");
     return result.data;
   }
-  async function answerAndValidate(responseStatus, answers = {}) {
+  async function answerAndValidate(responseStatus, answers = {}, responder = teacherASession) {
     const informationRequest = await requestMissingDate();
     const response = await request(
       `/information-requests/${informationRequest.id}/respond`,
       {
         method: "POST",
-        cookie: teacherASession.cookie,
-        csrf: teacherASession.csrf,
+        cookie: responder.cookie,
+        csrf: responder.csrf,
         body: {
           responseStatus,
           answers,
@@ -439,8 +444,8 @@ try {
       `/information-requests/${informationRequest.id}/validate`,
       {
         method: "POST",
-        cookie: c2Session.cookie,
-        csrf: c2Session.csrf,
+        cookie: admin.cookie,
+        csrf: admin.csrf,
         body: { expectedRevision: response.data.revision },
       },
     );
@@ -449,8 +454,13 @@ try {
     return validated.data;
   }
 
-  const noInformation = await answerAndValidate("sin_informacion");
+  const noInformation = await answerAndValidate("sin_informacion", {}, admin);
   assert.equal(noInformation.latestAnswers && Object.keys(noInformation.latestAnswers).length, 0);
+  const intervention = await pool.query(
+    "SELECT responder_id FROM information_responses WHERE request_id = $1",
+    [noInformation.id],
+  );
+  assert.equal(intervention.rows[0].responder_id, initialized.data.user.id, "admin intervention retains its true identity");
   const notPerformed = await answerAndValidate("no_realizada");
   assert.equal(notPerformed.latestResponseStatus, "no_realizada");
   const dateRequest = await requestMissingDate();
@@ -514,8 +524,8 @@ try {
     `/indicators/${numericIndicator.code}/observations`,
     {
       method: "POST",
-      cookie: c2Session.cookie,
-      csrf: c2Session.csrf,
+      cookie: admin.cookie,
+      csrf: admin.csrf,
       body: { period: "2026-12" },
     },
   );
@@ -563,6 +573,11 @@ try {
   assert.equal(uploaded.data.status, "pendiente_revision");
   assert.notEqual(uploaded.data.scanStatus, "limpio", "test intentionally has no antivirus daemon configured");
   const documentId = uploaded.data.id;
+  expectStatus(
+    await request(`/documents/${documentId}`, { cookie: admin.cookie }),
+    200,
+    "technical admin can read another user's family document",
+  );
 
   const duplicateFile = await request(`/documents?${uploadParams.toString()}`, {
     method: "POST",
@@ -579,8 +594,8 @@ try {
 
   const granted = await request(`/documents/${documentId}/access`, {
     method: "POST",
-    cookie: c2Session.cookie,
-    csrf: c2Session.csrf,
+    cookie: admin.cookie,
+    csrf: admin.csrf,
     body: { userId: teacherB.id, granted: true },
   });
   expectStatus(granted, 200, "grant explicit cross-family document access");
@@ -597,8 +612,8 @@ try {
   expectStatus(blockedDownload, 409, "quarantined evidence cannot be downloaded");
   const blockedApproval = await request(`/documents/${documentId}/approve`, {
     method: "POST",
-    cookie: c2Session.cookie,
-    csrf: c2Session.csrf,
+    cookie: admin.cookie,
+    csrf: admin.csrf,
     body: { expectedRevision: uploaded.data.revision },
   });
   expectStatus(blockedApproval, 409, "quarantined evidence cannot be approved");
@@ -606,8 +621,8 @@ try {
   const newerPdf = Buffer.from("%PDF-1.4\nINNOVA-C2 second immutable version\n%%EOF\n");
   const newVersion = await request(`/documents/${documentId}/versions`, {
     method: "POST",
-    cookie: teacherASession.cookie,
-    csrf: teacherASession.csrf,
+    cookie: admin.cookie,
+    csrf: admin.csrf,
     body: newerPdf,
   });
   expectStatus(newVersion, 201, "add immutable document version without custom header");
@@ -625,6 +640,32 @@ try {
   });
   expectStatus(requestsForOther, 200, "other family request list");
   assert.ok(requestsForOther.data.every((row) => row.recipientUserId === teacherB.id));
+
+  const adminActivity = await request("/activities", {
+    method: "POST", cookie: admin.cookie, csrf: admin.csrf,
+    body: {
+      title: `Intervención técnica ${testId}`, description: "Registro de administración para otra familia.",
+      activityDate: "2026-12-11", professionalFamily: families[1], projectId: null,
+      responsibleUserId: teacherB.id, sourceLabel: "Intervención técnica", indicatorCodes: [],
+    },
+  });
+  expectStatus(adminActivity, 201, "technical admin assigns activities across professional families");
+  assert.equal(adminActivity.data.activity.responsibleUserId, teacherB.id);
+  const adminConfirmed = await request(`/activities/${adminActivity.data.activity.id}/confirm`, {
+    method: "POST", cookie: admin.cookie, csrf: admin.csrf,
+    body: { expectedRevision: adminActivity.data.activity.revision, informationStatus: "confirmada" },
+  });
+  expectStatus(adminConfirmed, 200, "technical admin confirms an assigned activity");
+  const adminValidated = await request(`/activities/${adminActivity.data.activity.id}/validate`, {
+    method: "POST", cookie: admin.cookie, csrf: admin.csrf,
+    body: { expectedRevision: adminConfirmed.data.revision },
+  });
+  expectStatus(adminValidated, 200, "technical admin validates across professional families");
+  const adminValidationRecord = await pool.query(
+    "SELECT validated_by FROM activities WHERE id = $1",
+    [adminActivity.data.activity.id],
+  );
+  assert.equal(adminValidationRecord.rows[0].validated_by, initialized.data.user.id);
 
 } catch (error) {
   testFailure = error;

@@ -1,4 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
+import { hasCoordinationAccess } from "../lib/role-access";
 import { Router, type Request, type Response } from "express";
 import {
   activityIndicatorLinksTable,
@@ -261,7 +262,7 @@ router.post(
       return;
     }
     const actor = await loadCaptureActor(authContext(res).user.id);
-    if (!actor || actor.role !== "c2_innovacion") {
+    if (!actor || !hasCoordinationAccess(actor.role)) {
       res.status(403).json({ error: "Solo C2 puede confirmar observaciones de indicadores." });
       return;
     }

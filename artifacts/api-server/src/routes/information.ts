@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { hasCoordinationAccess } from "../lib/role-access";
 import { and, desc, eq, isNull, inArray } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
 import {
@@ -182,7 +183,7 @@ router.get(
         and(
           eq(informationRequestsTable.centerId, actor.centerId),
           eq(informationRequestsTable.schoolYearId, year.id),
-          actor.role === "c2_innovacion"
+          hasCoordinationAccess(actor.role)
             ? inArray(informationRequestsTable.status, [
                 "solicitada",
                 "respondida",
@@ -211,7 +212,7 @@ router.post(
       return;
     }
     const actor = await loadCaptureActor(authContext(res).user.id);
-    if (!actor || actor.role !== "c2_innovacion") {
+    if (!actor || !hasCoordinationAccess(actor.role)) {
       res.status(403).json({ error: "Solo C2 puede solicitar información mínima." });
       return;
     }
@@ -378,7 +379,7 @@ router.post(
       res.status(404).json({ error: "No se encontró la solicitud." });
       return;
     }
-    if (request.recipientUserId !== actor.id) {
+    if (request.recipientUserId !== actor.id && actor.role !== "admin_tecnico") {
       res.status(403).json({ error: "La solicitud no está asignada a esta cuenta." });
       return;
     }
@@ -475,7 +476,7 @@ router.post(
           )
           .limit(1)
       : [];
-    if (!actor || actor.role !== "c2_innovacion" || !request) {
+    if (!actor || !hasCoordinationAccess(actor.role) || !request) {
       res.status(404).json({ error: "No se encontró la solicitud." });
       return;
     }

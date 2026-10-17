@@ -77,6 +77,13 @@ Compose. También se incluye ClamAV en la red privada: la aplicación espera a
 que esté listo. En la primera instalación puede tardar varios minutos en
 descargar sus firmas; necesita salida a Internet y memoria suficiente.
 
+El administrador técnico acumula los permisos de todos los roles del centro,
+incluidos PIC, actuaciones, evidencias, solicitudes e indicadores. No necesita
+cambiar de rol: las intervenciones se registran con su identidad real. Esta
+decisión expresa del usuario sustituye la separación inicial de la especificación;
+no elimina CSRF, los límites del centro, el control de revisiones, la auditoría ni
+las restricciones de cuarentena.
+
 Antes de exponer el sistema a Internet, configura HTTPS en un proxy inverso
 confiable y cambia `COOKIE_SECURE=true`. Activa `TRUST_PROXY=1` únicamente si
 el proxy elimina y vuelve a establecer `X-Forwarded-*`. No publiques `.env`,

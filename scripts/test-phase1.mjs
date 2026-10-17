@@ -280,8 +280,8 @@ try {
   const c2Cookie = cookieFrom(c2Login.response);
   const c2Csrf = c2Login.data.csrfToken;
 
-  const deniedAdminPlan = await request("/plans/current", { cookie: adminCookie });
-  assert.equal(deniedAdminPlan.response.status, 403, "technical admin must not read the PIC");
+  const adminPlanBeforeCreation = await request("/plans/current", { cookie: adminCookie });
+  assert.equal(adminPlanBeforeCreation.response.status, 404, "technical admin has PIC access before a plan exists");
   const noPlan = await request("/plans/current", { cookie: c2Cookie });
   assert.equal(noPlan.response.status, 404, "no PIC exists before creation");
   const createdPlan = await request("/plans/current", {
@@ -298,8 +298,8 @@ try {
   const content = completePlanContent(catalogResponse.data);
   const saved = await request(`/plans/${planId}`, {
     method: "PUT",
-    cookie: c2Cookie,
-    csrf: c2Csrf,
+    cookie: adminCookie,
+    csrf: adminCsrf,
     body: { expectedRevision: 1, content },
   });
   assert.equal(saved.response.status, 200, JSON.stringify(saved.data));
@@ -344,7 +344,7 @@ try {
   );
   assert.ok(laycos.data.fields.some((field) => field.label.includes("PIC-1.1-I2") && field.value === "5"));
 
-  const docx = await request(`/plans/${planId}/exports/docx`, { cookie: c2Cookie });
+  const docx = await request(`/plans/${planId}/exports/docx`, { cookie: adminCookie });
   assert.equal(docx.response.status, 200);
   const docxBytes = Buffer.from(docx.data.contentBase64, "base64");
   assert.equal(docxBytes.subarray(0, 2).toString(), "PK", "DOCX should be an actual ZIP-based Office document");

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { hasCoordinationAccess } from "../lib/role-access";
 import { access, mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { and, desc, eq, isNull } from "drizzle-orm";
@@ -392,7 +393,7 @@ router.post(
     const family = parsedQuery.data.professionalFamily ?? actor.professionalFamily;
     if (
       parsedQuery.data.accessScope === "center" &&
-      actor.role !== "c2_innovacion"
+      !hasCoordinationAccess(actor.role)
     ) {
       res.status(403).json({ error: "Solo C2 puede publicar documentos para todo el centro." });
       return;
@@ -402,14 +403,14 @@ router.post(
       return;
     }
     if (
-      actor.role !== "c2_innovacion" &&
+      !hasCoordinationAccess(actor.role) &&
       family &&
       !sameFamily(actor.professionalFamily, family)
     ) {
       res.status(403).json({ error: "No puedes almacenar documentos de otra familia." });
       return;
     }
-    if (parsedQuery.data.accessScope === "restricted" && actor.role !== "c2_innovacion" && !family) {
+    if (parsedQuery.data.accessScope === "restricted" && !hasCoordinationAccess(actor.role) && !family) {
       // Restricted documents remain visible to their uploader even without a family.
     }
     const linkedActivity = await validateActivityLink(
@@ -632,7 +633,7 @@ router.post(
       return;
     }
     if (
-      actor.role !== "c2_innovacion" &&
+      !hasCoordinationAccess(actor.role) &&
       document.createdBy !== actor.id &&
       !sameFamily(actor.professionalFamily, document.professionalFamily)
     ) {
@@ -774,7 +775,7 @@ router.post(
     const document = actor
       ? await getDocumentRow(req.params.documentId as string, actor.centerId)
       : null;
-    if (!actor || actor.role !== "c2_innovacion" || !document) {
+    if (!actor || !hasCoordinationAccess(actor.role) || !document) {
       res.status(404).json({ error: "No se encontró el documento." });
       return;
     }
@@ -848,7 +849,7 @@ router.post(
     const document = actor
       ? await getDocumentRow(req.params.documentId as string, actor.centerId)
       : null;
-    if (!actor || actor.role !== "c2_innovacion" || !document) {
+    if (!actor || !hasCoordinationAccess(actor.role) || !document) {
       res.status(404).json({ error: "No se encontró el documento." });
       return;
     }

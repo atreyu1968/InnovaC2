@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { hasCoordinationAccess } from "../lib/role-access";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Download,
@@ -11,7 +12,6 @@ import {
   Trash2,
 } from "lucide-react";
 import {
-  UserRole,
   getExportPicDocxQueryKey,
   getExportPicLaycosQueryKey,
   getExportPicPdfQueryKey,
@@ -468,7 +468,7 @@ export function PicPlanPage({ user }: { user: User }) {
     }));
   };
 
-  if (user.role !== UserRole.c2_innovacion) {
+  if (!hasCoordinationAccess(user.role)) {
     return (
       <section className="panel p-6">
         <div className="flex gap-3"><ShieldAlert className="text-amber-700" /><div><h2 className="font-bold">Acceso restringido</h2><p className="mt-1 text-sm text-[#68746e]">La edición del PIC está reservada a la Coordinación C2.</p></div></div>

@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { hasCoordinationAccess } from "../lib/role-access";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Activity as ActivityIcon, AlertCircle, ArrowDownToLine, Check, ChevronDown,
@@ -32,10 +33,11 @@ type ActivityDraft = {
 };
 
 const operationalRoles = [
+  UserRole.admin_tecnico,
   UserRole.c2_innovacion, UserRole.profesorado, UserRole.jefatura_departamento,
   UserRole.coordinacion_red, UserRole.equipo_directivo,
 ];
-const roleIsC2 = (user: User) => user.role === UserRole.c2_innovacion;
+const roleIsC2 = (user: User) => hasCoordinationAccess(user.role);
 const readableDate = (value?: string | null) => value
   ? new Intl.DateTimeFormat("es-ES", { dateStyle: "medium" }).format(new Date(value))
   : "Sin fecha";
@@ -487,7 +489,10 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
         {currentRequest ? <div className="p2-response-box"><div className="p2-form-heading"><div><span className="p2-overline">Detalle de solicitud</span><h3>Respuesta y validación</h3></div></div>
           <p className="p2-request-reason">{currentRequest.reason}</p><ul className="p2-fields-list">{currentRequest.requestedFields.map(field => <li key={field}>{field}</li>)}</ul>
           {currentRequest.latestResponseStatus && <div className="p2-response-status"><strong>Estado declarado:</strong> {currentRequest.latestResponseStatus === "sin_informacion" ? "Sin información" : currentRequest.latestResponseStatus === "no_realizada" ? "No realizada" : "Respondida"}{currentRequest.latestComment && <p>{currentRequest.latestComment}</p>}</div>}
-          {!c2 && currentRequest.recipientUserId === user.id && currentRequest.status === "solicitada" && <form className="p2-compact-form" onSubmit={submitResponse}><label>Estado de la respuesta<select className="field" name="responseStatus" defaultValue="respondida"><option value="respondida">Información respondida</option><option value="sin_informacion">Sin información</option><option value="no_realizada">No realizada</option></select></label>{currentRequest.requestedFields.map((field, index) => <label key={field}>{field}<textarea className="field" name={`answer-${index}`} rows={2} /></label>)}<label>Comentario<input className="field" name="comment" maxLength={1000} /></label><button className="p2-primary" disabled={respondRequest.isPending} data-testid="button-respond-request">{respondRequest.isPending ? "Guardando…" : "Enviar respuesta"}</button></form>}
+          {(currentRequest.recipientUserId === user.id || user.role === UserRole.admin_tecnico) && currentRequest.status === "solicitada" && <form className="p2-compact-form" onSubmit={submitResponse}>
+            {currentRequest.recipientUserId !== user.id && <Notice>Intervención de administración técnica: la respuesta quedará registrada con tu identidad, no con la de la persona destinataria.</Notice>}
+            <label>Estado de la respuesta<select className="field" name="responseStatus" defaultValue="respondida"><option value="respondida">Información respondida</option><option value="sin_informacion">Sin información</option><option value="no_realizada">No realizada</option></select></label>{currentRequest.requestedFields.map((field, index) => <label key={field}>{field}<textarea className="field" name={`answer-${index}`} rows={2} /></label>)}<label>Comentario<input className="field" name="comment" maxLength={1000} /></label><button className="p2-primary" disabled={respondRequest.isPending} data-testid="button-respond-request">{respondRequest.isPending ? "Guardando…" : "Enviar respuesta"}</button>
+          </form>}
           {c2 && currentRequest.status === "respondida" && <button className="p2-primary p2-validate-response" onClick={() => handleValidateResponse(currentRequest)} disabled={validateResponse.isPending} data-testid="button-validate-response">{validateResponse.isPending ? "Validando…" : "Validar respuesta"}</button>}
         </div> : !c2 && <div className="p2-empty p2-detail-empty"><ClipboardCheck size={22} /><strong>Selecciona una solicitud</strong><p>Los datos solicitados y el formulario de respuesta aparecerán aquí.</p></div>}
       </aside>

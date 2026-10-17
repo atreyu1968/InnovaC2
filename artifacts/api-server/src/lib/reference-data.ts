@@ -86,6 +86,9 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
   ],
 };
 
+// Keep existing installations and future role permissions in sync on startup.
+ROLE_PERMISSIONS.admin_tecnico = [...new Set(Object.values(ROLE_PERMISSIONS).flat())];
+
 export function catalogDigest(catalog: unknown): string {
   return createHash("sha256")
     .update(JSON.stringify(canonicalize(catalog)))

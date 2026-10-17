@@ -11,6 +11,7 @@ import {
 } from "@workspace/db";
 import type { UserRole } from "@workspace/api-zod";
 import { getClientIp, keyedHash } from "./auth";
+import { hasCoordinationAccess } from "./role-access";
 
 export type CaptureActor = {
   id: string;
@@ -189,7 +190,7 @@ export function canReadActivity(
     createdBy: string | null;
   },
 ): boolean {
-  if (actor.role === "c2_innovacion") return true;
+  if (hasCoordinationAccess(actor.role)) return true;
   if (
     (actor.role === "jefatura_departamento" ||
       actor.role === "coordinacion_red") &&
@@ -220,7 +221,7 @@ export async function canReadDocument(
     id: string;
   },
 ): Promise<boolean> {
-  if (actor.role === "c2_innovacion" || document.createdBy === actor.id) {
+  if (hasCoordinationAccess(actor.role) || document.createdBy === actor.id) {
     return true;
   }
   if (document.accessScope === "center") return true;

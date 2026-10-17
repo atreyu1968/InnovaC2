@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { hasCoordinationAccess } from './lib/role-access';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
@@ -105,6 +106,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
   if (
     page === 'activities' &&
     ![
+      UserRole.admin_tecnico,
       UserRole.c2_innovacion,
       UserRole.coordinacion_red,
       UserRole.jefatura_departamento,
@@ -160,12 +162,12 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
           <nav id="primary-navigation" className="workspace-nav" aria-label="Navegación principal">
             <NavItem href="/" active={location === '/'} icon={<LayoutDashboard size={18} />} label="Panel principal" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             {user.role === UserRole.admin_tecnico && <NavItem href="/usuarios" active={location === '/usuarios'} icon={<Users size={18} />} label="Usuarios y permisos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
-            {user.role === UserRole.c2_innovacion && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
-            {[UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {hasCoordinationAccess(user.role) && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {[UserRole.admin_tecnico, UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={18} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
           </nav>
           <div className="workspace-sidebar-bottom">
-            {!collapsed && <div className="workspace-role-note"><div className="flex items-center gap-2 text-[11px] font-bold"><ShieldCheck size={15} /> Acceso por roles</div><p className="mt-1.5 text-[10px] leading-relaxed">Cada cuenta dispone únicamente de los permisos asignados.</p></div>}
+            {!collapsed && <div className="workspace-role-note"><div className="flex items-center gap-2 text-[11px] font-bold"><ShieldCheck size={15} />{user.role === UserRole.admin_tecnico ? 'Acceso completo del centro' : 'Acceso por roles'}</div><p className="mt-1.5 text-[10px] leading-relaxed">{user.role === UserRole.admin_tecnico ? 'Incluye las funciones de todos los roles. Las intervenciones se registran con tu identidad.' : 'Cada cuenta dispone únicamente de los permisos asignados.'}</p></div>}
           </div>
         </aside>
         <button className="workspace-collapse-button" type="button" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Expandir navegación' : 'Contraer navegación'} aria-controls="primary-navigation" aria-expanded={!collapsed} title={collapsed ? 'Expandir navegación' : 'Contraer navegación'} data-testid="button-collapse-navigation"><ChevronRight size={18} className={collapsed ? '' : 'rotate-180'} /><span className="sr-only">{collapsed ? 'Expandir navegación' : 'Contraer navegación'}</span></button>

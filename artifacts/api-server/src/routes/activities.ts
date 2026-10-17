@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { hasCoordinationAccess } from "../lib/role-access";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
 import {
@@ -268,7 +269,7 @@ router.post(
       return;
     }
     if (
-      actor.role !== "c2_innovacion" &&
+      !hasCoordinationAccess(actor.role) &&
       (!actor.professionalFamily ||
         !sameFamily(actor.professionalFamily, parsed.data.professionalFamily))
     ) {
@@ -276,11 +277,11 @@ router.post(
       return;
     }
     const responsibleUserId =
-      actor.role === "c2_innovacion" && parsed.data.responsibleUserId
+      hasCoordinationAccess(actor.role) && parsed.data.responsibleUserId
         ? parsed.data.responsibleUserId
         : actor.id;
     if (
-      actor.role !== "c2_innovacion" &&
+      !hasCoordinationAccess(actor.role) &&
       parsed.data.responsibleUserId &&
       parsed.data.responsibleUserId !== actor.id
     ) {
@@ -484,7 +485,7 @@ router.patch(
       res.status(409).json({ error: "Una actuación descartada conserva su historial y no se reabre." });
       return;
     }
-    if (activity.status === "validada" && actor.role !== "c2_innovacion") {
+    if (activity.status === "validada" && !hasCoordinationAccess(actor.role)) {
       res.status(403).json({ error: "Solo C2 puede corregir una actuación validada." });
       return;
     }
@@ -492,7 +493,7 @@ router.patch(
     const plan = year ? await loadCurrentPlan(actor.centerId, year.id) : null;
     const newFamily = parsed.data.professionalFamily ?? activity.professionalFamily;
     if (
-      actor.role !== "c2_innovacion" &&
+      !hasCoordinationAccess(actor.role) &&
       !sameFamily(actor.professionalFamily, newFamily)
     ) {
       res.status(403).json({ error: "No puedes cambiar la familia de la actuación." });
@@ -674,7 +675,7 @@ router.post(
       res.status(404).json({ error: "No se encontró la actuación." });
       return;
     }
-    if (actor.role !== "c2_innovacion") {
+    if (!hasCoordinationAccess(actor.role)) {
       res.status(403).json({ error: "La validación corresponde a C2." });
       return;
     }
