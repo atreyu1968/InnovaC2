@@ -64,6 +64,7 @@ import type {
   SchoolYear,
   SchoolYearAccount,
   SchoolYearClosure,
+  SchoolYearExport,
   SchoolYearHistory,
   SchoolYearOpening,
   SchoolYearValidation,
@@ -4790,6 +4791,80 @@ export function useGetSchoolYearHistory<TData = Awaited<ReturnType<typeof getSch
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetSchoolYearHistoryQueryOptions(yearId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getExportSchoolYearUrl = (yearId: string,) => {
+
+
+
+
+  return `/api/v1/school-years/${yearId}/export`
+}
+
+/**
+ * Descarga de solo lectura de la instantánea cerrada, sin archivos binarios ni rutas privadas. Comprueba la huella archivada y añade checksums del contenido público.
+ */
+export const exportSchoolYear = async (yearId: string, options?: Parameters<typeof customFetch>[1]): Promise<SchoolYearExport> => {
+
+  return customFetch<SchoolYearExport>(getExportSchoolYearUrl(yearId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportSchoolYearQueryKey = (yearId: string,) => {
+    return [
+    `/api/v1/school-years/${yearId}/export`
+    ] as const;
+    }
+
+
+export const getExportSchoolYearQueryOptions = <TData = Awaited<ReturnType<typeof exportSchoolYear>>, TError = ErrorType<ErrorResponse>>(yearId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYear>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportSchoolYearQueryKey(yearId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportSchoolYear>>> = ({ signal }) => exportSchoolYear(yearId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: yearId !== null && yearId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYear>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportSchoolYearQueryResult = NonNullable<Awaited<ReturnType<typeof exportSchoolYear>>>
+export type ExportSchoolYearQueryError = ErrorType<ErrorResponse>
+
+
+
+export function useExportSchoolYear<TData = Awaited<ReturnType<typeof exportSchoolYear>>, TError = ErrorType<ErrorResponse>>(
+ yearId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYear>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportSchoolYearQueryOptions(yearId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -5,6 +5,45 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type SchoolYearExportSchoolYear = {
+  id: string;
+  label: string;
+  closedAt: string;
+};
+
+export type SchoolYearExportArchive = {
+  sourceHash: string;
+  capturedAt: string;
+  verified: boolean;
+  verification: string;
+};
+
+export type SchoolYearExportManifestSourcesItem = {
+  index: number;
+  source: string;
+  id: string;
+  sha256: string;
+};
+
+export type SchoolYearExportManifest = {
+  algorithm: string;
+  serialization: string;
+  scope: string;
+  contentSha256: string;
+  sources: SchoolYearExportManifestSourcesItem[];
+};
+
+export type SchoolYearExportContent = {[key: string]: unknown};
+
+export interface SchoolYearExport {
+  format: string;
+  version: number;
+  schoolYear: SchoolYearExportSchoolYear;
+  archive: SchoolYearExportArchive;
+  manifest: SchoolYearExportManifest;
+  content: SchoolYearExportContent;
+}
+
 export interface SchoolYear {
   id: string;
   label: string;

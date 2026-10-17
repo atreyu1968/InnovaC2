@@ -5,11 +5,12 @@ import {
   auditLogsTable, db, schoolYearAssignmentsTable, schoolYearSnapshotsTable,
   schoolYearsTable, usersTable,
 } from "@workspace/db";
-import { OpenSchoolYearBody, CloseSchoolYearBody } from "@workspace/api-zod";
+import { OpenSchoolYearBody, CloseSchoolYearBody, ExportSchoolYearResponse } from "@workspace/api-zod";
 import { getClientIp, keyedHash, requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
 import { collectCourse, CycleConflict, publicYear, validateClosure } from "../lib/school-cycle";
 import { loadResourceActor } from "../lib/capture-scope";
 import initialCatalog from "../../../../config/pic_2026_2027_catalogo.json";
+import { buildSchoolYearExport, publicArchiveValue } from "../lib/school-year-export";
 
 const router = Router();
 const manageCycle: RequestHandler = async (_req, res, next) => {
@@ -167,7 +168,7 @@ router.post("/school-years", requireCsrf, async (req, res) => {
   }
 });
 
-router.get("/school-years/:yearId/history", withYear, async (req, res) => {
+const withHistoricalYear: RequestHandler = async (_req, res, next) => {
   const year = res.locals.schoolYear as typeof schoolYearsTable.$inferSelect;
   const [snapshot] = await db.select().from(schoolYearSnapshotsTable).where(eq(schoolYearSnapshotsTable.schoolYearId, year.id));
   if (!year.closedAt || !snapshot) { res.status(409).json({ error: "El expediente solo está disponible después del cierre." }); return; }
@@ -177,6 +178,13 @@ router.get("/school-years/:yearId/history", withYear, async (req, res) => {
   if (!historicalActor || (historicalActor.role !== "admin_tecnico" && historicalActor.role !== "c2_innovacion")) {
     res.status(403).json({ error: "La cuenta no tenía acceso C2 autorizado en este curso histórico." }); return;
   }
+  res.locals.schoolYearSnapshot = snapshot;
+  next();
+};
+
+router.get("/school-years/:yearId/history", withYear, withHistoricalYear, async (req, res) => {
+  const year = res.locals.schoolYear as typeof schoolYearsTable.$inferSelect;
+  const snapshot = res.locals.schoolYearSnapshot as typeof schoolYearSnapshotsTable.$inferSelect;
   await db.insert(auditLogsTable).values({
     userId: (res.locals.auth as AuthContext).user.id, action: "school_year.history.read",
     entityType: "school_year", entityId: year.id, details: { label: year.label, sourceHash: snapshot.sourceHash },
@@ -184,13 +192,29 @@ router.get("/school-years/:yearId/history", withYear, async (req, res) => {
   });
   const sources = snapshot.content.sources as { source: string; id: string; data: Record<string, unknown> }[];
   res.json({
-    schoolYearId: year.id, label: year.label, closedAt: year.closedAt.toISOString(), sourceHash: snapshot.sourceHash,
+    schoolYearId: year.id, label: year.label, closedAt: year.closedAt!.toISOString(), sourceHash: snapshot.sourceHash,
     // Storage locations never leave the server; historical consultation does not grant a download.
-    sources: sources.map(source => {
-      const { storage_key: _storage, evidence_storage_key: _submissionStorage, ...data } = source.data;
-      return { ...source, data };
-    }),
+    sources: publicArchiveValue(sources),
   });
+});
+
+router.get("/school-years/:yearId/export", withYear, withHistoricalYear, async (req, res): Promise<void> => {
+  const year = res.locals.schoolYear as typeof schoolYearsTable.$inferSelect;
+  const snapshot = res.locals.schoolYearSnapshot as typeof schoolYearSnapshotsTable.$inferSelect;
+  try {
+    const exported = ExportSchoolYearResponse.parse(buildSchoolYearExport(year, snapshot));
+    await db.insert(auditLogsTable).values({
+      userId: (res.locals.auth as AuthContext).user.id, action: "school_year.export",
+      entityType: "school_year", entityId: year.id, ipHash: keyedHash(getClientIp(req)),
+      details: { label: year.label, sourceHash: snapshot.sourceHash, contentSha256: exported.manifest.contentSha256 },
+    });
+    res.setHeader("Content-Disposition", `attachment; filename="expediente-${year.label}-${year.id}.json"`);
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.json(exported);
+  } catch (error) {
+    if (error instanceof CycleConflict) { res.status(409).json({ error: error.message }); return; }
+    throw error;
+  }
 });
 
 export default router;

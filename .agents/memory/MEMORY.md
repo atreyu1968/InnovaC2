@@ -3,3 +3,4 @@
 - [Test database isolation](test-database-isolation.md) — A “test” database name is not proof of disposability; provision fresh clusters independently of application settings.
 - [Antivirus verification boundaries](antivirus-verification.md) — Keep real-engine regression tests independent of signature downloads; verify production feed health separately.
 - [Academic cycle policy](academic-cycle-policy.md) — History is attributed context, never current achievement; closure archives actual state without certifying PIC approval.
+- [Closed-course integrity](archive-integrity.md) — Preserve legacy closure hash serialization across JSONB; distinguish archived hashes from redacted-export checksums.

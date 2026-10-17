@@ -1497,8 +1497,87 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/SchoolYearHistory" }
+  /school-years/{yearId}/export:
+    get:
+      operationId: exportSchoolYear
+      description: Descarga de solo lectura de la instantánea cerrada, sin archivos binarios ni rutas privadas. Comprueba la huella archivada y añade checksums del contenido público.
+      parameters:
+        - { name: yearId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Expediente JSON adjunto con manifiesto SHA-256
+          headers:
+            Content-Disposition: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SchoolYearExport" }
+        "400":
+          description: Identificador no válido
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "401":
+          description: Sesión requerida
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "403":
+          description: Sin permiso actual o histórico
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "404":
+          description: Curso no encontrado en el centro
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+        "409":
+          description: Curso no cerrado o integridad del archivo no verificable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
 components:
   schemas:
+    SchoolYearExport:
+      type: object
+      required: [format, version, schoolYear, archive, manifest, content]
+      properties:
+        format: { type: string }
+        version: { type: integer }
+        schoolYear:
+          type: object
+          required: [id, label, closedAt]
+          properties:
+            id: { type: string, format: uuid }
+            label: { type: string }
+            closedAt: { type: string, format: date-time }
+        archive:
+          type: object
+          required: [sourceHash, capturedAt, verified, verification]
+          properties:
+            sourceHash: { type: string }
+            capturedAt: { type: string, format: date-time }
+            verified: { type: boolean }
+            verification: { type: string }
+        manifest:
+          type: object
+          required: [algorithm, serialization, scope, contentSha256, sources]
+          properties:
+            algorithm: { type: string }
+            serialization: { type: string }
+            scope: { type: string }
+            contentSha256: { type: string }
+            sources:
+              type: array
+              items:
+                type: object
+                required: [index, source, id, sha256]
+                properties:
+                  index: { type: integer }
+                  source: { type: string }
+                  id: { type: string }
+                  sha256: { type: string }
+        content: { type: object, additionalProperties: {} }
     SchoolYear:
       type: object
       required: [id, label, active, revision, closedAt, closeReason]

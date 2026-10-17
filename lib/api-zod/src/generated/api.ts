@@ -2097,3 +2097,40 @@ export const GetSchoolYearHistoryResponse = zod.object({
 })
 
 
+/**
+ * Descarga de solo lectura de la instantánea cerrada, sin archivos binarios ni rutas privadas. Comprueba la huella archivada y añade checksums del contenido público.
+ */
+export const ExportSchoolYearParams = zod.object({
+  "yearId": zod.coerce.string().uuid()
+})
+
+export const ExportSchoolYearResponse = zod.object({
+  "format": zod.string(),
+  "version": zod.number().int(),
+  "schoolYear": zod.object({
+  "id": zod.string().uuid(),
+  "label": zod.string(),
+  "closedAt": zod.coerce.date()
+}),
+  "archive": zod.object({
+  "sourceHash": zod.string(),
+  "capturedAt": zod.coerce.date(),
+  "verified": zod.boolean(),
+  "verification": zod.string()
+}),
+  "manifest": zod.object({
+  "algorithm": zod.string(),
+  "serialization": zod.string(),
+  "scope": zod.string(),
+  "contentSha256": zod.string(),
+  "sources": zod.array(zod.object({
+  "index": zod.number().int(),
+  "source": zod.string(),
+  "id": zod.string(),
+  "sha256": zod.string()
+}))
+}),
+  "content": zod.record(zod.string(), zod.unknown())
+})
+
+

@@ -1,13 +1,13 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Archive, CheckCircle2, History, Lock, RefreshCw, ShieldCheck, UserCheck } from 'lucide-react';
+import { AlertTriangle, Archive, CheckCircle2, Download, History, Lock, RefreshCw, ShieldCheck, UserCheck } from 'lucide-react';
 import {
   UserRole,
   useListSchoolYears, getListSchoolYearsQueryKey,
   useOpenSchoolYear, useCloseSchoolYear,
   useGetSchoolYearReview, getGetSchoolYearReviewQueryKey,
   useValidateSchoolYearClosure, getValidateSchoolYearClosureQueryKey,
-  useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey,
+  useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey, exportSchoolYear,
   useGetCurrentCatalog, getGetCurrentCatalogQueryKey,
   getGetDashboardSummaryQueryKey, getGetCurrentPicPlanQueryKey, getListActivitiesQueryKey,
   getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey,
@@ -255,6 +255,27 @@ function OpenYearForm({ previous, onCancel, onOpened }: { previous: SchoolYear; 
 function HistoryPanel({ closed }: { closed: SchoolYear[] }) {
   const [yearId, setYearId] = useState('');
   const [filter, setFilter] = useState('');
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState('');
+  const [downloaded, setDownloaded] = useState('');
+  const download = async () => {
+    if (!yearId || downloading) return;
+    setDownloading(true); setDownloadError(''); setDownloaded('');
+    try {
+      const exported = await exportSchoolYear(yearId);
+      const blob = new Blob([JSON.stringify(exported, null, 2) + '\n'], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `expediente-${exported.schoolYear.label}-${exported.schoolYear.id}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setDownloaded(`Descarga preparada para el curso ${exported.schoolYear.label}. Huella archivada comprobada.`);
+    } catch (issue) { setDownloadError(messageFor(issue)); }
+    finally { setDownloading(false); }
+  };
   const history = useGetSchoolYearHistory(yearId, { query: { queryKey: getGetSchoolYearHistoryQueryKey(yearId), enabled: !!yearId } });
   const groups = useMemo(() => {
     const map = new Map<string, SchoolYearSource[]>();
@@ -268,13 +289,19 @@ function HistoryPanel({ closed }: { closed: SchoolYear[] }) {
     <div className="space-y-4 p-5 md:p-6">
       <Alert kind="info">Consulta de solo lectura. Estos registros pertenecen a un curso cerrado y no cuentan como logros ni datos del curso actual.</Alert>
       {!closed.length ? <p className="text-sm text-[#5f6e69]" data-testid="text-no-history">Todavía no hay cursos cerrados.</p> : <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block"><span className="mb-1.5 block text-xs font-bold text-[#405057]">Curso</span><select className="field" value={yearId} onChange={e => { setYearId(e.target.value); setFilter(''); }} data-testid="select-history-year"><option value="">Selecciona un curso cerrado</option>{closed.map(y => <option key={y.id} value={y.id}>{y.label}</option>)}</select></label>
+        <label className="block"><span className="mb-1.5 block text-xs font-bold text-[#405057]">Curso</span><select className="field" value={yearId} disabled={downloading} onChange={e => { setYearId(e.target.value); setFilter(''); setDownloadError(''); setDownloaded(''); }} data-testid="select-history-year"><option value="">Selecciona un curso cerrado</option>{closed.map(y => <option key={y.id} value={y.id}>{y.label}</option>)}</select></label>
         {history.data && <label className="block"><span className="mb-1.5 block text-xs font-bold text-[#405057]">Tipo de registro</span><select className="field" value={filter} onChange={e => setFilter(e.target.value)} data-testid="select-history-source"><option value="">Todos ({history.data.sources.length})</option>{groups.map(([s, list]) => <option key={s} value={s}>{sourceNames[s] ?? s} ({list.length})</option>)}</select></label>}
       </div>}
       {yearId && (history.isLoading ? <div className="space-y-2">{[1, 2, 3].map(n => <div key={n} className="skeleton h-14" />)}</div>
         : history.isError ? <Alert kind="error" testId="status-history-error">{messageFor(history.error)} <button className="ml-2 font-bold underline" onClick={() => history.refetch()} data-testid="button-retry-history">Reintentar</button></Alert>
         : history.data && <div className="space-y-4">
           <div className="rounded-lg bg-[#263c42] p-4 text-white"><p className="eyebrow text-[#9bc7b5]">Instantánea inmutable</p><p className="mt-1 font-[var(--app-font-serif)] text-lg font-bold" data-testid="text-history-label">Curso {history.data.label}</p><p className="mt-1 text-[11px] text-[#c4d1ce]">Cerrado el {formatDateTime(history.data.closedAt)} · ID {history.data.schoolYearId}</p><p className="mt-1 break-all font-mono text-[10px] text-[#a6b8b3]" data-testid="text-history-hash">Huella: {history.data.sourceHash}</p></div>
+          <div className="space-y-2">
+            <button type="button" className="quiet-action flex items-center gap-2 disabled:opacity-50" onClick={download} disabled={downloading || history.isFetching} data-testid="button-export-year"><Download size={14} />{downloading ? 'Verificando expediente…' : `Descargar expediente ${history.data.label}`}</button>
+            <p className="text-xs text-[#5f6e69]">JSON de solo lectura con manifiesto de fuentes y checksums SHA-256. Incluye datos y metadatos archivados, no los archivos originales ni rutas privadas. No crea versiones del PIC ni copia datos al curso activo.</p>
+            {downloadError && <Alert kind="error" testId="status-export-error">{downloadError}</Alert>}
+            {downloaded && <Alert kind="success" testId="status-export-success">{downloaded}</Alert>}
+          </div>
           {!visible.length ? <p className="text-sm text-[#5f6e69]">El expediente no contiene registros.</p> : visible.map(([source, list]) => <div key={source} data-testid={`group-history-${source}`}>
             <p className="eyebrow mb-2">{sourceNames[source] ?? source} · {list.length}</p>
             <div className="space-y-2">{list.map(item => <details key={`${item.source}-${item.id}`} className="rounded-lg border border-[#eee9df] bg-[#fffefa]" data-testid={`record-history-${item.source}-${item.id}`}>
