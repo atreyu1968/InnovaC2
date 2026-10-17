@@ -11,6 +11,7 @@ export interface MailProviderStatus {
   keyConfigured: boolean;
   webhookConfigured: boolean;
   deploymentEnabled: boolean;
+  activationConfirmed: boolean;
   domain: string;
   domainVerified: boolean;
   domainStatus: string;

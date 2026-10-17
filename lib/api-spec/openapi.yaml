@@ -2393,25 +2393,42 @@ components:
         priority: {type: integer, nullable: true}
     MailProviderStatus:
       type: object
-      required: [keyConfigured, webhookConfigured, deploymentEnabled, domain, domainVerified, domainStatus, records]
+      required: [keyConfigured, webhookConfigured, deploymentEnabled, activationConfirmed, domain, domainVerified, domainStatus, records]
       properties:
         keyConfigured: {type: boolean}
         webhookConfigured: {type: boolean}
         deploymentEnabled: {type: boolean}
+        activationConfirmed: {type: boolean}
         domain: {type: string}
         domainVerified: {type: boolean}
         domainStatus: {type: string}
         records:
           type: array
           items: {$ref: "#/components/schemas/MailDomainRecord"}
+    MailPublicDnsStatus:
+      type: object
+      required: [rootMx, spf, dkim, dmarc, inboundMx, ready, checkedAt]
+      properties:
+        rootMx:
+          type: array
+          items: {type: string}
+        spf: {type: string}
+        dkim: {type: string}
+        dmarc: {type: string}
+        inboundMx:
+          type: array
+          items: {type: string}
+        ready: {type: boolean}
+        checkedAt: {type: string, format: date-time}
     MailAdminSettings:
       type: object
-      required: [settings, provider]
+      required: [settings, provider, dns]
       properties:
         settings: {$ref: "#/components/schemas/MailSettings"}
         provider: {$ref: "#/components/schemas/MailProviderStatus"}
         lastDomainCheck: {type: string, nullable: true}
         lastDomainStatus: {type: string}
+        dns: {$ref: "#/components/schemas/MailPublicDnsStatus"}
         domainRecords:
           type: array
           items: {$ref: "#/components/schemas/MailDomainRecord"}

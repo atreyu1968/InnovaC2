@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { and, eq, desc, inArray, sql } from "drizzle-orm";
 import { Router, type RequestHandler, type ErrorRequestHandler } from "express";
@@ -6,6 +6,7 @@ import {
   db, auditLogsTable, schoolYearsTable, schoolYearAssignmentsTable, usersTable, documentsTable, documentVersionsTable,
   ciclopePoliciesTable as policies, ciclopeMeetingsTable as meetings, ciclopeVersionsTable as versions,
   ciclopeTasksTable as tasks, ciclopeNoticesTable as notices,
+  mailContactsTable, mailMessagesTable, mailThreadsTable,
 } from "@workspace/db";
 import {
   CreateCiclopeMeetingBody, UpdateCiclopeMeetingBody, ActCiclopeMeetingBody,
@@ -14,6 +15,7 @@ import {
 import { requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
 import { loadCaptureActor, loadActiveSchoolYear, type CaptureActor } from "../lib/capture-scope";
 import { exportCiclopeDocument } from "../lib/ciclope-exports";
+import { resendFromAddress } from "../lib/mail-provider";
 
 type ParsedInput = ReturnType<typeof CreateCiclopeMeetingBody.parse>;
 type Input = Omit<ParsedInput, "startsAt" | "endsAt" | "participants" | "agreements"> & {
@@ -233,9 +235,80 @@ router.post("/ciclope/meetings/:meetingId/action", requireCsrf, async (req, res)
         (row.kind === "ciclope" && (!c.data.chairUserId || !c.data.secretaryUserId || !c.data.validatorUserIds.length)) ||
         (row.kind === "red_c1" && !c.data.externalSender.trim()))
         fail(400, "Completa composición, presidencia, secretaría, validadores, lugar y orden del día.");
-      if (row.kind === "ciclope") for (const participant of c.data.participants) await tx.insert(notices).values({
-        schoolYearId: s.year.id, meetingId: row.id, recipientUserId: participant.userId, title: `Convocatoria: ${row.title}`,
-      });
+      if (row.kind === "ciclope") {
+        for (const participant of c.data.participants) await tx.insert(notices).values({
+          schoolYearId: s.year.id, meetingId: row.id, recipientUserId: participant.userId, title: `Convocatoria: ${row.title}`,
+        });
+        const participantEmails = c.data.participants.map(person => person.email?.trim().toLocaleLowerCase("en-US") ?? "");
+        if (participantEmails.some(email => !email)) fail(409, "Cada participante necesita un correo de cuenta para preparar el borrador institucional.");
+        const recipients = [...new Set(participantEmails)];
+        const dateText = new Date(c.data.startsAt).toLocaleString("es-ES", { dateStyle: "full", timeStyle: "short", timeZone: "Atlantic/Canary" });
+        const bodyText = [
+          "Convocatoria de sesión CICLOPE",
+          "",
+          c.data.title,
+          `Fecha y hora: ${dateText}`,
+          `Lugar o enlace: ${c.data.location}`,
+          `Finalidad: ${c.data.purpose}`,
+          "",
+          "Orden del día:",
+          ...c.data.agenda.map((item, index) => `${index + 1}. ${item}`),
+          "",
+          "Este borrador se ha preparado a partir de la convocatoria refrendada. Requiere una aprobación institucional adicional antes de incorporarse a la cola de correo; todavía no se ha enviado.",
+        ].join("\n");
+        const authorizedContacts = await tx.select().from(mailContactsTable).where(and(
+          eq(mailContactsTable.centerId, s.actor.centerId),
+          eq(mailContactsTable.schoolYearId, s.year.id),
+          inArray(mailContactsTable.emailKey, recipients),
+          eq(mailContactsTable.active, true),
+        ));
+        if (authorizedContacts.length !== recipients.length ||
+            authorizedContacts.some(contact => contact.optOut || contact.authorizationNote.trim().length < 4)) {
+          fail(409, "Registra y autoriza a todas las personas de la convocatoria en la agenda del curso antes de preparar el borrador.");
+        }
+        const linkedThreads: string[] = [];
+        for (const contact of authorizedContacts) {
+          const conversationKey = `ciclope:${row.id}:${contact.id}`;
+          const [thread] = await tx.insert(mailThreadsTable).values({
+            centerId: s.actor.centerId,
+            schoolYearId: s.year.id,
+            contactId: contact.id,
+            conversationKey,
+            replyToken: randomUUID(),
+            subject: `Convocatoria CICLOPE: ${row.title}`,
+            topic: "ciclope",
+            folder: "borradores",
+            createdBy: s.actor.id,
+          }).onConflictDoNothing().returning({ id: mailThreadsTable.id });
+          if (!thread) continue;
+          await tx.insert(mailMessagesTable).values({
+            centerId: s.actor.centerId,
+            schoolYearId: s.year.id,
+            threadId: thread.id,
+            contactId: contact.id,
+            direction: "saliente",
+            status: "borrador",
+            sender: resendFromAddress("ciclope"),
+            recipient: contact.email,
+            replyTo: "ciclope@buzon.iesmmg.org",
+            subject: `Convocatoria CICLOPE: ${row.title}`,
+            bodyText,
+            classification: "organizativa",
+            createdBy: s.actor.id,
+            eventMetadata: {
+              source: "ciclope",
+              ciclopeMeetingId: row.id,
+              ciclopeRevision: row.revision + 1,
+              approvedPolicyRevision: c.approvedPolicyRevision,
+            },
+          });
+          linkedThreads.push(thread.id);
+        }
+        await tx.insert(auditLogsTable).values({
+          userId: s.actor.id, action: "mail.ciclope.draft.create", entityType: "ciclope_meeting",
+          entityId: row.id, details: { threadIds: linkedThreads, recipientCount: linkedThreads.length, approvedPolicyRevision: c.approvedPolicyRevision },
+        });
+      }
       c.announcedAt = new Date().toISOString(); state = "convocada";
     } else if (a === "celebrar") {
       if (state !== "convocada" || +row.endsAt > Date.now()) fail(409, "Solo una reunión convocada y finalizada puede registrarse como celebrada.");

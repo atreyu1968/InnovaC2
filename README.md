@@ -30,8 +30,8 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
 - **Fase 3B — comunicaciones: implementada en modo seguro.** Bandeja y agenda
   por curso, plantillas, borradores, aprobación humana, cola persistente, webhooks
   Resend firmados e idempotentes y adjuntos privados con análisis y revisión.
-  El envío permanece apagado hasta aportar secretos de servidor y verificar
-  el dominio real. La prueba de esta fase no envía correo.
+  El envío requiere dos confirmaciones independientes del servidor, los secretos,
+  DNS SPF/DKIM/DMARC y la verificación del dominio. La prueba de esta fase no envía correo.
 - **Fases 4–6 — memoria, ATECA/FABLab y asistente IA: pendientes.** No se
   simulan envíos, respuestas, lectura ni capacidades de IA aún no implementadas.
 
@@ -78,19 +78,20 @@ La aplicación no responde automáticamente ni expone credenciales en el navegad
 
 El administrador técnico gestiona el proveedor exclusivamente en **Configuración**.
 La clave API y el secreto Svix son variables privadas del servidor; la pantalla
-solo informa si están configuradas. La consulta a Resend no cambia registros DNS.
-Antes de habilitar envíos hay que verificar iesmmg.org y publicar sus registros;
-el MX raíz no se modifica. La recepción se limita al subdominio
-`buzon.iesmmg.org`; las firmas, duplicados y curso activo se comprueban en servidor.
+solo informa si están configuradas. La comprobación consulta DNS público y el
+estado de Resend en modo de solo lectura: no cambia registros DNS ni el MX raíz.
+Antes de habilitar envíos hay que verificar SPF, DKIM, DMARC, la recepción en
+`buzon.iesmmg.org` y el dominio de Resend. Además de `EMAIL_ENABLED`, el servidor
+requiere `EMAIL_ACTIVATION_CONFIRMED` como confirmación institucional separada.
+Las firmas, duplicados y curso activo se comprueban en servidor.
 Los adjuntos entrantes se guardan en almacenamiento privado, se someten a ClamAV,
 y requieren aprobación humana antes de poder descargarse. Sin ClamAV permanecen
 en cuarentena.
 
-Para un servidor Ubuntu independiente, añade `RESEND_API_KEY`,
-`RESEND_WEBHOOK_SECRET` y `EMAIL_ENABLED=false` al almacén de secretos del servidor.
-Después de verificar DNS y realizar un envío de prueba autorizado, el administrador
-técnico podrá permitir el procesamiento de la cola. No introduzcas esos secretos
-en la aplicación web.
+Para un servidor Ubuntu independiente, mantén `EMAIL_ENABLED=false` y
+`EMAIL_ACTIVATION_CONFIRMED=false`. Guarda `RESEND_API_KEY` y
+`RESEND_WEBHOOK_SECRET` solo en el almacén de secretos. No actives el envío hasta
+completar DNS y recibir la autorización institucional documentada.
 
 Prueba reproducible, sin reutilizar `DATABASE_URL` ni datos del centro:
 
@@ -111,10 +112,10 @@ Fase 3B y regresión CICLOPE (clúster PostgreSQL temporal, Resend sin clave):
 pnpm run test:phase3b
 ```
 
-Comprueba que el panel de configuración está restringido a administración
-técnica, que contactos y borradores se conservan, que la aprobación no puede
-ser propia, que la cola no envía sin configuración, y que los webhooks inválidos
-se rechazan y los eventos repetidos se deduplican.
+Comprueba contactos y plantillas locales, aprobación independiente, adjuntos
+autorizados, firma/deduplicación del webhook, estado DNS de solo lectura y que la
+cola persiste sin afirmar envío cuando el proveedor está desactivado. La prueba
+no contacta con Resend ni envía correo real.
 
 Una pasada de navegador sobre el entorno desechable comprobó persistencia,
 refrendo, convocatoria, asistencia, acta validada, historial, descargas DOCX/PDF,

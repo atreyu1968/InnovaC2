@@ -7,6 +7,7 @@
  */
 import type { MailDomainRecord } from './mailDomainRecord';
 import type { MailProviderStatus } from './mailProviderStatus';
+import type { MailPublicDnsStatus } from './mailPublicDnsStatus';
 import type { MailSettings } from './mailSettings';
 
 export interface MailAdminSettings {
@@ -14,5 +15,6 @@ export interface MailAdminSettings {
   provider: MailProviderStatus;
   lastDomainCheck?: string | null;
   lastDomainStatus?: string;
+  dns: MailPublicDnsStatus;
   domainRecords?: MailDomainRecord[];
 }

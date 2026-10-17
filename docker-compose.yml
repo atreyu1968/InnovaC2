@@ -53,6 +53,10 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       TRUST_PROXY: ${TRUST_PROXY:-0}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      EMAIL_ENABLED: ${EMAIL_ENABLED:-false}
+      EMAIL_ACTIVATION_CONFIRMED: ${EMAIL_ACTIVATION_CONFIRMED:-false}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:-}
     depends_on:
       db:
         condition: service_healthy

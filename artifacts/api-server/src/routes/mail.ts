@@ -16,7 +16,7 @@ import { requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
 import { privateMailDirectory, storedAttachments } from "../lib/mail-worker";
 import { scanWithClamAv } from "../lib/clamav";
 import { loadActiveSchoolYear, loadCaptureActor, type CaptureActor } from "../lib/capture-scope";
-import { checkResendDomain, mailSendEnabled, resendConfigured, resendFromAddress, verifyResendSignature } from "../lib/mail-provider";
+import { checkResendDomain, mailSendEnabled, resendConfigured, resendFromAddress, verifyMailDns, verifyResendSignature } from "../lib/mail-provider";
 import { logger } from "../lib/logger";
 
 const router = Router();
@@ -106,10 +106,12 @@ async function currentSettings(centerId: string) {
   if (!raced) throw new Error("MAIL_SETTINGS_INIT_FAILED");
   return raced;
 }
-function providerView(): { keyConfigured: boolean; webhookConfigured: boolean; deploymentEnabled: boolean; domain: string; domainVerified: boolean; domainStatus: string; records: Array<{ type: string; name: string; value: string; status: string; priority?: number | null }> } {
+function providerView(): { keyConfigured: boolean; webhookConfigured: boolean; deploymentEnabled: boolean; activationConfirmed: boolean; domain: string; domainVerified: boolean; domainStatus: string; records: Array<{ type: string; name: string; value: string; status: string; priority?: number | null }> } {
   return {
     keyConfigured: resendConfigured(), webhookConfigured: Boolean(process.env.RESEND_WEBHOOK_SECRET),
-    deploymentEnabled: mailSendEnabled(), domain: "iesmmg.org", domainVerified: false,
+    deploymentEnabled: mailSendEnabled(),
+    activationConfirmed: process.env.EMAIL_ACTIVATION_CONFIRMED === "true",
+    domain: "iesmmg.org", domainVerified: false,
     domainStatus: resendConfigured() ? "pendiente_de_comprobar" : "sin_clave_privada",
     records: [],
   };
@@ -293,11 +295,13 @@ router.post("/mail/threads/:threadId/reply", requireAuth, requireCsrf, endpoint(
 router.get("/admin/mail/provider-status", requireAuth, endpoint(async (_req, res) => {
   const context = await getIdentity(res); needTechnicalAdmin(context);
   const settings = await currentSettings(context.actor.centerId);
+  const dns = await verifyMailDns();
   res.json({
     settings: emailSettingsView(settings, context.actor.centerId), provider: providerView(),
     lastDomainCheck: settings.lastDomainCheck?.toISOString() ?? null,
     lastDomainStatus: settings.lastDomainStatus,
     domainRecords: settings.domainRecords,
+    dns,
   });
 }));
 
@@ -307,6 +311,7 @@ router.post("/admin/mail/provider-status/verify", requireAuth, requireCsrf, endp
   let domain;
   try { domain = await checkResendDomain(); }
   catch { throw new MailFailure(503, "Resend no está disponible o no se pudo consultar su estado. No se modificó el DNS."); }
+  const dns = await verifyMailDns(true);
   const [updated] = await db.update(mailSettingsTable).set({
     revision: settings.revision + 1, lastDomainStatus: domain.status,
     lastDomainCheck: new Date(), domainRecords: domain.records, updatedBy: context.actor.id, updatedAt: new Date(),
@@ -317,6 +322,7 @@ router.post("/admin/mail/provider-status/verify", requireAuth, requireCsrf, endp
     settings: emailSettingsView(fresh, context.actor.centerId), provider: { ...providerView(), domainVerified: domain.verified, domainStatus: domain.status, records: domain.records },
     lastDomainCheck: fresh.lastDomainCheck?.toISOString() ?? null,
     lastDomainStatus: fresh.lastDomainStatus, domainRecords: fresh.domainRecords,
+    dns,
   });
 }));
 
@@ -332,6 +338,7 @@ router.put("/admin/mail/settings", requireAuth, requireCsrf, endpoint(async (req
   let status = existing.lastDomainStatus;
   let records = existing.domainRecords;
   let lastDomainCheck = existing.lastDomainCheck;
+  const dns = await verifyMailDns();
   if (input.sendEnabled) {
     if (!mailSendEnabled() || !resendConfigured())
       throw new MailFailure(409, "El envío sigue desactivado por la configuración segura del servidor.");
@@ -339,6 +346,7 @@ router.put("/admin/mail/settings", requireAuth, requireCsrf, endpoint(async (req
     try { check = await checkResendDomain(); }
     catch { throw new MailFailure(503, "No se pudo comprobar iesmmg.org en Resend."); }
     status = check.status; records = check.records; lastDomainCheck = new Date();
+    if (!dns.ready) throw new MailFailure(409, "No se puede activar el envío: SPF, DKIM, DMARC o el MX de buzon.iesmmg.org no están completos. No se modificó el DNS.");
     if (!check.verified) throw new MailFailure(409, "No se puede activar el envío: Resend aún no confirma iesmmg.org. El DNS no se ha modificado.");
   }
   const [updated] = await db.update(mailSettingsTable).set({
@@ -354,6 +362,7 @@ router.put("/admin/mail/settings", requireAuth, requireCsrf, endpoint(async (req
     settings: emailSettingsView(fresh, context.actor.centerId), provider: providerView(),
     lastDomainCheck: fresh.lastDomainCheck?.toISOString() ?? null,
     lastDomainStatus: fresh.lastDomainStatus, domainRecords: fresh.domainRecords,
+    dns,
   });
 }));
 

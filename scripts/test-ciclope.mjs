@@ -102,6 +102,17 @@ try {
     expectedRevision: savedMailConfig.settings.revision, sendEnabled: true,
     senderAlias: "innovacion", replyTo: "innovacion@buzon.iesmmg.org",
   }), 409);
+  for (const [email, displayName, segment] of [
+    ["c2@ciclope.example.invalid", "C2", "coordinacion_c1"],
+    ["direction@ciclope.example.invalid", "Dirección", "direccion"],
+    ["teacher@ciclope.example.invalid", "Docente", "profesorado"],
+  ]) {
+    status(await request("/mail/contacts", c2.session, "POST", {
+      email, displayName, segment, institution: "Centro aislado CICLOPE",
+      authorizationNote: "Destinatario autorizado para pruebas aisladas",
+      optOut: false, active: true,
+    }), 201);
+  }
   const contactPayload = {
     email: "external@empresa.example.invalid", displayName: "Contacto de empresa",
     segment: "empresa", institution: "Empresa de prueba", authorizationNote: "Colaboración institucional aprobada",
@@ -210,6 +221,22 @@ try {
   await act(c2.session, "convocar");
   assert.equal(m.state, "convocada");
   assert.equal((await overview(teacher.session)).notices.filter(n => n.title.startsWith("Convocatoria:")).length, 1);
+  const linkedMail = await pool.query(
+    `SELECT t.id, t.subject, t.folder, m.recipient, m.status, m.event_metadata
+     FROM mail_threads t
+     JOIN mail_messages m ON m.thread_id = t.id
+     WHERE m.event_metadata->>'ciclopeMeetingId' = $1`,
+    [m.id],
+  );
+  assert.equal(linkedMail.rowCount, 3, "Una convocatoria refrendada crea un borrador individual por destinatario autorizado.");
+  assert.deepEqual(linkedMail.rows.map(row => row.recipient).sort(), [
+    "c2@ciclope.example.invalid",
+    "direction@ciclope.example.invalid",
+    "teacher@ciclope.example.invalid",
+  ].sort(), "Los borradores individuales conservan exactamente los destinatarios refrendados.");
+  assert.ok(linkedMail.rows.every(row => row.status === "borrador" && row.folder === "borradores"));
+  assert.ok(linkedMail.rows.every(row => row.event_metadata.approvedPolicyRevision === 2));
+  checks += 4;
   await act(c2.session, "preparar_acta", 409);
   status(await request(`/ciclope/meetings/${m.id}/export/acta/${m.revision}/pdf`, c2.session), 409);
   await act(c2.session, "celebrar");
@@ -248,6 +275,8 @@ try {
   await assert.rejects(pool.query("UPDATE ciclope_versions SET revision=revision+100 WHERE id=$1", [history[0].id]), /CICLOPE_VERSION_IMMUTABLE/);
   const external = status(await request("/ciclope/meetings", c2.session, "POST", body(5, "red_c1")), 201);
   status(await request(`/ciclope/meetings/${external.id}/action`, c2.session, "POST", { action: "convocar", expectedRevision: 1 }), 200);
+  assert.equal(Number((await pool.query("SELECT count(*) FROM mail_messages WHERE event_metadata->>'ciclopeMeetingId'=$1", [external.id])).rows[0].count), 0,
+    "Una reunión de red C1 no genera una convocatoria institucional propia.");
   m = (await overview(c2.session)).meetings.find(x => x.id === external.id);
   await act(c2.session, "celebrar");
   m = status(await request(`/ciclope/meetings/${m.id}`, c2.session, "PUT", {

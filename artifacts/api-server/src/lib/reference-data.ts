@@ -41,12 +41,16 @@ const ROLE_PERMISSIONS: Record<UserRole, string[]> = {
     "indicators.write",
     "meetings.read",
     "meetings.write",
+    "communications.read",
+    "communications.manage",
   ],
   equipo_directivo: [
     "dashboard.read",
     "pic.catalog.read",
     "pic.plan.read",
     "institutional.approve",
+    "communications.read",
+    "communications.approve",
   ],
   coordinacion_red: [
     "dashboard.read",

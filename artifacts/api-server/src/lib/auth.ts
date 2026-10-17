@@ -219,7 +219,7 @@ export function requirePermission(permission: string): RequestHandler {
     }
     // Annual access is explicit once a course has reviewed assignments. Global
     // account permissions remain an upper bound, never an automatic carry-over.
-    if (context.user.role !== "admin_tecnico" && /^(pic\.plan\.|activities\.|documents\.|information\.|indicators\.|staff\.)/.test(permission)) {
+    if (context.user.role !== "admin_tecnico" && /^(pic\.plan\.|activities\.|documents\.|information\.|indicators\.|staff\.|communications\.)/.test(permission)) {
       const [account] = await db.select({ centerId: usersTable.centerId }).from(usersTable)
         .where(eq(usersTable.id, context.user.id));
       const [year] = account ? await db.select({ id: schoolYearsTable.id }).from(schoolYearsTable)

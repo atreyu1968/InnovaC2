@@ -85,6 +85,7 @@ export * from './mailMessage';
 export * from './mailMessageAttachmentsItem';
 export * from './mailOverview';
 export * from './mailProviderStatus';
+export * from './mailPublicDnsStatus';
 export * from './mailReplyInput';
 export * from './mailReplyInputClassification';
 export * from './mailRevisionInput';

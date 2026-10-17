@@ -250,17 +250,28 @@ export interface MailProviderStatus {
   keyConfigured: boolean;
   webhookConfigured: boolean;
   deploymentEnabled: boolean;
+  activationConfirmed: boolean;
   domain: string;
   domainVerified: boolean;
   domainStatus: string;
   records: MailDomainRecord[];
 }
 
+export interface MailPublicDnsStatus {
+  rootMx: string[];
+  spf: string;
+  dkim: string;
+  dmarc: string;
+  inboundMx: string[];
+  ready: boolean;
+  checkedAt: string;
+}
 export interface MailAdminSettings {
   settings: MailSettings;
   provider: MailProviderStatus;
   lastDomainCheck?: string | null;
   lastDomainStatus?: string;
+  dns: MailPublicDnsStatus;
   domainRecords?: MailDomainRecord[];
 }
 
@@ -2006,4 +2017,3 @@ export const UploadDocumentAccessScope = {
   center: 'center',
   restricted: 'restricted',
 } as const;
-

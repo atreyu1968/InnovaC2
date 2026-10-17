@@ -11,7 +11,7 @@ import { dataDirectory } from "./storage";
 import { scanWithClamAv } from "./clamav";
 import {
   checkResendDomain, downloadResendAttachment, listResendReceivedAttachments,
-  mailSendEnabled, resendConfigured, resendFromAddress, retrieveResendEmail,
+  mailSendEnabled, resendConfigured, resendFromAddress, retrieveResendEmail, verifyMailDns,
   sendResendEmail,
 } from "./mail-provider";
 import { logger } from "./logger";
@@ -52,9 +52,10 @@ function plainText(html: string): string {
 function domainVerified(): Promise<boolean> {
   const now = Date.now();
   if (domainCache && now - domainCache.checkedAt < 60_000) return Promise.resolve(domainCache.verified);
-  return checkResendDomain().then(result => {
-    domainCache = { checkedAt: Date.now(), verified: result.verified };
-    return result.verified;
+  return Promise.all([checkResendDomain(), verifyMailDns()]).then(([provider, dns]) => {
+    const verified = provider.verified && dns.ready;
+    domainCache = { checkedAt: Date.now(), verified };
+    return verified;
   });
 }
 

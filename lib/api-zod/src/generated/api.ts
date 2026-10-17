@@ -24,6 +24,7 @@ export const GetMailOverviewResponse = zod.object({
   "keyConfigured": zod.boolean(),
   "webhookConfigured": zod.boolean(),
   "deploymentEnabled": zod.boolean(),
+  "activationConfirmed": zod.boolean(),
   "domain": zod.string(),
   "domainVerified": zod.boolean(),
   "domainStatus": zod.string(),
@@ -131,7 +132,6 @@ export const replyToMailThreadBodyBodyTextMax = 20000;
 export const replyToMailThreadBodyAttachmentDocumentIdsMax = 10;
 
 
-
 export const ReplyToMailThreadBody = zod.object({
   "bodyText": zod.string().min(1).max(replyToMailThreadBodyBodyTextMax),
   "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
@@ -155,7 +155,6 @@ export const createMailContactBodyInstitutionMax = 200;
 
 export const createMailContactBodyAuthorizationNoteMin = 4;
 export const createMailContactBodyAuthorizationNoteMax = 1000;
-
 
 
 export const CreateMailContactBody = zod.object({
@@ -202,7 +201,6 @@ export const updateMailContactBodyAuthorizationNoteMin = 4;
 export const updateMailContactBodyAuthorizationNoteMax = 1000;
 
 
-
 export const UpdateMailContactBody = zod.object({
   "email": zod.string().email().max(updateMailContactBodyEmailMax),
   "displayName": zod.string().min(1).max(updateMailContactBodyDisplayNameMax),
@@ -238,7 +236,6 @@ export const createMailTemplateBodySubjectMax = 250;
 export const createMailTemplateBodyBodyMax = 20000;
 
 
-
 export const CreateMailTemplateBody = zod.object({
   "name": zod.string().min(1).max(createMailTemplateBodyNameMax),
   "subject": zod.string().min(1).max(createMailTemplateBodySubjectMax),
@@ -271,7 +268,6 @@ export const updateMailTemplateBodySubjectMax = 250;
 export const updateMailTemplateBodyBodyMax = 20000;
 
 
-
 export const UpdateMailTemplateBody = zod.object({
   "name": zod.string().min(1).max(updateMailTemplateBodyNameMax),
   "subject": zod.string().min(1).max(updateMailTemplateBodySubjectMax),
@@ -300,7 +296,6 @@ export const createMailDraftBodySubjectMax = 250;
 export const createMailDraftBodyBodyTextMax = 20000;
 
 export const createMailDraftBodyAttachmentDocumentIdsMax = 10;
-
 
 
 export const CreateMailDraftBody = zod.object({
@@ -368,7 +363,6 @@ export const updateMailDraftBodyBodyTextMax = 20000;
 export const updateMailDraftBodyAttachmentDocumentIdsMax = 10;
 
 
-
 export const UpdateMailDraftBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "subject": zod.string().min(1).max(updateMailDraftBodySubjectMax),
@@ -398,8 +392,6 @@ export const QueueMailDraftParams = zod.object({
 export const QueueMailDraftHeader = zod.object({
   "X-CSRF-Token": zod.string()
 })
-
-
 
 
 export const QueueMailDraftBody = zod.object({
@@ -483,6 +475,7 @@ export const GetAdminMailSettingsResponse = zod.object({
   "keyConfigured": zod.boolean(),
   "webhookConfigured": zod.boolean(),
   "deploymentEnabled": zod.boolean(),
+  "activationConfirmed": zod.boolean(),
   "domain": zod.string(),
   "domainVerified": zod.boolean(),
   "domainStatus": zod.string(),
@@ -496,6 +489,15 @@ export const GetAdminMailSettingsResponse = zod.object({
 }),
   "lastDomainCheck": zod.string().nullish(),
   "lastDomainStatus": zod.string().optional(),
+  "dns": zod.object({
+  "rootMx": zod.array(zod.string()),
+  "spf": zod.string(),
+  "dkim": zod.string(),
+  "dmarc": zod.string(),
+  "inboundMx": zod.array(zod.string()),
+  "ready": zod.boolean(),
+  "checkedAt": zod.coerce.date()
+}),
   "domainRecords": zod.array(zod.object({
   "type": zod.string(),
   "name": zod.string(),
@@ -523,6 +525,7 @@ export const VerifyAdminMailProviderResponse = zod.object({
   "keyConfigured": zod.boolean(),
   "webhookConfigured": zod.boolean(),
   "deploymentEnabled": zod.boolean(),
+  "activationConfirmed": zod.boolean(),
   "domain": zod.string(),
   "domainVerified": zod.boolean(),
   "domainStatus": zod.string(),
@@ -536,6 +539,15 @@ export const VerifyAdminMailProviderResponse = zod.object({
 }),
   "lastDomainCheck": zod.string().nullish(),
   "lastDomainStatus": zod.string().optional(),
+  "dns": zod.object({
+  "rootMx": zod.array(zod.string()),
+  "spf": zod.string(),
+  "dkim": zod.string(),
+  "dmarc": zod.string(),
+  "inboundMx": zod.array(zod.string()),
+  "ready": zod.boolean(),
+  "checkedAt": zod.coerce.date()
+}),
   "domainRecords": zod.array(zod.object({
   "type": zod.string(),
   "name": zod.string(),
@@ -552,7 +564,6 @@ export const UpdateAdminMailSettingsHeader = zod.object({
 
 
 export const updateAdminMailSettingsBodyReplyToMax = 250;
-
 
 
 export const UpdateAdminMailSettingsBody = zod.object({
@@ -575,6 +586,7 @@ export const UpdateAdminMailSettingsResponse = zod.object({
   "keyConfigured": zod.boolean(),
   "webhookConfigured": zod.boolean(),
   "deploymentEnabled": zod.boolean(),
+  "activationConfirmed": zod.boolean(),
   "domain": zod.string(),
   "domainVerified": zod.boolean(),
   "domainStatus": zod.string(),
@@ -588,6 +600,15 @@ export const UpdateAdminMailSettingsResponse = zod.object({
 }),
   "lastDomainCheck": zod.string().nullish(),
   "lastDomainStatus": zod.string().optional(),
+  "dns": zod.object({
+  "rootMx": zod.array(zod.string()),
+  "spf": zod.string(),
+  "dkim": zod.string(),
+  "dmarc": zod.string(),
+  "inboundMx": zod.array(zod.string()),
+  "ready": zod.boolean(),
+  "checkedAt": zod.coerce.date()
+}),
   "domainRecords": zod.array(zod.object({
   "type": zod.string(),
   "name": zod.string(),
@@ -640,7 +661,6 @@ export const getCiclopeResponseMeetingsItemDataValidatorUserIdsMax = 20;
 export const getCiclopeResponseMeetingsItemDataAttachmentIdsMax = 30;
 
 export const getCiclopeResponseMeetingsItemDataExternalSenderMax = 500;
-
 
 
 export const GetCiclopeResponse = zod.object({
@@ -737,7 +757,6 @@ export const GetCiclopeResponse = zod.object({
 export const updateCiclopePolicyBodyExpectedRevisionMin = 0;
 
 
-
 export const UpdateCiclopePolicyBody = zod.object({
   "expectedRevision": zod.number().int().min(updateCiclopePolicyBodyExpectedRevisionMin),
   "requireInstitutionalApproval": zod.boolean(),
@@ -776,7 +795,6 @@ export const createCiclopeMeetingBodyValidatorUserIdsMax = 20;
 export const createCiclopeMeetingBodyAttachmentIdsMax = 30;
 
 export const createCiclopeMeetingBodyExternalSenderMax = 500;
-
 
 
 export const CreateCiclopeMeetingBody = zod.object({
@@ -855,7 +873,6 @@ export const createCiclopeMeetingResponseDataValidatorUserIdsMax = 20;
 export const createCiclopeMeetingResponseDataAttachmentIdsMax = 30;
 
 export const createCiclopeMeetingResponseDataExternalSenderMax = 500;
-
 
 
 export const CreateCiclopeMeetingResponse = zod.object({
@@ -949,7 +966,6 @@ export const updateCiclopeMeetingBodyAttachmentIdsMax = 30;
 export const updateCiclopeMeetingBodyExternalSenderMax = 500;
 
 
-
 export const UpdateCiclopeMeetingBody = zod.object({
   "expectedRevision": zod.number().int().min(updateCiclopeMeetingBodyExpectedRevisionMin),
   "kind": zod.enum(['ciclope', 'red_c1']),
@@ -1028,7 +1044,6 @@ export const updateCiclopeMeetingResponseDataAttachmentIdsMax = 30;
 export const updateCiclopeMeetingResponseDataExternalSenderMax = 500;
 
 
-
 export const UpdateCiclopeMeetingResponse = zod.object({
   "id": zod.string(),
   "revision": zod.number().int(),
@@ -1093,7 +1108,6 @@ export const ActCiclopeMeetingParams = zod.object({
 export const actCiclopeMeetingBodyTextMax = 5000;
 
 
-
 export const ActCiclopeMeetingBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "action": zod.enum(['solicitar_refrendo', 'aprobar_convocatoria', 'convocar', 'celebrar', 'preparar_acta', 'validar_acta', 'cancelar', 'aportar']),
@@ -1136,7 +1150,6 @@ export const listCiclopeVersionsResponseContentDataValidatorUserIdsMax = 20;
 export const listCiclopeVersionsResponseContentDataAttachmentIdsMax = 30;
 
 export const listCiclopeVersionsResponseContentDataExternalSenderMax = 500;
-
 
 
 export const ListCiclopeVersionsResponseItem = zod.object({
@@ -1200,9 +1213,6 @@ export const ListCiclopeVersionsResponseItem = zod.object({
   "createdBy": zod.string()
 })
 export const ListCiclopeVersionsResponse = zod.array(ListCiclopeVersionsResponseItem)
-
-
-
 
 
 export const ExportCiclopeMeetingParams = zod.object({
@@ -1284,7 +1294,6 @@ export const InitializeSetupResponse = zod.object({
 export const loginBodyPasswordMax = 1024;
 
 
-
 export const LoginBody = zod.object({
   "email": zod.string().email(),
   "password": zod.string().min(1).max(loginBodyPasswordMax)
@@ -1310,7 +1319,6 @@ export const LoginResponse = zod.object({
 export const requestPasswordResetBodyEmailMax = 254;
 
 
-
 export const RequestPasswordResetBody = zod.object({
   "email": zod.string().email().max(requestPasswordResetBodyEmailMax)
 })
@@ -1328,7 +1336,6 @@ export const completePasswordResetBodyTokenMax = 200;
 
 export const completePasswordResetBodyPasswordMin = 12;
 export const completePasswordResetBodyPasswordMax = 1024;
-
 
 
 export const CompletePasswordResetBody = zod.object({
@@ -1352,7 +1359,6 @@ export const changePasswordBodyCurrentPasswordMax = 1024;
 
 export const changePasswordBodyPasswordMin = 12;
 export const changePasswordBodyPasswordMax = 1024;
-
 
 
 export const ChangePasswordBody = zod.object({
@@ -1431,7 +1437,6 @@ export const createUserBodyTemporaryPasswordMax = 1024;
 export const createUserBodyProfessionalFamilyMax = 120;
 
 
-
 export const CreateUserBody = zod.object({
   "email": zod.string().email(),
   "name": zod.string().min(1).max(createUserBodyNameMax),
@@ -1459,7 +1464,6 @@ export const UpdateUserFamilyParams = zod.object({
 })
 
 export const updateUserFamilyBodyProfessionalFamilyMax = 160;
-
 
 
 export const UpdateUserFamilyBody = zod.object({
@@ -1674,7 +1678,6 @@ export const getCurrentPicPlanResponseContentCalendarCiclopeMeetingDatesItemRegE
 export const getCurrentPicPlanResponseContentCalendarNotesMax = 1000;
 
 
-
 export const GetCurrentPicPlanResponse = zod.object({
   "id": zod.string().uuid(),
   "revision": zod.number().int(),
@@ -1803,7 +1806,6 @@ export const createCurrentPicPlanResponseContentCiclopeMembersItemNameMax = 200;
 export const createCurrentPicPlanResponseContentCalendarRedMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createCurrentPicPlanResponseContentCalendarCiclopeMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createCurrentPicPlanResponseContentCalendarNotesMax = 1000;
-
 
 
 export const CreateCurrentPicPlanResponse = zod.object({
@@ -1941,7 +1943,6 @@ export const savePicPlanBodyContentCalendarCiclopeMeetingDatesItemRegExp = new R
 export const savePicPlanBodyContentCalendarNotesMax = 1000;
 
 
-
 export const SavePicPlanBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "content": zod.object({
@@ -2059,7 +2060,6 @@ export const savePicPlanResponseContentCiclopeMembersItemNameMax = 200;
 export const savePicPlanResponseContentCalendarRedMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const savePicPlanResponseContentCalendarCiclopeMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const savePicPlanResponseContentCalendarNotesMax = 1000;
-
 
 
 export const SavePicPlanResponse = zod.object({
@@ -2183,7 +2183,6 @@ export const createPicSnapshotBodyReasonMin = 4;
 export const createPicSnapshotBodyReasonMax = 400;
 
 
-
 export const CreatePicSnapshotBody = zod.object({
   "reason": zod.string().min(createPicSnapshotBodyReasonMin).max(createPicSnapshotBodyReasonMax)
 })
@@ -2257,7 +2256,6 @@ export const getPicSnapshotResponseTwoContentCiclopeMembersItemNameMax = 200;
 export const getPicSnapshotResponseTwoContentCalendarRedMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getPicSnapshotResponseTwoContentCalendarCiclopeMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getPicSnapshotResponseTwoContentCalendarNotesMax = 1000;
-
 
 
 export const GetPicSnapshotResponse = zod.object({
@@ -2391,7 +2389,6 @@ export const recordPicSubmissionBodyEvidenceFileNameMax = 255;
 export const recordPicSubmissionBodyEvidenceFileBase64Max = 1400000;
 
 
-
 export const RecordPicSubmissionBody = zod.object({
   "snapshotId": zod.string().uuid(),
   "submissionDate": zod.string().regex(recordPicSubmissionBodySubmissionDateRegExp),
@@ -2521,7 +2518,6 @@ export const listPicFollowupsResponseReportsItemContentCertificationFinalMemoryO
 export const listPicFollowupsResponseReportsItemContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const listPicFollowupsResponseReportsItemContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
-
 
 
 export const ListPicFollowupsResponse = zod.object({
@@ -2668,7 +2664,6 @@ export const savePicFollowupBodyContentCertificationCertificationRequestedObserv
 export const savePicFollowupBodyContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
 
 
-
 export const SavePicFollowupBody = zod.object({
   "expectedRevision": zod.number().int().min(savePicFollowupBodyExpectedRevisionMin),
   "content": zod.object({
@@ -2772,7 +2767,6 @@ export const savePicFollowupResponseContentCertificationFinalMemoryOnTimeObserva
 export const savePicFollowupResponseContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const savePicFollowupResponseContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
-
 
 
 export const SavePicFollowupResponse = zod.object({
@@ -2929,7 +2923,6 @@ export const getPicFollowupResponseSnapshotsItemContentCertificationFinalMemoryO
 export const getPicFollowupResponseSnapshotsItemContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const getPicFollowupResponseSnapshotsItemContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
-
 
 
 export const GetPicFollowupResponse = zod.object({
@@ -3109,7 +3102,6 @@ export const createPicFollowupSnapshotBodyReasonMin = 4;
 export const createPicFollowupSnapshotBodyReasonMax = 400;
 
 
-
 export const CreatePicFollowupSnapshotBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "reason": zod.string().min(createPicFollowupSnapshotBodyReasonMin).max(createPicFollowupSnapshotBodyReasonMax)
@@ -3152,7 +3144,6 @@ export const createPicFollowupSnapshotResponseContentCertificationFinalMemoryOnT
 export const createPicFollowupSnapshotResponseContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const createPicFollowupSnapshotResponseContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
-
 
 
 export const CreatePicFollowupSnapshotResponse = zod.object({
@@ -3274,7 +3265,6 @@ export const recordPicFollowupDeliveryBodyConfirmationMin = 15;
 export const recordPicFollowupDeliveryBodyConfirmationMax = 500;
 
 
-
 export const RecordPicFollowupDeliveryBody = zod.object({
   "snapshotId": zod.string().uuid(),
   "deliveryDate": zod.string().regex(recordPicFollowupDeliveryBodyDeliveryDateRegExp),
@@ -3386,7 +3376,6 @@ export const createActivityBodySourceLabelMax = 200;
 export const createActivityBodyIndicatorCodesItemMax = 80;
 
 
-
 export const CreateActivityBody = zod.object({
   "title": zod.string().min(1).max(createActivityBodyTitleMax),
   "description": zod.string().min(1).max(createActivityBodyDescriptionMax),
@@ -3470,7 +3459,6 @@ export const updateActivityBodyProfessionalFamilyMax = 120;
 export const updateActivityBodyIndicatorCodesItemMax = 80;
 
 
-
 export const UpdateActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "title": zod.string().min(1).max(updateActivityBodyTitleMax).optional(),
@@ -3511,8 +3499,6 @@ export const ConfirmActivityParams = zod.object({
 })
 
 
-
-
 export const ConfirmActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "informationStatus": zod.enum(['confirmada', 'sin_informacion', 'no_realizada'])
@@ -3548,8 +3534,6 @@ export const ValidateActivityParams = zod.object({
 })
 
 
-
-
 export const ValidateActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1)
 })
@@ -3582,8 +3566,6 @@ export const ValidateActivityResponse = zod.object({
 export const DiscardActivityParams = zod.object({
   "activityId": zod.coerce.string().uuid()
 })
-
-
 
 
 export const DiscardActivityBody = zod.object({
@@ -3646,7 +3628,6 @@ export const uploadDocumentQueryProfessionalFamilyMax = 120;
 export const uploadDocumentQueryIndicatorCodeMax = 80;
 
 export const uploadDocumentQueryFileNameMax = 255;
-
 
 
 export const UploadDocumentQueryParams = zod.object({
@@ -3728,7 +3709,6 @@ export const AddDocumentVersionParams = zod.object({
 export const addDocumentVersionHeaderXFileNameMax = 255;
 
 
-
 export const AddDocumentVersionHeader = zod.object({
   "X-File-Name": zod.string().max(addDocumentVersionHeaderXFileNameMax).optional()
 })
@@ -3758,13 +3738,10 @@ export const AddDocumentVersionResponse = zod.object({
  */
 
 
-
 export const RescanDocumentVersionParams = zod.object({
   "documentId": zod.coerce.string().uuid(),
   "version": zod.coerce.number().int().min(1)
 })
-
-
 
 
 export const RescanDocumentVersionBody = zod.object({
@@ -3797,8 +3774,6 @@ export const RescanDocumentVersionResponse = zod.object({
 export const ApproveDocumentParams = zod.object({
   "documentId": zod.coerce.string().uuid()
 })
-
-
 
 
 export const ApproveDocumentBody = zod.object({
@@ -3854,7 +3829,6 @@ export const linkDocumentEvidenceBodyIndicatorCodeMax = 80;
 export const linkDocumentEvidenceBodyNoteMax = 500;
 
 
-
 export const LinkDocumentEvidenceBody = zod.object({
   "activityId": zod.string().uuid(),
   "indicatorCode": zod.string().max(linkDocumentEvidenceBodyIndicatorCodeMax).nullish(),
@@ -3869,7 +3843,6 @@ export const LinkDocumentEvidenceResponse = zod.object({
 /**
  * @summary Download an authorized document version as an attachment
  */
-
 
 
 export const DownloadDocumentVersionParams = zod.object({
@@ -3910,7 +3883,6 @@ export const createInformationRequestBodyRequestedFieldsItemMax = 80;
 export const createInformationRequestBodyReasonMax = 1000;
 
 
-
 export const CreateInformationRequestBody = zod.object({
   "recipientUserId": zod.string().uuid(),
   "subjectType": zod.enum(['activity', 'project']),
@@ -3947,7 +3919,6 @@ export const RespondToInformationRequestParams = zod.object({
 export const respondToInformationRequestBodyCommentMax = 1000;
 
 
-
 export const RespondToInformationRequestBody = zod.object({
   "responseStatus": zod.enum(['respondida', 'sin_informacion', 'no_realizada']),
   "answers": zod.record(zod.string(), zod.unknown()),
@@ -3977,8 +3948,6 @@ export const RespondToInformationRequestResponse = zod.object({
 export const ValidateInformationResponseParams = zod.object({
   "requestId": zod.coerce.string().uuid()
 })
-
-
 
 
 export const ValidateInformationResponseBody = zod.object({
@@ -4041,7 +4010,6 @@ export const ListCurrentIndicatorsResponse = zod.array(ListCurrentIndicatorsResp
 export const createIndicatorObservationPathIndicatorCodeMax = 80;
 
 
-
 export const CreateIndicatorObservationParams = zod.object({
   "indicatorCode": zod.coerce.string().max(createIndicatorObservationPathIndicatorCodeMax)
 })
@@ -4051,7 +4019,6 @@ export const createIndicatorObservationBodyPeriodMax = 40;
 export const createIndicatorObservationBodyNumeratorMin = 0;
 
 export const createIndicatorObservationBodyDenominatorMin = 0;
-
 
 
 export const CreateIndicatorObservationBody = zod.object({
@@ -4092,8 +4059,6 @@ export const ListSchoolYearsResponse = zod.array(ListSchoolYearsResponseItem)
 export const openSchoolYearBodyLabelRegExp = new RegExp('^\\d{4}-\\d{4}$');
 
 export const openSchoolYearBodyAssignmentsItemProfessionalFamilyMax = 200;
-
-
 
 
 export const OpenSchoolYearBody = zod.object({
@@ -4147,7 +4112,6 @@ export const CloseSchoolYearParams = zod.object({
 
 export const closeSchoolYearBodyReasonMin = 10;
 export const closeSchoolYearBodyReasonMax = 2000;
-
 
 
 export const CloseSchoolYearBody = zod.object({
@@ -4228,5 +4192,4 @@ export const ExportSchoolYearOriginalsParams = zod.object({
 })
 
 export const ExportSchoolYearOriginalsResponse = zod.unknown()
-
 

@@ -11,7 +11,7 @@
     "test:phase1": "pnpm --filter @workspace/api-server run build && node scripts/test-phase1.mjs",
     "test:phase2": "pnpm --filter @workspace/api-server run build && node scripts/test-phase2.mjs",
     "test:phase3": "pnpm --filter @workspace/api-server run build && node scripts/test-ciclope.mjs",
-    "test:phase3b": "pnpm --filter @workspace/api-server run build && node scripts/test-ciclope.mjs",
+    "test:phase3b": "pnpm --filter @workspace/api-server run build && node scripts/test-mail.mjs && node scripts/test-ciclope.mjs",
     "test:clamav": "node scripts/test-clamav.mjs",
     "test:password-reset": "node scripts/run-password-reset-test.mjs",
     "test:school-cycle": "pnpm --filter @workspace/api-server run build && node scripts/test-course-cache.mjs && node scripts/test-school-cycle.mjs",

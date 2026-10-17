@@ -6,3 +6,4 @@
 - [Closed-course integrity](archive-integrity.md) — Preserve legacy closure hash serialization across JSONB; distinguish archived hashes from redacted-export checksums.
 - [Communications settings](communications-settings.md) — Configure Resend within the technical administrator's existing Configuration section.
 - [Drizzle migration merges](drizzle-migration-merges.md) — After parallel feature merges, reconcile every SQL migration with one ordered journal and test from a fresh database.
+- [Communications data continuity](communications-data-continuity.md) — Extend the existing course-scoped mail model; do not replace it with an incompatible schema without a data-preserving migration.

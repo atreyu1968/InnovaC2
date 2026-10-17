@@ -1,7 +1,31 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { resolveMx, resolveTxt } from "node:dns/promises";
 
 const API = "https://api.resend.com";
 const SEND_DOMAIN = "iesmmg.org";
+const INBOUND_DOMAIN = "buzon.iesmmg.org";
+
+export type PublicDnsStatus = {
+  rootMx: string[];
+  spf: string;
+  dkim: string;
+  dmarc: string;
+  inboundMx: string[];
+  ready: boolean;
+  checkedAt: string;
+};
+
+type DnsResolvers = {
+  txt(host: string): Promise<string[][]>;
+  mx(host: string): Promise<Array<{ exchange: string; priority: number }>>;
+};
+
+const defaultDnsResolvers: DnsResolvers = {
+  txt: resolveTxt,
+  mx: resolveMx,
+};
+
+let dnsCache: { checkedAt: number; value: PublicDnsStatus } | null = null;
 
 export type ResendDomainCheck = {
   connected: boolean;
@@ -16,7 +40,64 @@ export function resendConfigured(): boolean {
 }
 
 export function mailSendEnabled(): boolean {
-  return process.env.EMAIL_ENABLED === "true";
+  return process.env.EMAIL_ENABLED === "true" &&
+    process.env.EMAIL_ACTIVATION_CONFIRMED === "true";
+}
+
+async function txtRecords(host: string, resolvers: DnsResolvers): Promise<string[]> {
+  try {
+    return (await resolvers.txt(host)).map(parts => parts.join(""));
+  } catch {
+    return [];
+  }
+}
+
+async function mxRecords(host: string, resolvers: DnsResolvers): Promise<string[]> {
+  try {
+    return (await resolvers.mx(host))
+      .map(record => `${record.priority} ${record.exchange}`.trim())
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Reads public DNS only. It never writes records or changes the root MX.
+ * Resolvers are injectable so the AT tests can cover record states offline.
+ */
+export async function verifyMailDns(
+  force = false,
+  resolvers: DnsResolvers = defaultDnsResolvers,
+): Promise<PublicDnsStatus> {
+  const now = Date.now();
+  if (!force && resolvers === defaultDnsResolvers && dnsCache && now - dnsCache.checkedAt < 60_000) {
+    return dnsCache.value;
+  }
+  const [rootMx, rootTxt, sendTxt, dkimTxt, dmarcTxt, inboundMx] = await Promise.all([
+    mxRecords(SEND_DOMAIN, resolvers),
+    txtRecords(SEND_DOMAIN, resolvers),
+    txtRecords(`send.${SEND_DOMAIN}`, resolvers),
+    txtRecords(`resend._domainkey.${SEND_DOMAIN}`, resolvers),
+    txtRecords(`_dmarc.${SEND_DOMAIN}`, resolvers),
+    mxRecords(INBOUND_DOMAIN, resolvers),
+  ]);
+  const spfRecords = [...rootTxt, ...sendTxt].filter(value => /^v=spf1(?:\s|$)/i.test(value));
+  const dkimConfigured = dkimTxt.some(value => /(?:^|;)\s*p=[A-Za-z0-9+/=]+(?:;|$)/i.test(value));
+  const dmarcConfigured = dmarcTxt.some(value => /^v=DMARC1(?:;|$)/i.test(value));
+  const value: PublicDnsStatus = {
+    rootMx,
+    spf: spfRecords.length ? `Registro SPF visible (${spfRecords.length})` : "No se encuentra registro SPF",
+    dkim: dkimConfigured
+      ? `Clave DKIM visible en resend._domainkey.${SEND_DOMAIN}`
+      : `No se encuentra la clave DKIM en resend._domainkey.${SEND_DOMAIN}`,
+    dmarc: dmarcConfigured ? "Política DMARC publicada" : "No se encuentra política DMARC",
+    inboundMx,
+    ready: spfRecords.length > 0 && dkimConfigured && dmarcConfigured && inboundMx.length > 0,
+    checkedAt: new Date(now).toISOString(),
+  };
+  if (resolvers === defaultDnsResolvers) dnsCache = { checkedAt: now, value };
+  return value;
 }
 
 async function resendRequest(path: string, init?: RequestInit): Promise<unknown> {
