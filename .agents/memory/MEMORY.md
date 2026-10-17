@@ -1,1 +1,1 @@
-- [Workspace visual direction](workspace-visual-direction.md) — Keep the aquamarine shell and desktop-floating/mobile-drawer navigation behavior.
+- [Workspace visual direction](workspace-visual-direction.md) — Keep the aquamarine shell and collapse behavior; public sign-in is a full-screen split with local, credited illustrative photography.

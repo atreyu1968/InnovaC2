@@ -19,6 +19,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { PicPlanPage } from '@/components/PicPlanPage';
 
+const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: true } },
 });
@@ -406,16 +408,75 @@ function LoginPage() {
     });
   };
   if (status.isLoading) return <LoadingScreen label="Comprobando espacio de trabajo" />;
-  if (status.isError) return <AuthFrame><ErrorNotice text={messageFor(status.error)} onRetry={() => status.refetch()} /></AuthFrame>;
-  return <AuthFrame><div className="mb-8"><p className="eyebrow">IES Manuel Martín González</p><h1 className="mt-2 font-[var(--app-font-serif)] text-3xl font-extrabold tracking-tight text-[#26383d]">Acceso al espacio</h1><p className="mt-2 text-sm text-[#6e7974]">Coordinación de innovación y mejora educativa.</p></div>
-    <form onSubmit={submit} className="space-y-4"><Field label="Correo electrónico" id="login-email"><input id="login-email" name="email" type="email" className="field" required autoComplete="username" data-testid="input-login-email" /></Field><Field label="Contraseña" id="login-password"><input id="login-password" name="password" type="password" className="field" required autoComplete="current-password" data-testid="input-login-password" /></Field>
+  if (status.isError) return <AuthFrame variant="login">
+    <div className="login-heading">
+      <p className="login-kicker">IES Manuel Martín González</p>
+      <h1 id="login-title">Acceso al espacio</h1>
+      <p>No se ha podido comprobar el estado del espacio de trabajo.</p>
+    </div>
+    <ErrorNotice text={messageFor(status.error)} onRetry={() => status.refetch()} />
+  </AuthFrame>;
+  return <AuthFrame variant="login">
+    <div className="login-heading">
+      <p className="login-kicker">IES Manuel Martín González</p>
+      <h1 id="login-title">Tu espacio de innovación</h1>
+      <p>Accede a la coordinación y mejora educativa de nuestro centro.</p>
+    </div>
+    <form onSubmit={submit} className="login-form" aria-labelledby="login-title">
+      <Field label="Correo electrónico" id="login-email"><input id="login-email" name="email" type="email" className="field login-field" required autoComplete="username" data-testid="input-login-email" /></Field>
+      <Field label="Contraseña" id="login-password"><input id="login-password" name="password" type="password" className="field login-field" required autoComplete="current-password" data-testid="input-login-password" /></Field>
       {error && <InlineAlert text={error} kind="error" />}
-      <button type="submit" className="primary-action mt-2 w-full" disabled={login.isPending} data-testid="button-login">{login.isPending ? 'Verificando acceso…' : 'Iniciar sesión'}</button></form>
-    <p className="mt-6 border-t border-[#eee9df] pt-4 text-center text-[11px] text-[#7d8580]">Acceso reservado a cuentas autorizadas del centro.</p>
+      <button type="submit" className="primary-action login-submit" disabled={login.isPending} data-testid="button-login">
+        <span>{login.isPending ? 'Verificando acceso…' : 'Iniciar sesión'}</span>
+        {!login.isPending && <ArrowRight size={17} aria-hidden="true" />}
+      </button>
+    </form>
+    <p className="login-assurance"><ShieldCheck size={16} aria-hidden="true" />Acceso reservado a cuentas autorizadas del centro.</p>
   </AuthFrame>;
 }
 
-function AuthFrame({ children }: { children: ReactNode }) {
+function AuthFrame({ children, variant }: { children: ReactNode; variant?: 'login' }) {
+  if (variant === 'login') {
+    return <main className="login-app">
+      <div className="login-stage">
+        <div className="login-composition">
+          <section className="login-story" aria-label="Coordinación para innovar juntos">
+            <div className="story-topline"><span className="story-dot" />PROYECTO DE INNOVACIÓN DEL CENTRO</div>
+            <figure className="story-art">
+              <img
+                className="story-photo"
+                src={loginTeamPhoto}
+                alt="Dos profesionales consultan una tableta juntos; fotografía ilustrativa."
+              />
+            </figure>
+            <div className="story-copy">
+              <h2>Tu centro, en movimiento</h2>
+              <p>Ideas que se coordinan y proyectos que avanzan.</p>
+              <p className="photo-credit">
+                Imagen ilustrativa · Foto de{' '}
+                <a href="https://www.pexels.com/photo/man-and-woman-looking-at-a-digital-tablet-5955023/" target="_blank" rel="noreferrer">
+                  Theo Decker / Pexels
+                </a>
+              </p>
+            </div>
+            <div className="story-bottom">
+              <span className="story-seal" aria-hidden="true">IES</span>
+              <p><strong>IES Manuel Martín González</strong><br />Coordinación educativa · Canarias</p>
+              <span className="story-year">PIC <i /> CENTRO</span>
+            </div>
+          </section>
+          <section className="login-card" aria-labelledby="login-title">
+            <div className="login-brand">
+              <div className="brand-mark login-brand-mark" aria-hidden="true">IC</div>
+              <div className="login-wordmark"><p>INNOVA-C2</p><span>ESPACIO DE COORDINACIÓN</span></div>
+            </div>
+            {children}
+            <footer className="login-footer">INNOVA-C2 · Coordinación educativa del centro</footer>
+          </section>
+        </div>
+      </div>
+    </main>;
+  }
   return <main className="app-shell flex min-h-[100dvh] flex-col"><header className="flex h-[68px] items-center gap-3 border-b border-[#e5dfd2] bg-[#f8f6ef] px-5 md:px-10"><div className="brand-mark">IC</div><div><p className="font-[var(--app-font-serif)] text-sm font-extrabold tracking-tight text-[#26383d]">INNOVA-C2</p><p className="text-[9px] tracking-[.12em] text-[#7b8580]">ESPACIO DE COORDINACIÓN</p></div><span className="ml-auto hidden text-xs text-[#737e78] sm:block">IES Manuel Martín González</span></header><div className="flex flex-1 items-start justify-center px-4 py-10 md:items-center md:py-14"><section className="panel w-full max-w-[620px] p-6 md:p-9">{children}</section></div><footer className="px-5 py-4 text-center text-[10px] tracking-wide text-[#7d8580]">INNOVA-C2 · Coordinación educativa</footer></main>;
 }
 
