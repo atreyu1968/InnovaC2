@@ -111,6 +111,13 @@ import type {
   SchoolYearValidation,
   SetupInitializeInput,
   SetupStatus,
+  SoftwareCatalogInput,
+  SoftwareOverview,
+  SoftwareProduct,
+  SoftwareProductDetail,
+  SoftwareProductInput,
+  SoftwareRecordInput,
+  SoftwareSyncResult,
   SpaceRecordVersion,
   SpaceReservation,
   SpaceReservationInput,
@@ -149,6 +156,614 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetSoftwareProductsUrl = () => {
+
+
+
+
+  return `/api/v1/software-products`
+}
+
+export const getSoftwareProducts = async ( options?: Parameters<typeof customFetch>[1]): Promise<SoftwareOverview> => {
+
+  return customFetch<SoftwareOverview>(getGetSoftwareProductsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSoftwareProductsQueryKey = () => {
+    return [
+    `/api/v1/software-products`
+    ] as const;
+    }
+
+
+export const getGetSoftwareProductsQueryOptions = <TData = Awaited<ReturnType<typeof getSoftwareProducts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSoftwareProductsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSoftwareProducts>>> = ({ signal }) => getSoftwareProducts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProducts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSoftwareProductsQueryResult = NonNullable<Awaited<ReturnType<typeof getSoftwareProducts>>>
+export type GetSoftwareProductsQueryError = ErrorType<unknown>
+
+
+
+export function useGetSoftwareProducts<TData = Awaited<ReturnType<typeof getSoftwareProducts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProducts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSoftwareProductsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSoftwareProductUrl = () => {
+
+
+
+
+  return `/api/v1/software-products`
+}
+
+export const createSoftwareProduct = async (softwareProductInput: SoftwareProductInput, options?: Parameters<typeof customFetch>[1]): Promise<SoftwareProduct> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SoftwareProduct>(getCreateSoftwareProductUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(softwareProductInput)
+  }
+);}
+
+
+
+
+
+export const getCreateSoftwareProductMutationKey = () => ['createSoftwareProduct'] as const;
+
+export const getCreateSoftwareProductMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSoftwareProduct>>, TError,CreateSoftwareProductMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSoftwareProduct>>, TError,CreateSoftwareProductMutationVariables, TContext> => {
+
+const mutationKey = getCreateSoftwareProductMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSoftwareProduct>>, CreateSoftwareProductMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  createSoftwareProduct(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSoftwareProductMutationResult = NonNullable<Awaited<ReturnType<typeof createSoftwareProduct>>>
+    export type CreateSoftwareProductMutationBody = BodyType<SoftwareProductInput>
+    export type CreateSoftwareProductMutationError = ErrorType<unknown>
+    export type CreateSoftwareProductMutationVariables = {data: BodyType<SoftwareProductInput>}
+
+    export const useCreateSoftwareProduct = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSoftwareProduct>>, TError,CreateSoftwareProductMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSoftwareProduct>>,
+        TError,
+        CreateSoftwareProductMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateSoftwareProductMutationOptions(options));
+    }
+
+export const getInitializeSoftwareProductsUrl = () => {
+
+
+
+
+  return `/api/v1/software-products/initialize`
+}
+
+export const initializeSoftwareProducts = async ( options?: Parameters<typeof customFetch>[1]): Promise<SoftwareOverview> => {
+
+  return customFetch<SoftwareOverview>(getInitializeSoftwareProductsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getInitializeSoftwareProductsMutationKey = () => ['initializeSoftwareProducts'] as const;
+
+export const getInitializeSoftwareProductsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeSoftwareProducts>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof initializeSoftwareProducts>>, TError,void, TContext> => {
+
+const mutationKey = getInitializeSoftwareProductsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeSoftwareProducts>>, void> = () => {
+
+
+          return  initializeSoftwareProducts(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type InitializeSoftwareProductsMutationResult = NonNullable<Awaited<ReturnType<typeof initializeSoftwareProducts>>>
+
+    export type InitializeSoftwareProductsMutationError = ErrorType<unknown>
+
+
+    export const useInitializeSoftwareProducts = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeSoftwareProducts>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof initializeSoftwareProducts>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getInitializeSoftwareProductsMutationOptions(options));
+    }
+
+export const getUpdateSoftwareCatalogUrl = () => {
+
+
+
+
+  return `/api/v1/software-products/catalog`
+}
+
+export const updateSoftwareCatalog = async (softwareCatalogInput: SoftwareCatalogInput, options?: Parameters<typeof customFetch>[1]): Promise<SoftwareOverview> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SoftwareOverview>(getUpdateSoftwareCatalogUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(softwareCatalogInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateSoftwareCatalogMutationKey = () => ['updateSoftwareCatalog'] as const;
+
+export const getUpdateSoftwareCatalogMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSoftwareCatalog>>, TError,UpdateSoftwareCatalogMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSoftwareCatalog>>, TError,UpdateSoftwareCatalogMutationVariables, TContext> => {
+
+const mutationKey = getUpdateSoftwareCatalogMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSoftwareCatalog>>, UpdateSoftwareCatalogMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateSoftwareCatalog(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSoftwareCatalogMutationResult = NonNullable<Awaited<ReturnType<typeof updateSoftwareCatalog>>>
+    export type UpdateSoftwareCatalogMutationBody = BodyType<SoftwareCatalogInput>
+    export type UpdateSoftwareCatalogMutationError = ErrorType<unknown>
+    export type UpdateSoftwareCatalogMutationVariables = {data: BodyType<SoftwareCatalogInput>}
+
+    export const useUpdateSoftwareCatalog = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSoftwareCatalog>>, TError,UpdateSoftwareCatalogMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSoftwareCatalog>>,
+        TError,
+        UpdateSoftwareCatalogMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateSoftwareCatalogMutationOptions(options));
+    }
+
+export const getSyncSoftwareDeliveriesUrl = () => {
+
+
+
+
+  return `/api/v1/software-products/sync-deliveries`
+}
+
+export const syncSoftwareDeliveries = async ( options?: Parameters<typeof customFetch>[1]): Promise<SoftwareSyncResult> => {
+
+  return customFetch<SoftwareSyncResult>(getSyncSoftwareDeliveriesUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSyncSoftwareDeliveriesMutationKey = () => ['syncSoftwareDeliveries'] as const;
+
+export const getSyncSoftwareDeliveriesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncSoftwareDeliveries>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof syncSoftwareDeliveries>>, TError,void, TContext> => {
+
+const mutationKey = getSyncSoftwareDeliveriesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncSoftwareDeliveries>>, void> = () => {
+
+
+          return  syncSoftwareDeliveries(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SyncSoftwareDeliveriesMutationResult = NonNullable<Awaited<ReturnType<typeof syncSoftwareDeliveries>>>
+
+    export type SyncSoftwareDeliveriesMutationError = ErrorType<unknown>
+
+
+    export const useSyncSoftwareDeliveries = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncSoftwareDeliveries>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof syncSoftwareDeliveries>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSyncSoftwareDeliveriesMutationOptions(options));
+    }
+
+export const getGetSoftwareProductUrl = (productId: string,) => {
+
+
+
+
+  return `/api/v1/software-products/${productId}`
+}
+
+export const getSoftwareProduct = async (productId: string, options?: Parameters<typeof customFetch>[1]): Promise<SoftwareProductDetail> => {
+
+  return customFetch<SoftwareProductDetail>(getGetSoftwareProductUrl(productId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSoftwareProductQueryKey = (productId: string,) => {
+    return [
+    `/api/v1/software-products/${productId}`
+    ] as const;
+    }
+
+
+export const getGetSoftwareProductQueryOptions = <TData = Awaited<ReturnType<typeof getSoftwareProduct>>, TError = ErrorType<unknown>>(productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProduct>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSoftwareProductQueryKey(productId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSoftwareProduct>>> = ({ signal }) => getSoftwareProduct(productId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProduct>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSoftwareProductQueryResult = NonNullable<Awaited<ReturnType<typeof getSoftwareProduct>>>
+export type GetSoftwareProductQueryError = ErrorType<unknown>
+
+
+
+export function useGetSoftwareProduct<TData = Awaited<ReturnType<typeof getSoftwareProduct>>, TError = ErrorType<unknown>>(
+ productId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSoftwareProduct>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSoftwareProductQueryOptions(productId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateSoftwareProductUrl = (productId: string,) => {
+
+
+
+
+  return `/api/v1/software-products/${productId}`
+}
+
+export const updateSoftwareProduct = async (productId: string,
+    softwareProductInput: SoftwareProductInput, options?: Parameters<typeof customFetch>[1]): Promise<SoftwareProduct> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SoftwareProduct>(getUpdateSoftwareProductUrl(productId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(softwareProductInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateSoftwareProductMutationKey = () => ['updateSoftwareProduct'] as const;
+
+export const getUpdateSoftwareProductMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSoftwareProduct>>, TError,UpdateSoftwareProductMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSoftwareProduct>>, TError,UpdateSoftwareProductMutationVariables, TContext> => {
+
+const mutationKey = getUpdateSoftwareProductMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSoftwareProduct>>, UpdateSoftwareProductMutationVariables> = (props) => {
+          const {productId,data} = props ?? {};
+
+          return  updateSoftwareProduct(productId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSoftwareProductMutationResult = NonNullable<Awaited<ReturnType<typeof updateSoftwareProduct>>>
+    export type UpdateSoftwareProductMutationBody = BodyType<SoftwareProductInput>
+    export type UpdateSoftwareProductMutationError = ErrorType<unknown>
+    export type UpdateSoftwareProductMutationVariables = {productId: string;data: BodyType<SoftwareProductInput>}
+
+    export const useUpdateSoftwareProduct = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSoftwareProduct>>, TError,UpdateSoftwareProductMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSoftwareProduct>>,
+        TError,
+        UpdateSoftwareProductMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateSoftwareProductMutationOptions(options));
+    }
+
+export const getCreateSoftwareRecordUrl = (productId: string,) => {
+
+
+
+
+  return `/api/v1/software-products/${productId}/records`
+}
+
+export const createSoftwareRecord = async (productId: string,
+    softwareRecordInput: SoftwareRecordInput, options?: Parameters<typeof customFetch>[1]): Promise<SoftwareProductDetail> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<SoftwareProductDetail>(getCreateSoftwareRecordUrl(productId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(softwareRecordInput)
+  }
+);}
+
+
+
+
+
+export const getCreateSoftwareRecordMutationKey = () => ['createSoftwareRecord'] as const;
+
+export const getCreateSoftwareRecordMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSoftwareRecord>>, TError,CreateSoftwareRecordMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSoftwareRecord>>, TError,CreateSoftwareRecordMutationVariables, TContext> => {
+
+const mutationKey = getCreateSoftwareRecordMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSoftwareRecord>>, CreateSoftwareRecordMutationVariables> = (props) => {
+          const {productId,data} = props ?? {};
+
+          return  createSoftwareRecord(productId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSoftwareRecordMutationResult = NonNullable<Awaited<ReturnType<typeof createSoftwareRecord>>>
+    export type CreateSoftwareRecordMutationBody = BodyType<SoftwareRecordInput>
+    export type CreateSoftwareRecordMutationError = ErrorType<unknown>
+    export type CreateSoftwareRecordMutationVariables = {productId: string;data: BodyType<SoftwareRecordInput>}
+
+    export const useCreateSoftwareRecord = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSoftwareRecord>>, TError,CreateSoftwareRecordMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSoftwareRecord>>,
+        TError,
+        CreateSoftwareRecordMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateSoftwareRecordMutationOptions(options));
+    }
 
 export const getGetLearningSpacesUrl = () => {
 

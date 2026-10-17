@@ -7,7 +7,7 @@ import { cp, mkdir, readFile, writeFile, readdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { verifyBackup } from "./backup-proof.mjs";
-import { ledger } from "./core.mjs";
+import { ledger, catalog } from "./core.mjs";
 
 const adapter = `#!/usr/bin/env node
 const {spawnSync}=require("node:child_process"),fs=require("node:fs"),path=require("node:path");
@@ -37,7 +37,7 @@ if(a.slice(0,6).join(" ")==="compose run --rm --no-deps -T --entrypoint"){
 throw Error("Unsupported Docker command");
 `;
 
-export async function verifyMaintenance({ directory, socket, env, admin, connect, dump, all }) {
+export async function verifyMaintenance({ directory, socket, env, admin, connect, dump, all, reference, legacyPrefix }) {
   const root = fileURLToPath(new URL("../../", import.meta.url));
   const sandbox = path.join(directory, "maintenance");
   const docs = path.join(sandbox, "documents");
@@ -108,7 +108,11 @@ BACKUP_ENCRYPTION_KEY=${key}
   const backup = await connect("maintenance_backup");
   assert.equal((await ledger(backup)).length, 0, "Backup is the pre-update state");
   assert.equal((await backup.query("SELECT name FROM centers")).rows[0].name, "Centro conservado");
-  assert.equal((await backup.query("SELECT to_regclass('public.ai_provider_settings') AS name")).rows[0].name, null);
+  await backup.query("BEGIN");
+  try {
+    assert.deepEqual(await catalog(backup), reference.states[legacyPrefix],
+      "The restored backup must retain the complete pre-update schema, not assume AI settings is always the last migration.");
+  } finally { await backup.query("ROLLBACK"); }
   const calls = await readFile(path.join(sandbox, "calls"), "utf8");
   assert.ok(!calls.includes('"start"') && !calls.includes('"up"'), "API must not auto-restart");
   console.log("PASS: staged maintenance scripts run real encrypted backup and migration, retain a restorable pre-update dump; failed backup blocks updates, bad checksum is rejected, API stays stopped (local Docker adapter).");

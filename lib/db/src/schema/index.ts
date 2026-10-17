@@ -25,3 +25,4 @@ export * from "./followups";
 export * from "./mail";
 export * from "./ai-provider";
 export * from "./spaces";
+export * from "./software-products";

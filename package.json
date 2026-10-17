@@ -12,6 +12,8 @@
     "test:phase2": "pnpm --filter @workspace/api-server run build && node scripts/test-phase2.mjs",
     "test:phase3": "pnpm --filter @workspace/api-server run build && node scripts/test-ciclope.mjs",
     "test:spaces": "pnpm --filter @workspace/api-server run build && node scripts/test-spaces.mjs",
+    "test:products": "pnpm --filter @workspace/api-server run build && node scripts/test-spaces.mjs --products-only",
+    "test:navigation": "node scripts/test-navigation.mjs",
     "test:phase3b": "pnpm --filter @workspace/api-server run build && node scripts/test-mail.mjs && node scripts/test-ciclope.mjs",
     "test:clamav": "node scripts/test-clamav.mjs",
     "test:ai-provider-check": "node scripts/test-ai-provider-check.mjs",

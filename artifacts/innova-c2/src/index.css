@@ -857,3 +857,26 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   .login-composition { animation: none; }
   .login-field, .login-submit { transition: none; }
 }
+
+/* Sidebar navigation: grouped accordion areas + compact rail. */
+.workspace-nav { flex:1 1 auto; min-height:0; overflow-y:auto; align-content:start; }
+.workspace-sidebar { overflow:hidden; }
+.sidebar-groups { display:grid; gap:4px; margin-top:6px; padding-top:8px; border-top:1px solid rgba(255,255,255,.18); }
+.sidebar-group-rail { border:0; background:transparent; cursor:pointer; }
+.sidebar-group-toggle { display:flex; align-items:center; gap:12px; width:100%; min-height:42px; padding:9px 12px; border:0; border-radius:8px; background:transparent; color:#fff; font-size:12.5px; font-weight:700; text-align:left; cursor:pointer; transition:background .18s; }
+.sidebar-group-toggle:hover { background:rgba(255,255,255,.13); }
+.sidebar-group-toggle .sidebar-link-label { flex:1; min-width:0; }
+.sidebar-group-toggle.has-active { color:var(--workspace-aqua-pale); }
+.sidebar-group-chevron { flex:0 0 auto; transition:transform .18s; }
+.sidebar-group.is-open .sidebar-group-chevron { transform:rotate(180deg); }
+.sidebar-group-items { display:grid; gap:2px; margin:2px 0 6px 20px; padding-left:8px; border-left:1px solid rgba(255,255,255,.22); }
+.sidebar-group-items[hidden] { display:none; }
+.sidebar-sublink { min-height:38px; padding:8px 10px; gap:10px; font-size:12.5px; font-weight:500; }
+.workspace-sidebar.is-expanded .sidebar-sublink { padding-inline:10px; }
+.sidebar-link-label { line-height:1.25; }
+.workspace-sidebar-bottom { display:grid; gap:6px; padding-top:8px; border-top:1px solid rgba(255,255,255,.18); }
+.sidebar-role-badge { display:inline-flex; align-items:center; gap:6px; margin:0 0 4px 2px; color:#d6eee9; font-size:10px; font-weight:700; letter-spacing:.04em; }
+@media (max-width: 767px) {
+  .workspace-sidebar.is-collapsed .sidebar-link-label { position:static; width:auto; height:auto; overflow:visible; clip:auto; white-space:normal; }
+}
+@media (prefers-reduced-motion: reduce) { .sidebar-group-chevron,.sidebar-group-toggle { transition:none; } }

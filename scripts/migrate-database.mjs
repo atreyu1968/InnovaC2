@@ -17,12 +17,14 @@ if (args.some(a => !["--preflight", "--apply", "--baseline", "--repair-guards", 
   process.exit(1);
 }
 const client = new Client({ connectionString: process.env.DATABASE_URL });
+let connected = false;
 try {
   if (!process.env.DATABASE_URL) throw new Error("Falta DATABASE_URL.");
   const all = await migrations();
   const reference = await loadReference(all);
   if (args.includes("--baseline")) await verifyBackup(backup);
   await client.connect();
+  connected = true;
   await client.query(args.includes("--preflight")
     ? "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY" : "BEGIN");
   await client.query("SET LOCAL lock_timeout='10s'");
@@ -43,10 +45,10 @@ try {
   await client.query("COMMIT");
   console.log(JSON.stringify({ ...result, applied: args.includes("--apply") }, null, 2));
 } catch (error) {
-  await client.query("ROLLBACK").catch(() => {});
+  if (connected) await client.query("ROLLBACK").catch(() => {});
   // Connection errors can contain hostnames but never echo connection settings.
   console.error(error.message.replace(/postgres(?:ql)?:\/\/\S+/gi, "[conexión oculta]"));
   process.exitCode = 1;
 } finally {
-  await client.end().catch(() => {});
+  if (connected) await client.end().catch(() => {});
 }

@@ -9,6 +9,781 @@ import * as zod from 'zod';
 
 
 
+export const getSoftwareProductsResponseCatalogOneOneDescriptionMax = 4000;
+
+export const getSoftwareProductsResponseProductsItemOneExpectedRevisionMin = 0;
+
+export const getSoftwareProductsResponseProductsItemOneNameMax = 160;
+
+export const getSoftwareProductsResponseProductsItemOnePurposeMax = 4000;
+
+export const getSoftwareProductsResponseProductsItemOneAudienceMax = 2000;
+
+export const getSoftwareProductsResponseProductsItemOneModulesMax = 4000;
+
+export const getSoftwareProductsResponseProductsItemOneCurrentVersionMax = 100;
+
+export const getSoftwareProductsResponseProductsItemOneRepositoryUrlMax = 800;
+
+export const getSoftwareProductsResponseProductsItemOneImplementationCenterMax = 500;
+
+export const getSoftwareProductsResponseProductsItemOneResultsMax = 5000;
+
+export const getSoftwareProductsResponseProductsItemOneEvidenceVersionIdsMax = 30;
+
+
+
+export const GetSoftwareProductsResponse = zod.object({
+  "schoolYearId": zod.string(),
+  "schoolYear": zod.string(),
+  "canManage": zod.boolean(),
+  "catalog": zod.union([zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "description": zod.string().max(getSoftwareProductsResponseCatalogOneOneDescriptionMax),
+  "picProjectId": zod.string().uuid().nullable()
+}).and(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "revision": zod.number().int()
+})),zod.null()]),
+  "products": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(getSoftwareProductsResponseProductsItemOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(getSoftwareProductsResponseProductsItemOneNameMax),
+  "purpose": zod.string().max(getSoftwareProductsResponseProductsItemOnePurposeMax),
+  "audience": zod.string().max(getSoftwareProductsResponseProductsItemOneAudienceMax),
+  "modules": zod.string().max(getSoftwareProductsResponseProductsItemOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(getSoftwareProductsResponseProductsItemOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(getSoftwareProductsResponseProductsItemOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(getSoftwareProductsResponseProductsItemOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(getSoftwareProductsResponseProductsItemOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(getSoftwareProductsResponseProductsItemOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+}))),
+  "staff": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})),
+  "picProjects": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})),
+  "evidenceOptions": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "installedVersion": zod.string()
+})
+
+
+export const CreateSoftwareProductHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const createSoftwareProductBodyExpectedRevisionMin = 0;
+
+export const createSoftwareProductBodyNameMax = 160;
+
+export const createSoftwareProductBodyPurposeMax = 4000;
+
+export const createSoftwareProductBodyAudienceMax = 2000;
+
+export const createSoftwareProductBodyModulesMax = 4000;
+
+export const createSoftwareProductBodyCurrentVersionMax = 100;
+
+export const createSoftwareProductBodyRepositoryUrlMax = 800;
+
+export const createSoftwareProductBodyImplementationCenterMax = 500;
+
+export const createSoftwareProductBodyResultsMax = 5000;
+
+export const createSoftwareProductBodyEvidenceVersionIdsMax = 30;
+
+
+
+export const CreateSoftwareProductBody = zod.object({
+  "expectedRevision": zod.number().int().min(createSoftwareProductBodyExpectedRevisionMin),
+  "name": zod.string().min(1).max(createSoftwareProductBodyNameMax),
+  "purpose": zod.string().max(createSoftwareProductBodyPurposeMax),
+  "audience": zod.string().max(createSoftwareProductBodyAudienceMax),
+  "modules": zod.string().max(createSoftwareProductBodyModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(createSoftwareProductBodyCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(createSoftwareProductBodyRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(createSoftwareProductBodyImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(createSoftwareProductBodyResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(createSoftwareProductBodyEvidenceVersionIdsMax)
+})
+
+export const createSoftwareProductResponseOneExpectedRevisionMin = 0;
+
+export const createSoftwareProductResponseOneNameMax = 160;
+
+export const createSoftwareProductResponseOnePurposeMax = 4000;
+
+export const createSoftwareProductResponseOneAudienceMax = 2000;
+
+export const createSoftwareProductResponseOneModulesMax = 4000;
+
+export const createSoftwareProductResponseOneCurrentVersionMax = 100;
+
+export const createSoftwareProductResponseOneRepositoryUrlMax = 800;
+
+export const createSoftwareProductResponseOneImplementationCenterMax = 500;
+
+export const createSoftwareProductResponseOneResultsMax = 5000;
+
+export const createSoftwareProductResponseOneEvidenceVersionIdsMax = 30;
+
+
+
+export const CreateSoftwareProductResponse = zod.object({
+  "expectedRevision": zod.number().int().min(createSoftwareProductResponseOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(createSoftwareProductResponseOneNameMax),
+  "purpose": zod.string().max(createSoftwareProductResponseOnePurposeMax),
+  "audience": zod.string().max(createSoftwareProductResponseOneAudienceMax),
+  "modules": zod.string().max(createSoftwareProductResponseOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(createSoftwareProductResponseOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(createSoftwareProductResponseOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(createSoftwareProductResponseOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(createSoftwareProductResponseOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(createSoftwareProductResponseOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+}))
+
+
+export const InitializeSoftwareProductsHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const initializeSoftwareProductsResponseCatalogOneOneDescriptionMax = 4000;
+
+export const initializeSoftwareProductsResponseProductsItemOneExpectedRevisionMin = 0;
+
+export const initializeSoftwareProductsResponseProductsItemOneNameMax = 160;
+
+export const initializeSoftwareProductsResponseProductsItemOnePurposeMax = 4000;
+
+export const initializeSoftwareProductsResponseProductsItemOneAudienceMax = 2000;
+
+export const initializeSoftwareProductsResponseProductsItemOneModulesMax = 4000;
+
+export const initializeSoftwareProductsResponseProductsItemOneCurrentVersionMax = 100;
+
+export const initializeSoftwareProductsResponseProductsItemOneRepositoryUrlMax = 800;
+
+export const initializeSoftwareProductsResponseProductsItemOneImplementationCenterMax = 500;
+
+export const initializeSoftwareProductsResponseProductsItemOneResultsMax = 5000;
+
+export const initializeSoftwareProductsResponseProductsItemOneEvidenceVersionIdsMax = 30;
+
+
+
+export const InitializeSoftwareProductsResponse = zod.object({
+  "schoolYearId": zod.string(),
+  "schoolYear": zod.string(),
+  "canManage": zod.boolean(),
+  "catalog": zod.union([zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "description": zod.string().max(initializeSoftwareProductsResponseCatalogOneOneDescriptionMax),
+  "picProjectId": zod.string().uuid().nullable()
+}).and(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "revision": zod.number().int()
+})),zod.null()]),
+  "products": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(initializeSoftwareProductsResponseProductsItemOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(initializeSoftwareProductsResponseProductsItemOneNameMax),
+  "purpose": zod.string().max(initializeSoftwareProductsResponseProductsItemOnePurposeMax),
+  "audience": zod.string().max(initializeSoftwareProductsResponseProductsItemOneAudienceMax),
+  "modules": zod.string().max(initializeSoftwareProductsResponseProductsItemOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(initializeSoftwareProductsResponseProductsItemOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(initializeSoftwareProductsResponseProductsItemOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(initializeSoftwareProductsResponseProductsItemOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(initializeSoftwareProductsResponseProductsItemOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(initializeSoftwareProductsResponseProductsItemOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+}))),
+  "staff": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})),
+  "picProjects": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})),
+  "evidenceOptions": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "installedVersion": zod.string()
+})
+
+
+export const UpdateSoftwareCatalogHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const updateSoftwareCatalogBodyDescriptionMax = 4000;
+
+
+
+export const UpdateSoftwareCatalogBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "description": zod.string().max(updateSoftwareCatalogBodyDescriptionMax),
+  "picProjectId": zod.string().uuid().nullable()
+})
+
+
+export const updateSoftwareCatalogResponseCatalogOneOneDescriptionMax = 4000;
+
+export const updateSoftwareCatalogResponseProductsItemOneExpectedRevisionMin = 0;
+
+export const updateSoftwareCatalogResponseProductsItemOneNameMax = 160;
+
+export const updateSoftwareCatalogResponseProductsItemOnePurposeMax = 4000;
+
+export const updateSoftwareCatalogResponseProductsItemOneAudienceMax = 2000;
+
+export const updateSoftwareCatalogResponseProductsItemOneModulesMax = 4000;
+
+export const updateSoftwareCatalogResponseProductsItemOneCurrentVersionMax = 100;
+
+export const updateSoftwareCatalogResponseProductsItemOneRepositoryUrlMax = 800;
+
+export const updateSoftwareCatalogResponseProductsItemOneImplementationCenterMax = 500;
+
+export const updateSoftwareCatalogResponseProductsItemOneResultsMax = 5000;
+
+export const updateSoftwareCatalogResponseProductsItemOneEvidenceVersionIdsMax = 30;
+
+
+
+export const UpdateSoftwareCatalogResponse = zod.object({
+  "schoolYearId": zod.string(),
+  "schoolYear": zod.string(),
+  "canManage": zod.boolean(),
+  "catalog": zod.union([zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "description": zod.string().max(updateSoftwareCatalogResponseCatalogOneOneDescriptionMax),
+  "picProjectId": zod.string().uuid().nullable()
+}).and(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "revision": zod.number().int()
+})),zod.null()]),
+  "products": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(updateSoftwareCatalogResponseProductsItemOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(updateSoftwareCatalogResponseProductsItemOneNameMax),
+  "purpose": zod.string().max(updateSoftwareCatalogResponseProductsItemOnePurposeMax),
+  "audience": zod.string().max(updateSoftwareCatalogResponseProductsItemOneAudienceMax),
+  "modules": zod.string().max(updateSoftwareCatalogResponseProductsItemOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(updateSoftwareCatalogResponseProductsItemOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(updateSoftwareCatalogResponseProductsItemOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(updateSoftwareCatalogResponseProductsItemOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(updateSoftwareCatalogResponseProductsItemOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(updateSoftwareCatalogResponseProductsItemOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+}))),
+  "staff": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})),
+  "picProjects": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string()
+})),
+  "evidenceOptions": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "installedVersion": zod.string()
+})
+
+
+export const SyncSoftwareDeliveriesHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const SyncSoftwareDeliveriesResponse = zod.object({
+  "inserted": zod.number().int(),
+  "message": zod.string()
+})
+
+
+export const GetSoftwareProductParams = zod.object({
+  "productId": zod.coerce.string().uuid()
+})
+
+export const getSoftwareProductResponseProductOneExpectedRevisionMin = 0;
+
+export const getSoftwareProductResponseProductOneNameMax = 160;
+
+export const getSoftwareProductResponseProductOnePurposeMax = 4000;
+
+export const getSoftwareProductResponseProductOneAudienceMax = 2000;
+
+export const getSoftwareProductResponseProductOneModulesMax = 4000;
+
+export const getSoftwareProductResponseProductOneCurrentVersionMax = 100;
+
+export const getSoftwareProductResponseProductOneRepositoryUrlMax = 800;
+
+export const getSoftwareProductResponseProductOneImplementationCenterMax = 500;
+
+export const getSoftwareProductResponseProductOneResultsMax = 5000;
+
+export const getSoftwareProductResponseProductOneEvidenceVersionIdsMax = 30;
+
+
+export const getSoftwareProductResponseRecordsItemOneTitleMax = 200;
+
+export const getSoftwareProductResponseRecordsItemOneVersionMax = 100;
+
+export const getSoftwareProductResponseRecordsItemOneDetailsMax = 6000;
+
+export const getSoftwareProductResponseRecordsItemOneEvidenceVersionIdsMax = 30;
+
+
+
+export const GetSoftwareProductResponse = zod.object({
+  "product": zod.object({
+  "expectedRevision": zod.number().int().min(getSoftwareProductResponseProductOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(getSoftwareProductResponseProductOneNameMax),
+  "purpose": zod.string().max(getSoftwareProductResponseProductOnePurposeMax),
+  "audience": zod.string().max(getSoftwareProductResponseProductOneAudienceMax),
+  "modules": zod.string().max(getSoftwareProductResponseProductOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(getSoftwareProductResponseProductOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(getSoftwareProductResponseProductOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(getSoftwareProductResponseProductOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(getSoftwareProductResponseProductOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(getSoftwareProductResponseProductOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+})),
+  "records": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "kind": zod.enum(['entrega', 'hito', 'prueba', 'ticket', 'captura', 'manual']),
+  "title": zod.string().min(1).max(getSoftwareProductResponseRecordsItemOneTitleMax),
+  "version": zod.string().max(getSoftwareProductResponseRecordsItemOneVersionMax),
+  "occurredOn": zod.coerce.date(),
+  "details": zod.string().min(1).max(getSoftwareProductResponseRecordsItemOneDetailsMax),
+  "outcome": zod.enum(['pendiente', 'superada', 'fallida', 'no_aplica']),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(getSoftwareProductResponseRecordsItemOneEvidenceVersionIdsMax),
+  "supersedesId": zod.string().uuid().nullable()
+}).and(zod.object({
+  "id": zod.string(),
+  "productId": zod.string(),
+  "revision": zod.number().int(),
+  "source": zod.enum(['manual', 'installed_manifest']),
+  "createdAt": zod.coerce.date(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+}))
+}))),
+  "history": zod.array(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "summary": zod.string()
+}))
+})
+
+
+export const UpdateSoftwareProductParams = zod.object({
+  "productId": zod.coerce.string().uuid()
+})
+
+export const UpdateSoftwareProductHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const updateSoftwareProductBodyExpectedRevisionMin = 0;
+
+export const updateSoftwareProductBodyNameMax = 160;
+
+export const updateSoftwareProductBodyPurposeMax = 4000;
+
+export const updateSoftwareProductBodyAudienceMax = 2000;
+
+export const updateSoftwareProductBodyModulesMax = 4000;
+
+export const updateSoftwareProductBodyCurrentVersionMax = 100;
+
+export const updateSoftwareProductBodyRepositoryUrlMax = 800;
+
+export const updateSoftwareProductBodyImplementationCenterMax = 500;
+
+export const updateSoftwareProductBodyResultsMax = 5000;
+
+export const updateSoftwareProductBodyEvidenceVersionIdsMax = 30;
+
+
+
+export const UpdateSoftwareProductBody = zod.object({
+  "expectedRevision": zod.number().int().min(updateSoftwareProductBodyExpectedRevisionMin),
+  "name": zod.string().min(1).max(updateSoftwareProductBodyNameMax),
+  "purpose": zod.string().max(updateSoftwareProductBodyPurposeMax),
+  "audience": zod.string().max(updateSoftwareProductBodyAudienceMax),
+  "modules": zod.string().max(updateSoftwareProductBodyModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(updateSoftwareProductBodyCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(updateSoftwareProductBodyRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(updateSoftwareProductBodyImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(updateSoftwareProductBodyResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(updateSoftwareProductBodyEvidenceVersionIdsMax)
+})
+
+export const updateSoftwareProductResponseOneExpectedRevisionMin = 0;
+
+export const updateSoftwareProductResponseOneNameMax = 160;
+
+export const updateSoftwareProductResponseOnePurposeMax = 4000;
+
+export const updateSoftwareProductResponseOneAudienceMax = 2000;
+
+export const updateSoftwareProductResponseOneModulesMax = 4000;
+
+export const updateSoftwareProductResponseOneCurrentVersionMax = 100;
+
+export const updateSoftwareProductResponseOneRepositoryUrlMax = 800;
+
+export const updateSoftwareProductResponseOneImplementationCenterMax = 500;
+
+export const updateSoftwareProductResponseOneResultsMax = 5000;
+
+export const updateSoftwareProductResponseOneEvidenceVersionIdsMax = 30;
+
+
+
+export const UpdateSoftwareProductResponse = zod.object({
+  "expectedRevision": zod.number().int().min(updateSoftwareProductResponseOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(updateSoftwareProductResponseOneNameMax),
+  "purpose": zod.string().max(updateSoftwareProductResponseOnePurposeMax),
+  "audience": zod.string().max(updateSoftwareProductResponseOneAudienceMax),
+  "modules": zod.string().max(updateSoftwareProductResponseOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(updateSoftwareProductResponseOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(updateSoftwareProductResponseOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(updateSoftwareProductResponseOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(updateSoftwareProductResponseOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(updateSoftwareProductResponseOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+}))
+
+
+export const CreateSoftwareRecordParams = zod.object({
+  "productId": zod.coerce.string().uuid()
+})
+
+export const CreateSoftwareRecordHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const createSoftwareRecordBodyTitleMax = 200;
+
+export const createSoftwareRecordBodyVersionMax = 100;
+
+export const createSoftwareRecordBodyDetailsMax = 6000;
+
+export const createSoftwareRecordBodyEvidenceVersionIdsMax = 30;
+
+
+
+export const CreateSoftwareRecordBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "kind": zod.enum(['entrega', 'hito', 'prueba', 'ticket', 'captura', 'manual']),
+  "title": zod.string().min(1).max(createSoftwareRecordBodyTitleMax),
+  "version": zod.string().max(createSoftwareRecordBodyVersionMax),
+  "occurredOn": zod.coerce.date(),
+  "details": zod.string().min(1).max(createSoftwareRecordBodyDetailsMax),
+  "outcome": zod.enum(['pendiente', 'superada', 'fallida', 'no_aplica']),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(createSoftwareRecordBodyEvidenceVersionIdsMax),
+  "supersedesId": zod.string().uuid().nullable()
+})
+
+export const createSoftwareRecordResponseProductOneExpectedRevisionMin = 0;
+
+export const createSoftwareRecordResponseProductOneNameMax = 160;
+
+export const createSoftwareRecordResponseProductOnePurposeMax = 4000;
+
+export const createSoftwareRecordResponseProductOneAudienceMax = 2000;
+
+export const createSoftwareRecordResponseProductOneModulesMax = 4000;
+
+export const createSoftwareRecordResponseProductOneCurrentVersionMax = 100;
+
+export const createSoftwareRecordResponseProductOneRepositoryUrlMax = 800;
+
+export const createSoftwareRecordResponseProductOneImplementationCenterMax = 500;
+
+export const createSoftwareRecordResponseProductOneResultsMax = 5000;
+
+export const createSoftwareRecordResponseProductOneEvidenceVersionIdsMax = 30;
+
+
+export const createSoftwareRecordResponseRecordsItemOneTitleMax = 200;
+
+export const createSoftwareRecordResponseRecordsItemOneVersionMax = 100;
+
+export const createSoftwareRecordResponseRecordsItemOneDetailsMax = 6000;
+
+export const createSoftwareRecordResponseRecordsItemOneEvidenceVersionIdsMax = 30;
+
+
+
+export const CreateSoftwareRecordResponse = zod.object({
+  "product": zod.object({
+  "expectedRevision": zod.number().int().min(createSoftwareRecordResponseProductOneExpectedRevisionMin),
+  "name": zod.string().min(1).max(createSoftwareRecordResponseProductOneNameMax),
+  "purpose": zod.string().max(createSoftwareRecordResponseProductOnePurposeMax),
+  "audience": zod.string().max(createSoftwareRecordResponseProductOneAudienceMax),
+  "modules": zod.string().max(createSoftwareRecordResponseProductOneModulesMax),
+  "responsibleUserId": zod.string().uuid().nullable(),
+  "startedOn": zod.coerce.date().nullable(),
+  "currentVersion": zod.string().max(createSoftwareRecordResponseProductOneCurrentVersionMax),
+  "status": zod.enum(['idea', 'analisis', 'desarrollo', 'pruebas', 'piloto', 'implantado', 'mantenimiento']),
+  "repositoryUrl": zod.string().max(createSoftwareRecordResponseProductOneRepositoryUrlMax).nullable(),
+  "implementationCenter": zod.string().max(createSoftwareRecordResponseProductOneImplementationCenterMax),
+  "implementationDate": zod.coerce.date().nullable(),
+  "results": zod.string().max(createSoftwareRecordResponseProductOneResultsMax),
+  "resultsConfirmedOn": zod.coerce.date().nullable(),
+  "approvalConfirmed": zod.boolean(),
+  "approvalDate": zod.coerce.date().nullable(),
+  "securityReviewed": zod.boolean(),
+  "securityDate": zod.coerce.date().nullable(),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(createSoftwareRecordResponseProductOneEvidenceVersionIdsMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "productKey": zod.string().nullable(),
+  "responsibleName": zod.string().nullable(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+})),
+  "evidenceIssues": zod.array(zod.string())
+})),
+  "records": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "kind": zod.enum(['entrega', 'hito', 'prueba', 'ticket', 'captura', 'manual']),
+  "title": zod.string().min(1).max(createSoftwareRecordResponseRecordsItemOneTitleMax),
+  "version": zod.string().max(createSoftwareRecordResponseRecordsItemOneVersionMax),
+  "occurredOn": zod.coerce.date(),
+  "details": zod.string().min(1).max(createSoftwareRecordResponseRecordsItemOneDetailsMax),
+  "outcome": zod.enum(['pendiente', 'superada', 'fallida', 'no_aplica']),
+  "evidenceVersionIds": zod.array(zod.string().uuid()).max(createSoftwareRecordResponseRecordsItemOneEvidenceVersionIdsMax),
+  "supersedesId": zod.string().uuid().nullable()
+}).and(zod.object({
+  "id": zod.string(),
+  "productId": zod.string(),
+  "revision": zod.number().int(),
+  "source": zod.enum(['manual', 'installed_manifest']),
+  "createdAt": zod.coerce.date(),
+  "evidence": zod.array(zod.object({
+  "versionId": zod.string(),
+  "documentId": zod.string(),
+  "title": zod.string(),
+  "sha256": zod.string(),
+  "versionNumber": zod.number().int(),
+  "available": zod.boolean(),
+  "issue": zod.string().nullable()
+}))
+}))),
+  "history": zod.array(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "summary": zod.string()
+}))
+})
+
+
+
 export const getLearningSpacesResponseSpacesItemOneNameMax = 160;
 
 export const getLearningSpacesResponseSpacesItemOnePurposeMax = 3000;

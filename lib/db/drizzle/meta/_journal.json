@@ -127,6 +127,20 @@
       "when": 1792258460052,
       "tag": "0015_space_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792258460053,
+      "tag": "0016_software_products",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1792258460054,
+      "tag": "0017_software_guards",
+      "breakpoints": true
     }
   ]
 }

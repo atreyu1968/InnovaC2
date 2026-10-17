@@ -111,8 +111,10 @@ try {
   // empty (but valid) Drizzle ledger. Dump then restore into a DIFFERENT DB.
   await admin.query("CREATE DATABASE legacy");
   const legacy = await connect("legacy");
+  const legacyPrefix = all.findIndex(m => m.tag === "0013_ai_provider_settings");
+  assert.ok(legacyPrefix > 0, "Keep a fixed populated legacy prefix as new migrations are appended.");
   await transaction(legacy, async () => {
-    for (const m of all.slice(0, -1)) await applySql(legacy, m);
+    for (const m of all.slice(0, legacyPrefix)) await applySql(legacy, m);
     await legacy.query(`CREATE SCHEMA drizzle;
       CREATE TABLE drizzle.__drizzle_migrations(id SERIAL PRIMARY KEY,hash text NOT NULL,created_at bigint)`);
     await legacy.query(`INSERT INTO centers(id,name) VALUES ('10000000-0000-0000-0000-000000000001','Centro conservado');
@@ -138,8 +140,8 @@ try {
   };
   const original = await rows(restored);
   const plan = await transaction(restored, () => inspect(restored, all, reference), true);
-  assert.equal(plan.status, "baseline-required");
-  assert.deepEqual(plan.pending, [all.at(-1).tag]);
+  assert.equal(plan.status, "baseline-required", JSON.stringify(plan));
+  assert.deepEqual(plan.pending, all.slice(legacyPrefix).map(m => m.tag));
   assert.equal((await ledger(restored)).length, 0, "Preflight must not write ledger");
   await assert.rejects(transaction(restored, () => upgrade(restored, all, reference)), /--baseline/);
   await transaction(restored, () => upgrade(restored, all, reference, { allowBaseline: true }));
@@ -173,6 +175,10 @@ try {
   console.log("PASS: full schema baselining and ordinary tracked-prefix upgrade.");
 
   const drifts = [
+    ["space-range", `ALTER TABLE space_reservations DROP CONSTRAINT space_reservations_space_kinds_check;
+      ALTER TABLE space_reservations ADD CONSTRAINT space_reservations_space_kinds_check
+      CHECK (cardinality(space_kinds) BETWEEN 0 AND 2 AND space_kinds <@ ARRAY['ateca','fablab']::text[]
+        AND (cardinality(space_kinds)=1 OR space_kinds[1]<>space_kinds[2]))`],
     ["column", `ALTER TABLE centers ALTER COLUMN name DROP NOT NULL`],
     ["extra", `CREATE TABLE unexpected_data(id integer)`],
     ["index", `CREATE INDEX extra_index ON centers(name)`],
@@ -213,7 +219,7 @@ try {
   assert.equal((await ledger(legacy)).length, 0);
   assert.deepEqual(await rows(legacy), original);
   await transaction(legacy, async () => {
-    assert.deepEqual(difference(reference.states.at(-2), await catalog(legacy)), []);
+    assert.deepEqual(difference(reference.states[legacyPrefix], await catalog(legacy)), []);
   });
   console.log("PASS: failure rolls back both baseline and additive changes; backup/source unchanged.");
 
@@ -237,7 +243,7 @@ try {
     await assert.rejects(upgrade(legacy, all, reference, { allowBaseline: true, repairGuards: true }), /incompatible/);
   }, true);
   console.log("PASS: explicit repair adds only absent guards; changed functions are blocked without replacement.");
-  await verifyMaintenance({ directory, socket, env, admin, connect, dump, all });
+  await verifyMaintenance({ directory, socket, env, admin, connect, dump, all, reference, legacyPrefix });
   if (process.argv.includes("--copy-development")) {
     await verifyDevelopmentCopy({ source: developmentSource, directory, socket, env, admin, connect, all, reference });
   }

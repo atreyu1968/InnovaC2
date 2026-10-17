@@ -36,10 +36,11 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
   11–14, referencias a evidencias, comprobaciones humanas de certificación,
   instantáneas inmutables, exportaciones y recibos de entrega manual.
   Véase `docs/fase-4-seguimientos-memoria.md`; no emite certificados oficiales.
-- **Fase 5 — primer bloque implementado: ATECA y FABLab.** Fichas separadas,
-  calendario/reservas, usos documentados mediante actuaciones existentes,
-  historial y cierre de curso. Pendientes el catálogo de productos propios,
-  las fichas SCORM y el circuito de transferencia/difusión.
+- **Fase 5 — espacios y catálogo de productos implementados.** ATECA/FABLab,
+  calendario/reservas, usos vinculados a actuaciones y archivo. Catálogo
+  «Innovando en FP» con fichas independientes, entregas, pruebas, hitos,
+  tickets, capturas y manuales. Pendientes las fichas SCORM y el circuito de
+  transferencia/difusión. Véase `docs/fase-5-productos.md`.
 - **Fase 6 — parcial.** Grabación/transcripción y borrador de actas,
   configuración y comprobación del proveedor. Pendientes el asistente
   documental/RAG y sus circuitos de aprobación. No se simulan capacidades no
@@ -75,8 +76,8 @@ ocupación de actuaciones únicas y no certifican logros.
 Los guardados tienen control de revisión e historial inmutable. Las fichas,
 reservas e historial se incluyen al archivar el curso, quedan bloqueados tras su
 cierre y no se copian al nuevo. La vista actual no sustituye a la consulta del
-archivo histórico. El catálogo de software/SCORM y la transferencia autonómica
-siguen pendientes, no se presentan como terminados.
+archivo histórico. El catálogo de software se describe en
+`docs/fase-5-productos.md`; SCORM y transferencia autonómica siguen pendientes.
 
 **Pruebas:** `pnpm run test:spaces` provisiona PostgreSQL y servidor privados,
 ejecuta todas las migraciones desde cero y comprueba permisos, CSRF, privacidad,

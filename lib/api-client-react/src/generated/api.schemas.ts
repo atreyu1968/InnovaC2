@@ -5,6 +5,203 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface SoftwareCatalogInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  /** @maxLength 4000 */
+  description: string;
+  /** @nullable */
+  picProjectId: string | null;
+}
+
+export type SoftwareCatalog = SoftwareCatalogInput & {
+  id: string;
+  name: string;
+  revision: number;
+};
+
+export type SoftwareProductInputStatus = typeof SoftwareProductInputStatus[keyof typeof SoftwareProductInputStatus];
+
+
+export const SoftwareProductInputStatus = {
+  idea: 'idea',
+  analisis: 'analisis',
+  desarrollo: 'desarrollo',
+  pruebas: 'pruebas',
+  piloto: 'piloto',
+  implantado: 'implantado',
+  mantenimiento: 'mantenimiento',
+} as const;
+
+export interface SoftwareProductInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  name: string;
+  /** @maxLength 4000 */
+  purpose: string;
+  /** @maxLength 2000 */
+  audience: string;
+  /** @maxLength 4000 */
+  modules: string;
+  /** @nullable */
+  responsibleUserId: string | null;
+  /** @nullable */
+  startedOn: string | null;
+  /** @maxLength 100 */
+  currentVersion: string;
+  status: SoftwareProductInputStatus;
+  /**
+     * @maxLength 800
+     * @nullable
+     */
+  repositoryUrl: string | null;
+  /** @maxLength 500 */
+  implementationCenter: string;
+  /** @nullable */
+  implementationDate: string | null;
+  /** @maxLength 5000 */
+  results: string;
+  /** @nullable */
+  resultsConfirmedOn: string | null;
+  approvalConfirmed: boolean;
+  /** @nullable */
+  approvalDate: string | null;
+  securityReviewed: boolean;
+  /** @nullable */
+  securityDate: string | null;
+  /** @maxItems 30 */
+  evidenceVersionIds: string[];
+}
+
+export interface SoftwareEvidence {
+  versionId: string;
+  documentId: string;
+  title: string;
+  sha256: string;
+  versionNumber: number;
+  available: boolean;
+  /** @nullable */
+  issue: string | null;
+}
+
+export type SoftwareProduct = SoftwareProductInput & ({
+  id: string;
+  revision: number;
+  /** @nullable */
+  productKey: string | null;
+  /** @nullable */
+  responsibleName: string | null;
+  evidence: SoftwareEvidence[];
+  evidenceIssues: string[];
+});
+
+export type SoftwareRecordInputKind = typeof SoftwareRecordInputKind[keyof typeof SoftwareRecordInputKind];
+
+
+export const SoftwareRecordInputKind = {
+  entrega: 'entrega',
+  hito: 'hito',
+  prueba: 'prueba',
+  ticket: 'ticket',
+  captura: 'captura',
+  manual: 'manual',
+} as const;
+
+export type SoftwareRecordInputOutcome = typeof SoftwareRecordInputOutcome[keyof typeof SoftwareRecordInputOutcome];
+
+
+export const SoftwareRecordInputOutcome = {
+  pendiente: 'pendiente',
+  superada: 'superada',
+  fallida: 'fallida',
+  no_aplica: 'no_aplica',
+} as const;
+
+export interface SoftwareRecordInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  kind: SoftwareRecordInputKind;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+  /** @maxLength 100 */
+  version: string;
+  occurredOn: string;
+  /**
+     * @minLength 1
+     * @maxLength 6000
+     */
+  details: string;
+  outcome: SoftwareRecordInputOutcome;
+  /** @maxItems 30 */
+  evidenceVersionIds: string[];
+  /** @nullable */
+  supersedesId: string | null;
+}
+
+export type SoftwareRecordSource = typeof SoftwareRecordSource[keyof typeof SoftwareRecordSource];
+
+
+export const SoftwareRecordSource = {
+  manual: 'manual',
+  installed_manifest: 'installed_manifest',
+} as const;
+
+export type SoftwareRecord = SoftwareRecordInput & {
+  id: string;
+  productId: string;
+  revision: number;
+  source: SoftwareRecordSource;
+  createdAt: string;
+  evidence: SoftwareEvidence[];
+};
+
+export interface SpaceRecordVersion {
+  id: string;
+  revision: number;
+  createdAt: string;
+  summary: string;
+}
+
+export interface SoftwareProductDetail {
+  product: SoftwareProduct;
+  records: SoftwareRecord[];
+  history: SpaceRecordVersion[];
+}
+
+export interface SoftwareStaffOption {
+  id: string;
+  name: string;
+}
+
+export interface SoftwareNamedOption {
+  id: string;
+  name: string;
+}
+
+export interface SoftwareOverview {
+  schoolYearId: string;
+  schoolYear: string;
+  canManage: boolean;
+  catalog: SoftwareCatalog | null;
+  products: SoftwareProduct[];
+  staff: SoftwareStaffOption[];
+  picProjects: SoftwareNamedOption[];
+  evidenceOptions: SoftwareEvidence[];
+  installedVersion: string;
+}
+
+export interface SoftwareSyncResult {
+  inserted: number;
+  message: string;
+}
+
 export interface LearningSpaceInput {
   /** @minimum 1 */
   expectedRevision: number;
@@ -111,13 +308,6 @@ export interface LearningSpacesOverview {
   spaces: LearningSpace[];
   reservations: SpaceReservation[];
   activities: SpaceActivityOption[];
-}
-
-export interface SpaceRecordVersion {
-  id: string;
-  revision: number;
-  createdAt: string;
-  summary: string;
 }
 
 export interface CiclopePerson {

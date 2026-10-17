@@ -1,0 +1,20 @@
+{
+  "application": "INNOVA-C2",
+  "installedVersion": "0.5.2",
+  "deliveries": [
+    {
+      "key": "innova-c2-spaces-0.5.1",
+      "version": "0.5.1",
+      "date": "2026-10-17",
+      "title": "ATECA y FABLab: fichas, reservas y usos documentados",
+      "details": "Fichas independientes, reservas de uno o ambos espacios, solapes, permisos, revisiones inmutables y archivo de curso. Verificación técnica realizada: pnpm run test:spaces, 62 comprobaciones API sobre PostgreSQL aislado; pnpm run typecheck y compilación Vite correctos; recorrido de navegador en escritorio y móvil sobre datos ficticios. Referencias reproducibles: scripts/test-spaces.mjs y README.md. Estas comprobaciones no certifican seguridad, implantación, aprobación oficial ni impacto educativo."
+    },
+    {
+      "key": "innova-c2-products-0.5.2",
+      "version": "0.5.2",
+      "date": "2026-10-17",
+      "title": "Catálogo de productos de Innovando en FP",
+      "details": "Fichas independientes, vinculación opcional al PIC sin selección automática, responsables, versiones, hitos, pruebas, tickets, capturas y manuales; referencias documentales fijadas, historial y rectificaciones inmutables, declaraciones condicionadas a evidencias y fechas. Verificación técnica realizada: pnpm run test:products, 86 comprobaciones semánticas/HTTP sobre PostgreSQL aislado; tipos y compilación correctos. Referencias reproducibles: scripts/test-software-products.mjs y docs/fase-5-productos.md. No constituye aprobación oficial, auditoría de seguridad, implantación ni resultado de innovación."
+    }
+  ]
+}

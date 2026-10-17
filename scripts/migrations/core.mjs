@@ -33,7 +33,18 @@ export async function catalog(client, namespace = "public") {
     .replaceAll("n.nspname='public'", `n.nspname='${namespace}'`);
   const { rows } = await client.query(sql);
   if (new Set(rows.map(r => r.key)).size !== rows.length) throw new Error("Catálogo ambiguo; no se puede reconciliar.");
-  return Object.fromEntries(rows.map(r => [r.key, hash(stable(r.value))]));
+  return Object.fromEntries(rows.map(r => {
+    // pg_dump reparses BETWEEN followed by AND into a flat AND group.
+    // Normalize ONLY this known, associative range clause; keep every bound,
+    // operator and remaining predicate in the fingerprint. Never strip SQL parentheses generally.
+    if (r.key === "constraint:space_reservations.space_reservations_space_kinds_check" && typeof r.value.definition === "string") {
+      r.value.definition = r.value.definition.replace(
+        "CHECK ((((cardinality(space_kinds) >= 1) AND (cardinality(space_kinds) <= 2)) AND ",
+        "CHECK (((cardinality(space_kinds) >= 1) AND (cardinality(space_kinds) <= 2) AND ",
+      );
+    }
+    return [r.key, hash(stable(r.value))];
+  }));
 }
 
 export async function guardDefinitions(client) {

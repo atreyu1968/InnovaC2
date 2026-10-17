@@ -90,6 +90,19 @@ try {
   const teacher = await account("teacher@spaces.example.invalid", family);
   const other = await account("other@spaces.example.invalid", otherFamily);
   const reader = await account("reader@spaces.example.invalid", null, "consulta_auditora");
+  if (process.argv.includes("--products-only")) {
+    const { testSoftwareProducts } = await import("./test-software-products.mjs");
+    const fixture = await testSoftwareProducts({ request, status, pool, admin, teacher, reader, adminId: initial.user.id,
+      browser: process.argv.includes("--serve-browser") });
+    if (fixture) {
+      const fixturePath = path.join(directory, "browser-fixture.json");
+      await writeFile(fixturePath, JSON.stringify({ ...fixture, url: base.replace("/api/v1", ""), password,
+        admin: initial.user.email, teacher: "teacher@spaces.example.invalid", reader: "reader@spaces.example.invalid" }), { mode: 0o600 });
+      console.log(`Products browser fixture ready: ${fixturePath}`);
+      await new Promise(() => {});
+    }
+    console.log(`Catálogo: ${checks} respuestas HTTP verificadas.`);
+  } else {
   status(await request("/spaces"), 401);
   const overview = () => request("/spaces", admin).then((response) => status(response, 200));
   assert.equal((await overview()).spaces.length, 0); checks++;
@@ -191,5 +204,6 @@ try {
   }), 404);
   status(await request(`/space-records/${reservation.id}/versions`, admin), 404);
   console.log(`ATECA y FABLab: ${checks} comprobaciones correctas; PostgreSQL aislado, permisos, solapes, versiones, privacidad, reutilización y cierre.`);
+  }
 } catch (error) { console.error(error); process.exitCode = 1; }
 finally { await cleanup(); }

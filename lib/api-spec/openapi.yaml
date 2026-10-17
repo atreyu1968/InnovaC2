@@ -29,6 +29,107 @@ tags:
   - name: indicators
     description: Observaciones y cálculos trazables de indicadores
 paths:
+  /software-products:
+    get:
+      operationId: getSoftwareProducts
+      responses:
+        "200":
+          description: Course-scoped product catalog
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareOverview"}
+    post:
+      operationId: createSoftwareProduct
+      parameters: [{$ref: "#/components/parameters/CsrfToken"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SoftwareProductInput"}
+      responses:
+        "201":
+          description: Product created without implied implantation
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareProduct"}
+  /software-products/initialize:
+    post:
+      operationId: initializeSoftwareProducts
+      parameters: [{$ref: "#/components/parameters/CsrfToken"}]
+      responses:
+        "201":
+          description: Explicitly initialize umbrella and independent product names
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareOverview"}
+  /software-products/catalog:
+    put:
+      operationId: updateSoftwareCatalog
+      parameters: [{$ref: "#/components/parameters/CsrfToken"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SoftwareCatalogInput"}
+      responses:
+        "200":
+          description: Umbrella edited without changing PIC selections
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareOverview"}
+  /software-products/sync-deliveries:
+    post:
+      operationId: syncSoftwareDeliveries
+      parameters: [{$ref: "#/components/parameters/CsrfToken"}]
+      responses:
+        "200":
+          description: Idempotent import of installed technical-delivery metadata
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareSyncResult"}
+  /software-products/{productId}:
+    get:
+      operationId: getSoftwareProduct
+      parameters: [{name: productId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses:
+        "200":
+          description: Product, immutable records and history
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareProductDetail"}
+    put:
+      operationId: updateSoftwareProduct
+      parameters:
+        - {name: productId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SoftwareProductInput"}
+      responses:
+        "200":
+          description: Revision-protected product saved
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareProduct"}
+  /software-products/{productId}/records:
+    post:
+      operationId: createSoftwareRecord
+      parameters:
+        - {name: productId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/SoftwareRecordInput"}
+      responses:
+        "201":
+          description: Append-only release, milestone, test, ticket or document reference
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/SoftwareProductDetail"}
   /spaces:
     get:
       operationId: getLearningSpaces
@@ -2392,6 +2493,132 @@ components:
       required: true
       schema: {type: string}
   schemas:
+    SoftwareCatalogInput:
+      type: object
+      required: [expectedRevision, description, picProjectId]
+      properties:
+        expectedRevision: {type: integer, minimum: 1}
+        description: {type: string, maxLength: 4000}
+        picProjectId: {type: [string, "null"], format: uuid}
+    SoftwareCatalog:
+      allOf:
+        - {$ref: "#/components/schemas/SoftwareCatalogInput"}
+        - type: object
+          required: [id, name, revision]
+          properties:
+            id: {type: string}
+            name: {type: string}
+            revision: {type: integer}
+    SoftwareProductInput:
+      type: object
+      required: [expectedRevision, name, purpose, audience, modules, responsibleUserId, startedOn, currentVersion, status, repositoryUrl, implementationCenter, implementationDate, results, resultsConfirmedOn, approvalConfirmed, approvalDate, securityReviewed, securityDate, evidenceVersionIds]
+      properties:
+        expectedRevision: {type: integer, minimum: 0}
+        name: {type: string, minLength: 1, maxLength: 160}
+        purpose: {type: string, maxLength: 4000}
+        audience: {type: string, maxLength: 2000}
+        modules: {type: string, maxLength: 4000}
+        responsibleUserId: {type: [string, "null"], format: uuid}
+        startedOn: {type: [string, "null"], format: date}
+        currentVersion: {type: string, maxLength: 100}
+        status: {type: string, enum: [idea, analisis, desarrollo, pruebas, piloto, implantado, mantenimiento]}
+        repositoryUrl: {type: [string, "null"], maxLength: 800}
+        implementationCenter: {type: string, maxLength: 500}
+        implementationDate: {type: [string, "null"], format: date}
+        results: {type: string, maxLength: 5000}
+        resultsConfirmedOn: {type: [string, "null"], format: date}
+        approvalConfirmed: {type: boolean}
+        approvalDate: {type: [string, "null"], format: date}
+        securityReviewed: {type: boolean}
+        securityDate: {type: [string, "null"], format: date}
+        evidenceVersionIds: {type: array, maxItems: 30, uniqueItems: true, items: {type: string, format: uuid}}
+    SoftwareEvidence:
+      type: object
+      required: [versionId, documentId, title, sha256, versionNumber, available, issue]
+      properties:
+        versionId: {type: string}
+        documentId: {type: string}
+        title: {type: string}
+        sha256: {type: string}
+        versionNumber: {type: integer}
+        available: {type: boolean}
+        issue: {type: [string, "null"]}
+    SoftwareProduct:
+      allOf:
+        - {$ref: "#/components/schemas/SoftwareProductInput"}
+        - type: object
+          required: [id, revision, productKey, responsibleName, evidence, evidenceIssues]
+          properties:
+            id: {type: string}
+            revision: {type: integer}
+            productKey: {type: [string, "null"]}
+            responsibleName: {type: [string, "null"]}
+            evidence: {type: array, items: {$ref: "#/components/schemas/SoftwareEvidence"}}
+            evidenceIssues: {type: array, items: {type: string}}
+    SoftwareRecordInput:
+      type: object
+      required: [expectedRevision, kind, title, version, occurredOn, details, outcome, evidenceVersionIds, supersedesId]
+      properties:
+        expectedRevision: {type: integer, minimum: 1}
+        kind: {type: string, enum: [entrega, hito, prueba, ticket, captura, manual]}
+        title: {type: string, minLength: 1, maxLength: 200}
+        version: {type: string, maxLength: 100}
+        occurredOn: {type: string, format: date}
+        details: {type: string, minLength: 1, maxLength: 6000}
+        outcome: {type: string, enum: [pendiente, superada, fallida, no_aplica]}
+        evidenceVersionIds: {type: array, maxItems: 30, uniqueItems: true, items: {type: string, format: uuid}}
+        supersedesId: {type: [string, "null"], format: uuid}
+    SoftwareRecord:
+      allOf:
+        - {$ref: "#/components/schemas/SoftwareRecordInput"}
+        - type: object
+          required: [id, productId, revision, source, createdAt, evidence]
+          properties:
+            id: {type: string}
+            productId: {type: string}
+            revision: {type: integer}
+            source: {type: string, enum: [manual, installed_manifest]}
+            createdAt: {type: string, format: date-time}
+            evidence: {type: array, items: {$ref: "#/components/schemas/SoftwareEvidence"}}
+    SoftwareProductDetail:
+      type: object
+      required: [product, records, history]
+      properties:
+        product: {$ref: "#/components/schemas/SoftwareProduct"}
+        records: {type: array, items: {$ref: "#/components/schemas/SoftwareRecord"}}
+        history: {type: array, items: {$ref: "#/components/schemas/SpaceRecordVersion"}}
+    SoftwareOverview:
+      type: object
+      required: [schoolYearId, schoolYear, canManage, catalog, products, staff, picProjects, evidenceOptions, installedVersion]
+      properties:
+        schoolYearId: {type: string}
+        schoolYear: {type: string}
+        canManage: {type: boolean}
+        catalog:
+          anyOf: [{$ref: "#/components/schemas/SoftwareCatalog"}, {type: "null"}]
+        products: {type: array, items: {$ref: "#/components/schemas/SoftwareProduct"}}
+        staff: {type: array, items: {$ref: "#/components/schemas/SoftwareStaffOption"}}
+        picProjects: {type: array, items: {$ref: "#/components/schemas/SoftwareNamedOption"}}
+        evidenceOptions: {type: array, items: {$ref: "#/components/schemas/SoftwareEvidence"}}
+        installedVersion: {type: string}
+    SoftwareStaffOption:
+      type: object
+      required: [id, name]
+      properties:
+        id: {type: string}
+        name: {type: string}
+    SoftwareNamedOption:
+      type: object
+      required: [id, name]
+      properties:
+        id: {type: string}
+        name: {type: string}
+    SoftwareSyncResult:
+      type: object
+      required: [inserted, message]
+      properties:
+        inserted: {type: integer}
+        message: {type: string}
     LearningSpaceInput:
       type: object
       additionalProperties: false

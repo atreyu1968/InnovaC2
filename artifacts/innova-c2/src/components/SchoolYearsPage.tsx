@@ -10,7 +10,7 @@ import {
   useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey, exportSchoolYear, exportSchoolYearOriginals,
   useGetCurrentCatalog, getGetCurrentCatalogQueryKey,
   getGetDashboardSummaryQueryKey, getGetCurrentPicPlanQueryKey, getListActivitiesQueryKey,
-  getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey, getGetCiclopeQueryKey, getGetLearningSpacesQueryKey,
+  getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey, getGetCiclopeQueryKey, getGetLearningSpacesQueryKey, getGetSoftwareProductsQueryKey,
 } from '@workspace/api-client-react';
 import type { SchoolYear, SchoolYearAccount, SchoolYearSource, UserRole as UserRoleValue } from '@workspace/api-client-react';
 import { discardCourseCache } from '@/lib/course-cache';
@@ -98,8 +98,9 @@ export function SchoolYearsPage() {
     await discardCourseCache(client, [
       getGetDashboardSummaryQueryKey(), getGetCurrentPicPlanQueryKey(),
       getListActivitiesQueryKey(), getListDocumentsQueryKey(), getListCurrentIndicatorsQueryKey(),
-      getGetCiclopeQueryKey(), getGetLearningSpacesQueryKey(),
+      getGetCiclopeQueryKey(), getGetLearningSpacesQueryKey(), getGetSoftwareProductsQueryKey(),
     ]);
+    client.removeQueries({ predicate: q => String(q.queryKey[0] ?? '').includes('/software-products/') });
     await Promise.all([
       getListSchoolYearsQueryKey(), getGetSchoolYearReviewQueryKey(), getGetDashboardSummaryQueryKey(), getGetCurrentPicPlanQueryKey(),
       getListActivitiesQueryKey(), getListDocumentsQueryKey(), getListCurrentIndicatorsQueryKey(), getListUsersQueryKey(),

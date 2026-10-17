@@ -1,5 +1,6 @@
 -- PostgreSQL 16 schema fingerprint. No row contents, credentials or sequence
 -- counters are collected. Object names, not OIDs, identify dependencies.
+-- Fingerprints also apply the narrowly scoped, equivalent AND-range normalization in core.mjs.
 WITH objects AS (
  SELECT 'relation:'||c.relname AS key,
  jsonb_build_object('kind',c.relkind,'persistence',c.relpersistence,

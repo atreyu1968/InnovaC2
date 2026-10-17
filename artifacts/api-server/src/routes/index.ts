@@ -16,11 +16,13 @@ import mailRouter from "./mail";
 import followupsRouter from "./followups";
 import aiProviderRouter from "./ai-provider";
 import spacesRouter from "./spaces";
+import softwareProductsRouter from "./software-products";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(spacesRouter);
+router.use(softwareProductsRouter);
 router.use(authRouter);
 router.use(schoolYearsRouter);
 router.use(ciclopeRouter);

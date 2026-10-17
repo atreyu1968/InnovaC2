@@ -9,6 +9,12 @@ Use the same dark green as the section headers for both the workspace header and
 
 **How to apply:** Preserve this palette and responsive navigation pattern when changing authenticated INNOVA-C2 screens.
 
+Keep navigation organized by workflow area rather than adding every new section to a flat sidebar or icon rail. The panel and personal account remain direct accesses; functional sections belong inside collapsible groups.
+
+**Why:** The user found the growing sidebar saturated and explicitly requested a logical reorganization of accesses and sections.
+
+**How to apply:** Place future features in the appropriate existing area, preserve each role's visibility, and keep both grouped compact navigation and the expanded/mobile menu usable.
+
 For public sign-in, keep the user-selected edge-to-edge split composition: an aquamarine welcome panel and the real credential form. The stock photo must remain bundled locally, credited, and clearly marked as illustrative; do not imply it depicts IES staff. Do not add password-recovery or invitation links until those flows have working routes.
 
 **Why:** The user asked the access screen to resemble the supplied reference, fill the full page, and use stock imagery. Links must lead to real implemented flows.

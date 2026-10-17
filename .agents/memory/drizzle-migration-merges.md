@@ -21,6 +21,12 @@ New course-scoped tables need both versioned migrations and the development setu
 
 **How to apply:** Keep guard SQL independently replayable, register it in development setup, and verify replay alongside fresh migrations. Do not replay table-creation DDL as a substitute for installing guards.
 
+Dump/restore can flatten equivalent nested `AND` clauses produced by `BETWEEN`. Schema fingerprints must accommodate only proven equivalent forms without changing already-shipped migration SQL.
+
+**Why:** A restored database can otherwise be rejected as drift despite having the same constraints. Removing SQL parentheses indiscriminately would instead hide real logic changes.
+
+**How to apply:** Keep any canonicalization narrowly scoped to a reviewed equivalent expression, preserve every bound and predicate, regenerate the isolated reference, and test both dump/restore equivalence and rejection of changed bounds.
+
 Schema synchronization can create PIC follow-up tables without installing their
 hand-written immutability and course-scope guards. Their existence is not proof
 that the corresponding migration's protections ran.
