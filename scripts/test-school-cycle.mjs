@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { createServer } from "node:net";
 import path from "node:path";
 import { materializeDocuments, verifyBackupRestore } from "./test-school-cycle-backup.mjs";
+import { prepareOriginals, verifyOriginals, verifyLiveBlock } from "./test-school-year-originals.mjs";
 
 const root = new URL("../", import.meta.url).pathname;
 const require = createRequire(import.meta.url);
@@ -65,11 +66,12 @@ try {
   api.stdout.on("data", chunk => { apiOutput += chunk; });
   api.stderr.on("data", chunk => { apiOutput += chunk; });
   const base = `http://127.0.0.1:${apiPort}/api/v1`;
-  async function request(url, { method = "GET", session, body, raw } = {}) {
+  async function request(url, { method = "GET", session, body, raw, binary = false } = {}) {
     const headers = { "content-type": raw ? "application/octet-stream" : "application/json" };
     if (session) { headers.cookie = session.cookie; headers["x-csrf-token"] = session.csrf; }
     const response = await fetch(base + url, { method, headers,
       ...(raw ? { body: raw } : body ? { body: JSON.stringify(body) } : {}) });
+    if (binary && response.ok) return { status: response.status, data: Buffer.from(await response.arrayBuffer()), headers: response.headers };
     const text = await response.text();
     let data;
     try { data = text ? JSON.parse(text) : null; } catch { data = text; }
@@ -107,6 +109,9 @@ try {
   const old = status(await years(), 200)[0];
   status(await request(`/school-years/${old.id}/export`, { session: admin }), 409);
   status(await request(`/school-years/${old.id}/export`), 401);
+  status(await request(`/school-years/${old.id}/originals`, { session: admin }), 409);
+  status(await request(`/school-years/${old.id}/originals`), 401);
+  status(await request(`/school-years/not-a-uuid/originals`, { session: admin }), 400);
   status(await request(`/school-years/not-a-uuid/export`, { session: admin }), 400);
   const [{ center_id: center }] = (await pool.query("SELECT center_id FROM school_years WHERE id=$1", [old.id])).rows;
   if (process.argv.includes("--backup-restore")) {
@@ -164,6 +169,10 @@ try {
   assert.equal(check.canClose, true);
   // Unlike metadata-only fixtures, these bytes must survive a real backup.
   await materializeDocuments(pool, env.DATA_DIR, old.id);
+  // Backup/restore fixtures deliberately require every stored reference present;
+  // unavailable and unsafe originals are exercised by the normal cycle suite.
+  const originalsFixtures = process.argv.includes("--backup-restore") ? []
+    : await prepareOriginals(pool, env.DATA_DIR, center, old.id, c2.account.id);
   check = status(await validation(), 200);
   status(await request(`/school-years/${old.id}/close`, { method: "POST", session: { cookie: admin.cookie }, body: closeBody() }), 403);
   status(await request(`/school-years/${old.id}/close`, { method: "POST", session: admin,
@@ -218,6 +227,17 @@ try {
   assert.ok(!JSON.stringify(exported).includes("immutable/old-file"));
   assert.ok(!/storage_key|password_hash|evidence_storage_key/.test(JSON.stringify(exported)));
   assert.deepEqual(await courseState(), stateBeforeExport);
+  await verifyOriginals(request, old, c2.session, directory, exported, originalsFixtures);
+  await verifyOriginals(request, old, admin, directory, exported, originalsFixtures);
+  if (originalsFixtures.length) await verifyLiveBlock(pool, request, old, admin, directory, originalsFixtures[0]);
+  assert.deepEqual(await courseState(), stateBeforeExport);
+  // Current permissions remain an upper bound over frozen historical grants.
+  await pool.query("DELETE FROM role_permissions WHERE role='c2_innovacion' AND permission='documents.read'");
+  try {
+    status(await request(`/school-years/${old.id}/originals`, { session: c2.session }), 403);
+  } finally {
+    await pool.query("INSERT INTO role_permissions(role,permission) VALUES ('c2_innovacion','documents.read')");
+  }
   assert.deepEqual(status(await request(`/school-years/${old.id}/export`, { session: admin }), 200), exported);
   const exportPath = path.join(directory, "expediente.json");
   await writeFile(exportPath, JSON.stringify(exported));
@@ -232,6 +252,8 @@ try {
   await writeFile(exportPath, JSON.stringify(missingSource));
   assert.equal(spawnSync(process.execPath, ["scripts/verify-school-year-export.mjs", exportPath], { cwd: root }).status, 1);
   status(await request(`/school-years/${old.id}/export`, { session: teacher.session }), 403);
+  status(await request(`/school-years/${old.id}/originals`, { session: teacher.session }), 403);
+  status(await request(`/school-years/${foreignYear}/originals`, { session: c2.session }), 404);
   status(await request(`/school-years/${foreignYear}/export`, { session: c2.session }), 404);
   // Deliberate corruption in this disposable cluster only: fail closed, never
   // silently stamp an unverified snapshot as valid. Restore it immediately.
@@ -239,6 +261,7 @@ try {
   try {
     await pool.query("UPDATE school_year_snapshots SET source_hash=$1 WHERE school_year_id=$2", ["0".repeat(64), old.id]);
     status(await request(`/school-years/${old.id}/export`, { session: admin }), 409);
+    status(await request(`/school-years/${old.id}/originals`, { session: admin }), 409);
   } finally {
     await pool.query("UPDATE school_year_snapshots SET source_hash=$1 WHERE school_year_id=$2", [snapshotBefore.source_hash, old.id]);
     await pool.query("ALTER TABLE school_year_snapshots ENABLE TRIGGER school_year_snapshot_guard");
@@ -294,6 +317,7 @@ try {
     status(await request(`/activities/${activity}`, { session }), 404);
     status(await request(`/school-years/${old.id}/history`, { session }), 403);
     status(await request(`/school-years/${old.id}/export`, { session }), 403);
+    status(await request(`/school-years/${old.id}/originals`, { session }), 403);
   }
   // Remove the temporary promotion to retain the staff-options omission check.
   await pool.query("UPDATE users SET role='profesorado' WHERE id=$1", [omitted.account.id]);
@@ -389,6 +413,8 @@ try {
   assert.equal(historicAfter.sourceHash, historic.sourceHash);
   const stateAfterNewWork = await courseState();
   assert.deepEqual(status(await request(`/school-years/${old.id}/export`, { session: admin }), 200), exported);
+  assert.deepEqual(await courseState(), stateAfterNewWork);
+  await verifyOriginals(request, old, c2.session, directory, exported, originalsFixtures);
   assert.deepEqual(await courseState(), stateAfterNewWork);
   const audit = (await pool.query("SELECT action,count(*) AS n FROM audit_logs WHERE action LIKE 'school_year.%' GROUP BY action")).rows;
   assert.equal(Number(audit.find(a => a.action === "school_year.closed").n), 1);

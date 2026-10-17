@@ -3,14 +3,15 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { Router, type RequestHandler } from "express";
 import {
   auditLogsTable, db, schoolYearAssignmentsTable, schoolYearSnapshotsTable,
-  schoolYearsTable, usersTable,
+  schoolYearsTable, usersTable, documentVersionsTable,
 } from "@workspace/db";
 import { OpenSchoolYearBody, CloseSchoolYearBody, ExportSchoolYearResponse } from "@workspace/api-zod";
-import { getClientIp, keyedHash, requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
+import { getClientIp, keyedHash, requireAuth, requireCsrf, requirePermission, type AuthContext } from "../lib/auth";
 import { collectCourse, CycleConflict, publicYear, validateClosure } from "../lib/school-cycle";
 import { loadResourceActor } from "../lib/capture-scope";
 import initialCatalog from "../../../../config/pic_2026_2027_catalogo.json";
 import { buildSchoolYearExport, publicArchiveValue } from "../lib/school-year-export";
+import { buildOriginalsPackage, OriginalsLimit } from "../lib/school-year-originals";
 
 const router = Router();
 const manageCycle: RequestHandler = async (_req, res, next) => {
@@ -214,6 +215,45 @@ router.get("/school-years/:yearId/export", withYear, withHistoricalYear, async (
   } catch (error) {
     if (error instanceof CycleConflict) { res.status(409).json({ error: error.message }); return; }
     throw error;
+  }
+});
+
+// Keep large ZIP jobs serial per API process to bound temporary disk/memory use.
+let originalsBusy = false;
+router.get("/school-years/:yearId/originals", requirePermission("documents.read"), withYear, withHistoricalYear, async (req, res): Promise<void> => {
+  if (originalsBusy) { res.status(429).json({ error: "Ya se está preparando un paquete de originales. Inténtalo de nuevo." }); return; }
+  originalsBusy = true;
+  let bundle: Awaited<ReturnType<typeof buildOriginalsPackage>> | undefined;
+  try {
+    const year = res.locals.schoolYear as typeof schoolYearsTable.$inferSelect;
+    const snapshot = res.locals.schoolYearSnapshot as typeof schoolYearSnapshotsTable.$inferSelect;
+    const exported = buildSchoolYearExport(year, snapshot);
+    const sources = snapshot.content.sources as Parameters<typeof buildOriginalsPackage>[1];
+    const ids = sources.filter(s => s.source === "document_versions").map(s => s.id);
+    if (ids.length > 2000) throw new OriginalsLimit("El paquete supera el límite de 2000 versiones.");
+    const versions = ids.length ? await db.select().from(documentVersionsTable)
+      .where(inArray(documentVersionsTable.id, ids)) : [];
+    bundle = await buildOriginalsPackage(exported, sources, new Map(versions.map(v => [v.id, v])));
+    await db.insert(auditLogsTable).values({
+      userId: (res.locals.auth as AuthContext).user.id, action: "school_year.originals.export",
+      entityType: "school_year", entityId: year.id, ipHash: keyedHash(getClientIp(req)),
+      details: { sourceHash: snapshot.sourceHash, counts: Object.fromEntries(
+        ["included", "missing", "checksum_mismatch", "security_blocked"].map(status =>
+          [status, bundle!.entries.filter(e => e.status === status).length])) },
+    });
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Type", "application/zip");
+    await new Promise<void>((resolve, reject) => {
+      res.download(bundle!.filename, `originales-${year.label}-${year.id}.zip`, error => error ? reject(error) : resolve());
+    });
+  } catch (error) {
+    if (!res.headersSent && !res.destroyed) {
+      if (error instanceof CycleConflict) { res.status(409).json({ error: error.message }); return; }
+      if (error instanceof OriginalsLimit) { res.status(413).json({ error: error.message }); return; }
+    }
+    throw error;
+  } finally {
+    try { await bundle?.dispose(); } finally { originalsBusy = false; }
   }
 });
 

@@ -5525,3 +5525,77 @@ export function useExportSchoolYear<TData = Awaited<ReturnType<typeof exportScho
 
 
 
+export const getExportSchoolYearOriginalsUrl = (yearId: string,) => {
+
+
+
+
+  return `/api/v1/school-years/${yearId}/originals`
+}
+
+/**
+ * Paquete ZIP separado de originales autorizados de la instantánea inmutable. Incluye expediente.json compatible e informe de incluidos, ausentes, checksum incorrecto y bloqueos de seguridad. Nunca incluye cuarentena ni rutas privadas. No sustituye una copia de seguridad.
+ */
+export const exportSchoolYearOriginals = async (yearId: string, options?: Parameters<typeof customFetch>[1]): Promise<Blob> => {
+
+  return customFetch<Blob>(getExportSchoolYearOriginalsUrl(yearId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportSchoolYearOriginalsQueryKey = (yearId: string,) => {
+    return [
+    `/api/v1/school-years/${yearId}/originals`
+    ] as const;
+    }
+
+
+export const getExportSchoolYearOriginalsQueryOptions = <TData = Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError = ErrorType<void>>(yearId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportSchoolYearOriginalsQueryKey(yearId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportSchoolYearOriginals>>> = ({ signal }) => exportSchoolYearOriginals(yearId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: yearId !== null && yearId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportSchoolYearOriginalsQueryResult = NonNullable<Awaited<ReturnType<typeof exportSchoolYearOriginals>>>
+export type ExportSchoolYearOriginalsQueryError = ErrorType<void>
+
+
+
+export function useExportSchoolYearOriginals<TData = Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError = ErrorType<void>>(
+ yearId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportSchoolYearOriginals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportSchoolYearOriginalsQueryOptions(yearId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+

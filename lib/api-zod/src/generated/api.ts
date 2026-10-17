@@ -2749,3 +2749,13 @@ export const ExportSchoolYearResponse = zod.object({
 })
 
 
+/**
+ * Paquete ZIP separado de originales autorizados de la instantánea inmutable. Incluye expediente.json compatible e informe de incluidos, ausentes, checksum incorrecto y bloqueos de seguridad. Nunca incluye cuarentena ni rutas privadas. No sustituye una copia de seguridad.
+ */
+export const ExportSchoolYearOriginalsParams = zod.object({
+  "yearId": zod.coerce.string().uuid()
+})
+
+export const ExportSchoolYearOriginalsResponse = zod.unknown()
+
+

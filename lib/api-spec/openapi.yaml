@@ -1671,6 +1671,30 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponse" }
+  /school-years/{yearId}/originals:
+    get:
+      operationId: exportSchoolYearOriginals
+      description: Paquete ZIP separado de originales autorizados de la instantánea inmutable. Incluye expediente.json compatible e informe de incluidos, ausentes, checksum incorrecto y bloqueos de seguridad. Nunca incluye cuarentena ni rutas privadas. No sustituye una copia de seguridad.
+      parameters:
+        - { name: yearId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: ZIP con originales seguros disponibles e informe de omisiones, incluso si no hay originales disponibles
+          content:
+            application/zip:
+              schema: { type: string, format: binary }
+        "401":
+          description: Sesión requerida
+        "403":
+          description: Sin permiso actual o histórico
+        "404":
+          description: Curso no encontrado en el centro
+        "409":
+          description: Curso no cerrado o instantánea no verificable
+        "413":
+          description: El paquete supera el límite de 128 MiB o 2000 versiones
+        "429":
+          description: Ya se está preparando un paquete
 components:
   schemas:
     CiclopePerson:

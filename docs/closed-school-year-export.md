@@ -23,6 +23,50 @@ auditoría.
 
 ## Verificar sin conexión
 
+### Paquete separado de originales
+
+**Descargar originales autorizados (ZIP)** exige acceso actual a documentos y
+autorización C2 del curso histórico, o administración técnica dentro del centro.
+No cambia la descarga JSON ni su manifiesto versión 1. El ZIP contiene:
+
+- `expediente.json`: el mismo expediente y manifiesto compatible, sin rutas privadas.
+- `informe-originales.json`: curso, huella de la instantánea, identificadores
+  inmutables de documento y versión, resultado por versión y, solo para incluidos,
+  nombre dentro del ZIP, tamaño y SHA-256.
+- `originales/…`: únicamente los bytes que coinciden con el SHA-256 y tamaño
+  archivados, con análisis limpio tanto archivado como vigente. No se usa
+  `currentVersion`, ni se alteran documentos, permisos, análisis o versiones PIC.
+
+Resultados del informe:
+
+- `included`: original incluido.
+- `missing`: versión o archivo ausente.
+- `checksum_mismatch`: bytes o tamaño distintos de la referencia archivada.
+- `security_blocked`: cuarentena, análisis pendiente/no disponible/no limpio,
+  referencia inconsistente, archivo no regular, enlace simbólico, ruta insegura
+  o acceso al almacenamiento denegado. No se reanaliza ni libera cuarentena.
+
+Los nombres del ZIP se generan a partir de identificadores, versión y extensión
+segura; nunca contienen ubicaciones del servidor. Los originales de todas las
+versiones archivadas elegibles se incluyen, no solo la última. El informe puede
+indicar omisiones o no incluir ningún original: **no es una copia de seguridad**.
+No incluye archivos binarios ajenos a `document_versions` (por ejemplo, adjuntos
+de entregas PIC); conserva sus metadatos en el expediente.
+
+Hay un límite de 2000 versiones y 128 MiB de originales incluidos por paquete,
+y 8 MiB por archivo conforme al límite de subida. Exceder el límite del paquete
+rechaza toda la descarga (413), no entrega un ZIP truncado. Solo se prepara un
+paquete simultáneo por proceso (429 para el siguiente). Los archivos temporales
+se crean con acceso privado y se eliminan al terminar o fallar la descarga.
+Los fallos de disco al preparar el ZIP abortan la descarga. La auditoría registra
+la huella y recuentos por resultado, nunca ubicaciones de almacenamiento.
+
+Tras extraer el ZIP, verifica `expediente.json` con el comando de abajo.
+Para cada entrada `included`, compara el SHA-256 y tamaño del archivo indicado
+con el informe. Estos checksums verifican coherencia, no autenticidad ni firma.
+
+### Manifiesto del expediente JSON
+
 Desde la carpeta del proyecto, con Node.js instalado, ejecuta:
 
 ```sh

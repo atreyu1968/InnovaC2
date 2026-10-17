@@ -7,7 +7,7 @@ import {
   useOpenSchoolYear, useCloseSchoolYear,
   useGetSchoolYearReview, getGetSchoolYearReviewQueryKey,
   useValidateSchoolYearClosure, getValidateSchoolYearClosureQueryKey,
-  useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey, exportSchoolYear,
+  useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey, exportSchoolYear, exportSchoolYearOriginals,
   useGetCurrentCatalog, getGetCurrentCatalogQueryKey,
   getGetDashboardSummaryQueryKey, getGetCurrentPicPlanQueryKey, getListActivitiesQueryKey,
   getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey, getGetCiclopeQueryKey,
@@ -262,21 +262,26 @@ function HistoryPanel({ closed }: { closed: SchoolYear[] }) {
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState('');
   const [downloaded, setDownloaded] = useState('');
-  const download = async () => {
+  const download = async (originals = false) => {
     if (!yearId || downloading) return;
     setDownloading(true); setDownloadError(''); setDownloaded('');
     try {
-      const exported = await exportSchoolYear(yearId);
-      const blob = new Blob([JSON.stringify(exported, null, 2) + '\n'], { type: 'application/json' });
+      const exported = originals ? null : await exportSchoolYear(yearId);
+      const blob = originals ? await exportSchoolYearOriginals(yearId)
+        : new Blob([JSON.stringify(exported, null, 2) + '\n'], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `expediente-${exported.schoolYear.label}-${exported.schoolYear.id}.json`;
+      const label = closed.find(y => y.id === yearId)?.label ?? yearId;
+      link.download = originals ? `originales-${label}-${yearId}.zip`
+        : `expediente-${exported!.schoolYear.label}-${exported!.schoolYear.id}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setDownloaded(`Descarga preparada para el curso ${exported.schoolYear.label}. Huella archivada comprobada.`);
+      setDownloaded(originals
+        ? `Paquete del curso ${label} preparado. Revisa informe-originales.json: distingue incluidos, ausentes, checksum incorrecto y bloqueos de seguridad. Puede no contener originales.`
+        : `Descarga preparada para el curso ${exported!.schoolYear.label}. Huella archivada comprobada.`);
     } catch (issue) { setDownloadError(messageFor(issue)); }
     finally { setDownloading(false); }
   };
@@ -301,8 +306,10 @@ function HistoryPanel({ closed }: { closed: SchoolYear[] }) {
         : history.data && <div className="space-y-4">
           <div className="rounded-lg bg-[#263c42] p-4 text-white"><p className="eyebrow text-[#9bc7b5]">Instantánea inmutable</p><p className="mt-1 font-[var(--app-font-serif)] text-lg font-bold" data-testid="text-history-label">Curso {history.data.label}</p><p className="mt-1 text-[11px] text-[#c4d1ce]">Cerrado el {formatDateTime(history.data.closedAt)} · ID {history.data.schoolYearId}</p><p className="mt-1 break-all font-mono text-[10px] text-[#a6b8b3]" data-testid="text-history-hash">Huella: {history.data.sourceHash}</p></div>
           <div className="space-y-2">
-            <button type="button" className="quiet-action flex items-center gap-2 disabled:opacity-50" onClick={download} disabled={downloading || history.isFetching} data-testid="button-export-year"><Download size={14} />{downloading ? 'Verificando expediente…' : `Descargar expediente ${history.data.label}`}</button>
+            <button type="button" className="quiet-action flex items-center gap-2 disabled:opacity-50" onClick={() => download()} disabled={downloading || history.isFetching} data-testid="button-export-year"><Download size={14} />{downloading ? 'Preparando descarga…' : `Descargar expediente ${history.data.label}`}</button>
             <p className="text-xs text-[#5f6e69]">JSON de solo lectura con manifiesto de fuentes y checksums SHA-256. Incluye datos y metadatos archivados, no los archivos originales ni rutas privadas. No crea versiones del PIC ni copia datos al curso activo.</p>
+            <button type="button" className="quiet-action flex items-center gap-2 disabled:opacity-50" onClick={() => download(true)} disabled={downloading || history.isFetching} data-testid="button-export-originals"><Download size={14} />{downloading ? 'Preparando descarga…' : `Descargar originales autorizados ${history.data.label} (ZIP)`}</button>
+            <p className="text-xs text-[#5f6e69]">Paquete separado con las versiones archivadas disponibles, autorizadas y con análisis antivirus limpio. Incluye el expediente JSON y un informe de archivos ausentes, checksums incorrectos y bloqueos de seguridad. Nunca incluye cuarentena. No sustituye una copia de seguridad. Límite: 128 MiB y 2000 versiones.</p>
             {downloadError && <Alert kind="error" testId="status-export-error">{downloadError}</Alert>}
             {downloaded && <Alert kind="success" testId="status-export-success">{downloaded}</Alert>}
           </div>
