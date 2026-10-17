@@ -788,13 +788,13 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   .login-stage { min-height: 100dvh; }
   .login-composition { min-height: 100dvh; grid-template-columns: 1fr; }
   .login-story { min-height: 0; padding: 22px 24px 18px; }
-  .login-card { min-height: 0; padding: 30px 25px 60px; }
-  .login-brand { margin-bottom: 26px; }
+  .login-card { min-height: 0; padding: 24px 25px 60px; }
+  .login-brand { margin-bottom: 20px; }
   .login-brand-mark { width: 38px; height: 38px; }
   .login-story::before { top: -180px; right: -17%; }
   .login-story::after { top: -160px; right: -7%; }
   .story-topline { font-size: 8px; }
-  .story-art { width: 116px; margin-top: 12px; padding: 5px; }
+  .story-art { width: clamp(180px, 52vw, 210px); margin-top: 12px; padding: 5px; }
   .story-copy { margin-top: 10px; }
   .story-copy h2 { font-size: 14px; }
   .story-copy > p { margin-top: 4px; font-size: 9px; }
@@ -804,7 +804,7 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   .story-bottom p { font-size: 9px; }
   .story-bottom p strong { font-size: 10px; }
   .story-year { font-size: 7px; }
-  .login-heading { margin-bottom: 26px; }
+  .login-heading { margin-bottom: 20px; }
   .login-heading h1 { font-size: 31px; }
 }
 @media (max-width: 390px) {
