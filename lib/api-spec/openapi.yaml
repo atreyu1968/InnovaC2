@@ -94,6 +94,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /auth/password-reset/request:
+    post:
+      operationId: requestPasswordReset
+      tags: [auth]
+      summary: Request a password reset email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequestInput"
+      responses:
+        "202":
+          description: Generic response regardless of whether the account exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetRequestResponse"
+        "400":
+          description: Invalid email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request origin is not allowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request limit reached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/password-reset/complete:
+    post:
+      operationId: completePasswordReset
+      tags: [auth]
+      summary: Set a new password using a one-time reset token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetCompleteInput"
+      responses:
+        "200":
+          description: Password changed and existing sessions revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Reset token is invalid, expired, or already used
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /auth/logout:
     post:
       operationId: logout
@@ -674,6 +734,32 @@ components:
           minLength: 1
           maxLength: 1024
       required: [email, password]
+    PasswordResetRequestInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+      required: [email]
+    PasswordResetRequestResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    PasswordResetCompleteInput:
+      type: object
+      properties:
+        token:
+          type: string
+          minLength: 20
+          maxLength: 200
+        password:
+          type: string
+          minLength: 12
+          maxLength: 1024
+      required: [token, password]
     SetupInitializeInput:
       type: object
       properties:

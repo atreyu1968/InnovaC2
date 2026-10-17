@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
-  Activity, ArrowDownRight, ArrowRight, BookOpen, ChevronDown, ChevronRight,
+  Activity, ArrowDownRight, ArrowLeft, ArrowRight, BookOpen, ChevronDown, ChevronRight,
   CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu,
   RefreshCw, ShieldCheck, Users, X,
 } from 'lucide-react';
@@ -12,6 +12,7 @@ import {
   getHealthCheckQueryKey, useHealthCheck, useGetSetupStatus, useInitializeSetup, useLogin, useLogout,
   useGetCurrentUser, useGetDashboardSummary, useListUsers, useCreateUser,
   useGetCurrentCatalog, useImportCatalog, setCsrfToken,
+  useRequestPasswordReset, useCompletePasswordReset,
 } from '@workspace/api-client-react';
 import type { UserRole as UserRoleValue, User, PicDafoCategory, CatalogImportInput } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -65,6 +66,8 @@ function Routed() {
       <Switch>
         <Route path="/setup" component={SetupPage} />
         <Route path="/login" component={LoginPage} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/usuarios"><ProtectedPage page="users" /></Route>
         <Route path="/catalogo"><ProtectedPage page="catalog" /></Route>
         <Route path="/plan-pic"><ProtectedPage page="pic" /></Route>
@@ -425,6 +428,7 @@ function LoginPage() {
     <form onSubmit={submit} className="login-form" aria-labelledby="login-title">
       <Field label="Correo electrónico" id="login-email"><input id="login-email" name="email" type="email" className="field login-field" required autoComplete="username" data-testid="input-login-email" /></Field>
       <Field label="Contraseña" id="login-password"><input id="login-password" name="password" type="password" className="field login-field" required autoComplete="current-password" data-testid="input-login-password" /></Field>
+      <Link href="/forgot-password" className="auth-link">¿Has olvidado tu contraseña?</Link>
       {error && <InlineAlert text={error} kind="error" />}
       <button type="submit" className="primary-action login-submit" disabled={login.isPending} data-testid="button-login">
         <span>{login.isPending ? 'Verificando acceso…' : 'Iniciar sesión'}</span>
@@ -432,6 +436,90 @@ function LoginPage() {
       </button>
     </form>
     <p className="login-assurance"><ShieldCheck size={16} aria-hidden="true" />Acceso reservado a cuentas autorizadas del centro.</p>
+  </AuthFrame>;
+}
+
+function ForgotPasswordPage() {
+  const [, setLocation] = useLocation();
+  const reset = useRequestPasswordReset();
+  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    const form = new FormData(event.currentTarget);
+    reset.mutate({ data: { email: String(form.get('email')).trim() } }, {
+      onSuccess: () => setSubmitted(true),
+      onError: issue => setError(messageFor(issue)),
+    });
+  };
+
+  return <AuthFrame variant="login">
+    <div className="login-heading">
+      <p className="login-kicker">Recuperar acceso</p>
+      <h1 id="login-title">Restablecer contraseña</h1>
+      <p>Escribe el correo asociado a tu cuenta y te enviaremos un enlace si existe una cuenta activa.</p>
+    </div>
+    {submitted ? <div className="auth-result" role="status">
+      <InlineAlert text="Si existe una cuenta activa con ese correo, recibirás un enlace para cambiar la contraseña." kind="success" />
+      <p className="mt-4 text-sm leading-relaxed text-[#6e807b]">Revisa tu correo. El enlace caduca en 30 minutos y solo se puede utilizar una vez.</p>
+    </div> : <form onSubmit={submit} className="login-form" aria-labelledby="login-title">
+      <Field label="Correo electrónico" id="reset-request-email"><input id="reset-request-email" name="email" type="email" className="field login-field" required maxLength={254} autoComplete="email" data-testid="input-reset-request-email" /></Field>
+      {error && <InlineAlert text={error} kind="error" />}
+      <button type="submit" className="primary-action login-submit" disabled={reset.isPending} data-testid="button-reset-request">
+        <span>{reset.isPending ? 'Enviando solicitud…' : 'Enviar enlace'}</span>
+        {!reset.isPending && <ArrowRight size={17} aria-hidden="true" />}
+      </button>
+    </form>}
+    <Link href="/login" className="auth-return" data-testid="link-back-to-login"><ArrowLeft size={15} aria-hidden="true" />Volver al acceso</Link>
+  </AuthFrame>;
+}
+
+function ResetPasswordPage() {
+  const [, setLocation] = useLocation();
+  const reset = useCompletePasswordReset();
+  const token = new URLSearchParams(window.location.search).get('token') ?? '';
+  const [error, setError] = useState('');
+  const [completed, setCompleted] = useState(false);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get('password'));
+    const confirmation = String(form.get('confirmPassword'));
+    if (password !== confirmation) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
+    reset.mutate({ data: { token, password } }, {
+      onSuccess: () => {
+        window.history.replaceState({}, '', window.location.pathname);
+        setCompleted(true);
+      },
+      onError: () => setError('El enlace no es válido, ha caducado o ya se ha utilizado. Solicita uno nuevo.'),
+    });
+  };
+
+  return <AuthFrame variant="login">
+    <div className="login-heading">
+      <p className="login-kicker">Recuperar acceso</p>
+      <h1 id="login-title">Crea una contraseña nueva</h1>
+      <p>Elige una contraseña de al menos 12 caracteres para proteger tu cuenta.</p>
+    </div>
+    {completed ? <div className="auth-result" role="status">
+      <InlineAlert text="Tu contraseña se ha actualizado. Ya puedes iniciar sesión." kind="success" />
+    </div> : !token ? <div className="auth-result">
+      <InlineAlert text="Este enlace no es válido o ya no está disponible. Solicita uno nuevo." kind="error" />
+    </div> : <form onSubmit={submit} className="login-form" aria-labelledby="login-title">
+      <Field label="Contraseña nueva" id="reset-password"><input id="reset-password" name="password" type="password" className="field login-field" required minLength={12} maxLength={1024} autoComplete="new-password" data-testid="input-reset-password" /></Field>
+      <Field label="Repite la contraseña nueva" id="reset-password-confirm"><input id="reset-password-confirm" name="confirmPassword" type="password" className="field login-field" required minLength={12} maxLength={1024} autoComplete="new-password" data-testid="input-reset-password-confirm" /></Field>
+      {error && <InlineAlert text={error} kind="error" />}
+      <button type="submit" className="primary-action login-submit" disabled={reset.isPending} data-testid="button-reset-password">
+        <span>{reset.isPending ? 'Actualizando contraseña…' : 'Guardar contraseña nueva'}</span>
+        {!reset.isPending && <ArrowRight size={17} aria-hidden="true" />}
+      </button>
+    </form>}
+    {completed ? <button type="button" className="auth-return" onClick={() => setLocation('/login')} data-testid="button-reset-to-login"><ArrowLeft size={15} aria-hidden="true" />Ir al acceso</button> : <Link href="/forgot-password" className="auth-return" data-testid="link-request-another-reset"><ArrowLeft size={15} aria-hidden="true" />Solicitar un enlace nuevo</Link>}
   </AuthFrame>;
 }
 

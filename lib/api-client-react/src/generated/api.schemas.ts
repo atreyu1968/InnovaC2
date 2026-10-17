@@ -58,6 +58,28 @@ export interface LoginInput {
   password: string;
 }
 
+export interface PasswordResetRequestInput {
+  /** @maxLength 254 */
+  email: string;
+}
+
+export interface PasswordResetRequestResponse {
+  message: string;
+}
+
+export interface PasswordResetCompleteInput {
+  /**
+     * @minLength 20
+     * @maxLength 200
+     */
+  token: string;
+  /**
+     * @minLength 12
+     * @maxLength 1024
+     */
+  password: string;
+}
+
 export interface SetupInitializeInput {
   email: string;
   /**

@@ -15,6 +15,13 @@
       "when": 1792240270364,
       "tag": "0001_dapper_gressill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792246094683,
+      "tag": "0002_square_chamber",
+      "breakpoints": true
     }
   ]
 }

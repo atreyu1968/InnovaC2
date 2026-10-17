@@ -85,6 +85,43 @@ export const LoginResponse = zod.object({
 
 
 /**
+ * @summary Request a password reset email
+ */
+export const requestPasswordResetBodyEmailMax = 254;
+
+
+
+export const RequestPasswordResetBody = zod.object({
+  "email": zod.string().email().max(requestPasswordResetBodyEmailMax)
+})
+
+export const RequestPasswordResetResponse = zod.object({
+  "message": zod.string()
+})
+
+
+/**
+ * @summary Set a new password using a one-time reset token
+ */
+export const completePasswordResetBodyTokenMin = 20;
+export const completePasswordResetBodyTokenMax = 200;
+
+export const completePasswordResetBodyPasswordMin = 12;
+export const completePasswordResetBodyPasswordMax = 1024;
+
+
+
+export const CompletePasswordResetBody = zod.object({
+  "token": zod.string().min(completePasswordResetBodyTokenMin).max(completePasswordResetBodyTokenMax),
+  "password": zod.string().min(completePasswordResetBodyPasswordMin).max(completePasswordResetBodyPasswordMax)
+})
+
+export const CompletePasswordResetResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
  * @summary End the current session
  */
 export const LogoutResponse = zod.object({

@@ -687,7 +687,7 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   padding: clamp(32px, 5.3vh, 64px) clamp(28px, 5.3vw, 72px) 60px;
   background: #fbfcfa;
 }
-.login-card > :where(.login-heading, .login-form, .login-assurance, [data-testid="status-load-error"]) {
+.login-card > :where(.login-heading, .login-form, .login-assurance, .auth-link, .auth-result, .auth-return, [data-testid="status-load-error"]) {
   width: min(100%, 440px);
   margin-right: auto;
   margin-left: auto;
@@ -760,6 +760,30 @@ button, a, input, select { -webkit-tap-highlight-color: transparent; }
   line-height: 1.55;
 }
 .login-assurance svg { flex: 0 0 auto; color: #448e7e; }
+.auth-link {
+  align-self: flex-end;
+  justify-self: end;
+  margin-top: -8px;
+  margin-right: 0;
+  margin-left: auto;
+  color: #24766b;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.auth-link:hover, .auth-return:hover { color: #125a54; text-decoration: underline; }
+.auth-result { margin-top: -2px; }
+.auth-return {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 22px auto 0;
+  color: #24766b;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.login-card > .auth-return { justify-content: center; }
 .login-card [data-testid="status-load-error"] { margin-block: 4px; }
 .login-card :where(button, input):focus-visible {
   outline: 3px solid #165f57;
