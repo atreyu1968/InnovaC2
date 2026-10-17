@@ -1,12 +1,12 @@
 import argon2 from "argon2";
 import { Router } from "express";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import {
   auditLogsTable,
   db,
   usersTable,
 } from "@workspace/db";
-import { CreateUserBody } from "@workspace/api-zod";
+import { CreateUserBody, UpdateUserFamilyBody, UpdateUserFamilyParams } from "@workspace/api-zod";
 import {
   getClientIp,
   keyedHash,
@@ -130,6 +130,59 @@ router.post(
       }
       throw error;
     }
+  },
+);
+
+router.post(
+  "/users/:userId/family",
+  requireAuth,
+  requirePermission("users.create"),
+  requireCsrf,
+  async (req, res) => {
+    const params = UpdateUserFamilyParams.safeParse(req.params);
+    const body = UpdateUserFamilyBody.safeParse(req.body);
+    if (!params.success || !body.success ||
+      (body.data.professionalFamily !== null &&
+        !initialCatalog.familias_profesionales.includes(body.data.professionalFamily))) {
+      res.status(400).json({ error: "Selecciona una familia del catálogo oficial." });
+      return;
+    }
+    const context = res.locals.auth as AuthContext;
+    const [admin] = await db.select().from(usersTable).where(eq(usersTable.id, context.user.id)).limit(1);
+    const [target] = admin ? await db.select().from(usersTable).where(and(
+      eq(usersTable.id, params.data.userId), eq(usersTable.centerId, admin.centerId),
+    )).limit(1) : [];
+    if (!target) {
+      res.status(404).json({ error: "No se encontró la cuenta en tu centro." });
+      return;
+    }
+    if (body.data.professionalFamily === null &&
+      ["profesorado", "jefatura_departamento", "coordinacion_red"].includes(target.role)) {
+      res.status(400).json({ error: "Este perfil necesita una familia profesional." });
+      return;
+    }
+    const updated = await db.transaction(async tx => {
+      const [account] = await tx.update(usersTable).set({ professionalFamily: body.data.professionalFamily }).where(and(
+        eq(usersTable.id, target.id),
+        body.data.expectedFamily === null ? isNull(usersTable.professionalFamily) : eq(usersTable.professionalFamily, body.data.expectedFamily),
+      )).returning({
+        id: usersTable.id, email: usersTable.email, name: usersTable.name,
+        role: usersTable.role, professionalFamily: usersTable.professionalFamily,
+        active: usersTable.active, createdAt: usersTable.createdAt,
+      });
+      if (!account) return null;
+      await tx.insert(auditLogsTable).values({
+        userId: context.user.id, action: "user.family.updated", entityType: "user",
+        entityId: account.id, ipHash: keyedHash(getClientIp(req)),
+        details: { previousFamily: target.professionalFamily, professionalFamily: account.professionalFamily },
+      });
+      return account;
+    });
+    if (!updated) {
+      res.status(409).json({ error: "La familia ha cambiado en otra sesión. Actualiza la lista." });
+      return;
+    }
+    res.json(updated);
   },
 );
 

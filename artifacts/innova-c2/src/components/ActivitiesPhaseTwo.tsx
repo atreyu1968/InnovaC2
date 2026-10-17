@@ -6,7 +6,7 @@ import {
   ShieldCheck, Upload, X,
 } from "lucide-react";
 import {
-  UserRole, getListActivitiesQueryKey, getListCurrentIndicatorsQueryKey,
+  UserRole, addDocumentVersion as postDocumentVersion, getListActivitiesQueryKey, getListCurrentIndicatorsQueryKey,
   getListDocumentsQueryKey, getListInformationRequestsQueryKey,
   getListStaffOptionsQueryKey, getGetDocumentQueryKey,
   useAddDocumentVersion, useApproveDocument, useConfirmActivity,
@@ -90,7 +90,13 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
   const validateActivity = useValidateActivity();
   const discardActivity = useDiscardActivity();
   const uploadDocument = useUploadDocument();
-  const addVersion = useAddDocumentVersion();
+  const addVersion = useAddDocumentVersion({
+    mutation: {
+      mutationFn: ({ documentId, data }) => postDocumentVersion(documentId, data, {
+        headers: data instanceof File ? { "X-File-Name": encodeURIComponent(data.name) } : {},
+      }),
+    },
+  });
   const approveDocument = useApproveDocument();
   const setDocumentAccess = useSetDocumentAccess();
   const linkEvidence = useLinkDocumentEvidence();
@@ -312,7 +318,7 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
         dueAt: String(data.get("dueAt") ?? "") ? `${String(data.get("dueAt"))}T23:59:59.000Z` : null,
       },
     }, {
-      onSuccess: async () => { await refresh(getListInformationRequestsQueryKey()); formElement.reset(); succeed("Solicitud de información enviada."); },
+      onSuccess: async () => { await refresh(getListInformationRequestsQueryKey()); formElement.reset(); succeed("Solicitud registrada para el destinatario dentro de la aplicación."); },
       onError: fail,
     });
   };
@@ -458,7 +464,7 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
           </div>
           {detail.isLoading ? <div className="p2-skeleton-row" /> : detail.isError ? <Notice tone="error">No se pudo cargar el historial de versiones. <button onClick={() => void detail.refetch()}>Reintentar</button></Notice> : <div className="p2-versions"><h3>Versiones conservadas</h3>{detail.data?.versions.map(version => <button type="button" className={`p2-version-row p2-version-select ${downloadVersion === version.version ? "is-selected" : ""}`} key={version.version} onClick={() => setDownloadVersion(version.version)} disabled={version.scanStatus !== "limpio"} title={version.scanStatus === "limpio" ? "Seleccionar versión" : "No disponible hasta que el escaneo sea limpio"}><span><strong>Versión {version.version}</strong><small>{version.originalName} · {readableDate(version.createdAt)}</small></span><StatusPill tone={version.scanStatus === "limpio" ? "good" : "warn"}>{scanLabel[version.scanStatus] ?? version.scanStatus}</StatusPill></button>)}</div>}
           <form className="p2-compact-form" onSubmit={submitVersion}><label>Añadir versión<input className="field" type="file" name="versionFile" required /></label><p className="p2-helper">Se conserva el historial; se reutiliza el nombre del archivo actual si no se envía otro.</p><button className="p2-secondary" disabled={addVersion.isPending} data-testid="button-add-version">{addVersion.isPending ? "Subiendo…" : "Añadir versión"}</button></form>
-          {currentDocument.accessScope === "restricted" && c2 && <form className="p2-compact-form" onSubmit={handleAccess}><h3>Acceso restringido</h3><label>Persona<select className="field" name="userId" required defaultValue=""><option value="" disabled>Seleccionar personal…</option>{staff.map(person => <option key={person.id} value={person.id}>{person.name} · {person.professionalFamily ?? "Sin familia"}</option>)}</select></label><label>Permiso<select className="field" name="granted" defaultValue="true"><option value="true">Conceder acceso</option><option value="false">Revocar acceso</option></select></label><button className="p2-secondary" disabled={setDocumentAccess.isPending} data-testid="button-set-document-access">{setDocumentAccess.isPending ? "Aplicando…" : "Actualizar acceso"}</button></form>}
+          {currentDocument.accessScope !== "center" && c2 && <form className="p2-compact-form" onSubmit={handleAccess}><h3>Compartir acceso</h3><label>Persona<select className="field" name="userId" required defaultValue=""><option value="" disabled>Seleccionar personal…</option>{staff.map(person => <option key={person.id} value={person.id}>{person.name} · {person.professionalFamily ?? "Sin familia"}</option>)}</select></label><label>Permiso<select className="field" name="granted" defaultValue="true"><option value="true">Conceder acceso</option><option value="false">Revocar acceso</option></select></label><button className="p2-secondary" disabled={setDocumentAccess.isPending} data-testid="button-set-document-access">{setDocumentAccess.isPending ? "Aplicando…" : "Actualizar acceso"}</button></form>}
           <form className="p2-compact-form" onSubmit={handleLink}><h3>Vincular evidencia</h3><label>Actuación<select className="field" name="activityId" required defaultValue=""><option value="" disabled>Seleccionar actuación…</option>{activities.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><label>Indicador<input className="field" name="indicatorCode" placeholder="Código (opcional)" /></label><label>Nota<input className="field" name="note" maxLength={500} /></label><button className="p2-secondary" disabled={linkEvidence.isPending} data-testid="button-link-evidence"><Link2 size={14} />{linkEvidence.isPending ? "Vinculando…" : "Vincular documento"}</button></form>
         </> : <div className="p2-empty p2-detail-empty"><FileText size={24} /><strong>Selecciona un documento</strong><p>Consulta el estado del control antivirus, sus versiones y las operaciones disponibles.</p></div>}
       </aside>

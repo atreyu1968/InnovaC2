@@ -283,6 +283,55 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /users/{userId}/family:
+    post:
+      operationId: updateUserFamily
+      tags: [users]
+      summary: Assign an official family to an existing account with concurrency control
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserFamilyInput"
+      responses:
+        "200":
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Invalid family assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Administrator permission required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Account outside the administrator's center
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Assignment changed in another session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /staff/options:
     get:
       operationId: listStaffOptions
@@ -1429,6 +1478,16 @@ components:
           type: string
           pattern: "^\\d{4}-\\d{4}$"
       required: [email, name, password, centerName, schoolYear]
+    UpdateUserFamilyInput:
+      type: object
+      properties:
+        professionalFamily:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 160
+        expectedFamily:
+          type: [string, "null"]
+      required: [professionalFamily, expectedFamily]
     CreateUserInput:
       type: object
       properties:

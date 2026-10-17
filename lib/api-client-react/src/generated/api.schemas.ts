@@ -111,6 +111,17 @@ export interface SetupInitializeInput {
   schoolYear: string;
 }
 
+export interface UpdateUserFamilyInput {
+  /**
+     * @minLength 1
+     * @maxLength 160
+     * @nullable
+     */
+  professionalFamily: string | null;
+  /** @nullable */
+  expectedFamily: string | null;
+}
+
 export interface CreateUserInput {
   email: string;
   /**

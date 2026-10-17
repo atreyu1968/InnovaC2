@@ -98,6 +98,7 @@ export * from './setupStatus';
 export * from './staffOption';
 export * from './successResponse';
 export * from './updateActivityInput';
+export * from './updateUserFamilyInput';
 export * from './uploadDocumentAccessScope';
 export * from './uploadDocumentCategory';
 export * from './uploadDocumentParams';

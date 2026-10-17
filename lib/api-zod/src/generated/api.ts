@@ -209,6 +209,33 @@ export const CreateUserResponse = zod.object({
 
 
 /**
+ * @summary Assign an official family to an existing account with concurrency control
+ */
+export const UpdateUserFamilyParams = zod.object({
+  "userId": zod.coerce.string().uuid()
+})
+
+export const updateUserFamilyBodyProfessionalFamilyMax = 160;
+
+
+
+export const UpdateUserFamilyBody = zod.object({
+  "professionalFamily": zod.string().min(1).max(updateUserFamilyBodyProfessionalFamilyMax).nullable(),
+  "expectedFamily": zod.string().nullable()
+})
+
+export const UpdateUserFamilyResponse = zod.object({
+  "id": zod.string().uuid(),
+  "email": zod.string().email(),
+  "name": zod.string(),
+  "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullish(),
+  "active": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
  * @summary List active staff names and families for C2 assignments
  */
 export const ListStaffOptionsResponseItem = zod.object({

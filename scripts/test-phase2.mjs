@@ -181,6 +181,18 @@ async function cleanup() {
           OR user_id IN (SELECT id FROM users WHERE center_id = $1::uuid)`,
       [row.id],
     );
+    // Approved evidence deliberately prevents deleting its immutable version.
+    // Remove only this disposable center's evidence before the center cascade.
+    await pool.query(
+      `DELETE FROM evidences WHERE document_version_id IN (
+        SELECT v.id FROM document_versions v
+        JOIN documents d ON d.id = v.document_id WHERE d.center_id = $1
+      )`,
+      [row.id],
+    );
+    await pool.query("DELETE FROM information_requests WHERE center_id = $1", [row.id]);
+    await pool.query("DELETE FROM activities WHERE center_id = $1", [row.id]);
+    await pool.query("DELETE FROM documents WHERE center_id = $1", [row.id]);
     await pool.query("DELETE FROM centers WHERE id = $1", [row.id]);
   }
   await pool.end();
@@ -254,7 +266,7 @@ try {
   );
   const headA = await createStaff(
     admin,
-    "jefatura",
+    "jefatura_departamento",
     headAEmail,
     "Jefatura familia A",
     headAPassword,
@@ -264,6 +276,20 @@ try {
   const teacherASession = await login(teacherAEmail, teacherAPassword);
   const teacherBSession = await login(teacherBEmail, teacherBPassword);
   const headASession = await login(headAEmail, headAPassword);
+  // An existing account can be assigned by its administrator without recreation.
+  await pool.query("UPDATE users SET professional_family = NULL WHERE id = $1", [teacherA.id]);
+  expectStatus(await request(`/users/${teacherA.id}/family`, {
+    method: "POST", cookie: admin.cookie, csrf: admin.csrf,
+    body: { expectedFamily: null, professionalFamily: families[0] },
+  }), 200, "assign family to existing account");
+  expectStatus(await request(`/users/${teacherA.id}/family`, {
+    method: "POST", cookie: admin.cookie, csrf: admin.csrf,
+    body: { expectedFamily: null, professionalFamily: families[1] },
+  }), 409, "reject stale family assignment");
+  expectStatus(await request(`/users/${teacherB.id}/family`, {
+    method: "POST", cookie: teacherASession.cookie, csrf: teacherASession.csrf,
+    body: { expectedFamily: families[1], professionalFamily: families[0] },
+  }), 403, "teacher cannot change family assignments");
 
   const staffOptions = await request("/staff/options", { cookie: c2Session.cookie });
   expectStatus(staffOptions, 200, "C2 staff selector");
@@ -600,7 +626,6 @@ try {
   expectStatus(requestsForOther, 200, "other family request list");
   assert.ok(requestsForOther.data.every((row) => row.recipientUserId === teacherB.id));
 
-  console.log("Phase 2 integration tests passed: family scope, activity deduplication and revisions, distinct information outcomes, immutable/private documents, quarantine, grants, and indicator evidence rules.");
 } catch (error) {
   testFailure = error;
 } finally {
@@ -612,3 +637,4 @@ try {
 if (testFailure) {
   throw testFailure;
 }
+console.log("Phase 2 integration tests passed: family assignments and scope, activity deduplication and revisions, distinct information outcomes, immutable/private documents, quarantine, grants, indicator evidence rules, and cleanup.");

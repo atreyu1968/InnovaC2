@@ -16,8 +16,14 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
   validación, control de concurrencia, snapshots inmutables, exportación
   campo a campo para transcripción manual a Laycos y documentos DOCX/PDF.
   El justificante de presentación se conserva con hash SHA-256.
-- **Fases posteriores: pendientes.** Gestión y distribución documental,
-  circuitos completos de CICLOPE, comunicaciones reales por Resend, memoria,
+- **Fase 2 — actuaciones y evidencias: integrada y probada por API.** Alta,
+  edición, deduplicación, confirmación, validación y retirada de actuaciones;
+  versiones documentales privadas, permisos por familia y concesiones expresas;
+  solicitudes de datos esenciales, respuestas y validación C2; indicadores con
+  trazabilidad de evidencias. Asignación de familia a cuentas nuevas y existentes.
+  El antivirus debe estar disponible para descargar o aprobar archivos.
+- **Fases posteriores: pendientes.** Circuitos completos de CICLOPE,
+  comunicaciones reales por Resend, memoria,
   ATECA/FABLab y asistente IA se habilitarán según la especificación, con sus
   pruebas. No se sustituyen por envíos, respuestas o integraciones simuladas.
 
@@ -45,6 +51,12 @@ envíos automáticos: la aplicación prepara los campos ordenados y registra la
 presentación manual con su justificante. Los archivos de evidencia se guardan
 en el volumen persistente indicado por `DATA_DIR`.
 
+Guía de uso, alcance y limitaciones de captura documental:
+[`docs/fase2-actuaciones-evidencias.md`](docs/fase2-actuaciones-evidencias.md).
+La consulta de cursos anteriores por IA corresponde a la fase 6: se utilizarán
+como antecedentes con fuentes y permisos, nunca para arrastrar automáticamente
+logros, evidencias o valores al curso actual. El asistente aún no está habilitado.
+
 ## Instalación autónoma en Ubuntu / Proxmox
 
 Requisitos: Ubuntu 22.04 o posterior, arquitectura compatible con Docker
@@ -61,7 +73,9 @@ sudo ./scripts/install.sh
 Abre `http://<servidor>:8080` (o el puerto definido por `APP_PORT`) y completa
 la configuración inicial para crear el primer administrador técnico, centro y
 curso. El servicio de PostgreSQL no publica su puerto fuera de la red interna de
-Compose.
+Compose. También se incluye ClamAV en la red privada: la aplicación espera a
+que esté listo. En la primera instalación puede tardar varios minutos en
+descargar sus firmas; necesita salida a Internet y memoria suficiente.
 
 Antes de exponer el sistema a Internet, configura HTTPS en un proxy inverso
 confiable y cambia `COOKIE_SECURE=true`. Activa `TRUST_PROXY=1` únicamente si
@@ -97,6 +111,7 @@ DATABASE_URL="$TEST_DATABASE_URL" pnpm --filter @workspace/db run push
 pnpm -w run typecheck
 pnpm run test:phase0
 pnpm run test:phase1
+pnpm run test:phase2
 BASE_PATH=/ PORT=3000 pnpm -w run build
 ```
 
@@ -106,6 +121,14 @@ de prueba usa además un directorio temporal para evidencias. No las ejecutes
 contra producción ni contra la base activa del centro. `test:phase1` verifica
 permisos, edición, validación oficial, concurrencia, snapshots, exportaciones
 DOCX/PDF, salida Laycos y almacenamiento/descarga del justificante.
+
+`test:phase2` prepara el esquema en la base desechable y comprueba asignaciones
+de familia, deduplicación, revisiones concurrentes, respuestas de información,
+privacidad, concesiones expresas, versiones y bloqueo por cuarentena. Utiliza
+un antivirus deshabilitado deliberadamente para verificar que el sistema falla
+de forma segura; no certifica la detección real de malware ni el circuito de
+aprobación con ClamAV. Esas comprobaciones deben realizarse en el entorno de
+despliegue con el servicio real, antes del uso con documentos del centro.
 
 Variables de ejemplo: `.env.example`. La API sirve el frontend compilado y
 responde en `/api/v1/health`.

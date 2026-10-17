@@ -64,6 +64,7 @@ import type {
   StaffOption,
   SuccessResponse,
   UpdateActivityInput,
+  UpdateUserFamilyInput,
   UploadDocumentParams,
   User
 } from './api.schemas';
@@ -993,6 +994,95 @@ export const useCreateUser = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getCreateUserMutationOptions(options));
+    }
+
+export const getUpdateUserFamilyUrl = (userId: string,) => {
+
+
+
+
+  return `/api/v1/users/${userId}/family`
+}
+
+/**
+ * @summary Assign an official family to an existing account with concurrency control
+ */
+export const updateUserFamily = async (userId: string,
+    updateUserFamilyInput: UpdateUserFamilyInput, options?: Parameters<typeof customFetch>[1]): Promise<User> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<User>(getUpdateUserFamilyUrl(userId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(updateUserFamilyInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateUserFamilyMutationKey = () => ['updateUserFamily'] as const;
+
+export const getUpdateUserFamilyMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserFamily>>, TError,UpdateUserFamilyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateUserFamily>>, TError,UpdateUserFamilyMutationVariables, TContext> => {
+
+const mutationKey = getUpdateUserFamilyMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateUserFamily>>, UpdateUserFamilyMutationVariables> = (props) => {
+          const {userId,data} = props ?? {};
+
+          return  updateUserFamily(userId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateUserFamilyMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserFamily>>>
+    export type UpdateUserFamilyMutationBody = BodyType<UpdateUserFamilyInput>
+    export type UpdateUserFamilyMutationError = ErrorType<ErrorResponse>
+    export type UpdateUserFamilyMutationVariables = {userId: string;data: BodyType<UpdateUserFamilyInput>}
+
+    /**
+ * @summary Assign an official family to an existing account with concurrency control
+ */
+export const useUpdateUserFamily = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserFamily>>, TError,UpdateUserFamilyMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateUserFamily>>,
+        TError,
+        UpdateUserFamilyMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateUserFamilyMutationOptions(options));
     }
 
 export const getListStaffOptionsUrl = () => {

@@ -230,7 +230,6 @@ export async function canReadDocument(
   ) {
     return true;
   }
-  if (document.accessScope !== "restricted") return false;
   const [grant] = await db
     .select({ id: usersTable.id })
     .from(usersTable)

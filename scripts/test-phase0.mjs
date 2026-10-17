@@ -240,6 +240,7 @@ try {
       name: "Docente de prueba",
       role: "profesorado",
       temporaryPassword: teacherPassword,
+      professionalFamily: officialCatalog.data.familias_profesionales[0],
     },
   });
   assert.equal(createdUser.response.status, 201, "admin should create a user");
