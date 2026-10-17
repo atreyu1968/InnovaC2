@@ -61,6 +61,9 @@ try {
     plugins: [{
       name: "isolated-db",
       setup(build) {
+        build.onResolve({ filter: /\/ai-provider-check-limits$/ }, () => ({
+          path: resolve(root, "scripts/fixtures/ai-check-memory-limits.ts"),
+        }));
         build.onResolve({ filter: /^@workspace\/db$/ }, () => ({ path: "db", namespace: "isolated" }));
         build.onLoad({ filter: /.*/, namespace: "isolated" }, () => ({ contents: database, loader: "js" }));
         build.onResolve({ filter: /\/logger$/ }, () => ({ path: "logger", namespace: "logger" }));
@@ -300,6 +303,15 @@ try {
   assert.equal((await request(undefined, otherSession)).status, 200, "Unexpected errors release the lock in finally");
   assert.deepEqual(state.row, snapshot, "The saved provider remains unchanged after every diagnostic");
   const config = { mode: "local", baseUrl, apiKey: "synthetic-provider-key" };
+  before = calls;
+  for (const guard of [
+    { signal: AbortSignal.abort(), deadline: Infinity },
+    { signal: new AbortController().signal, deadline: Date.now() - 1 },
+  ]) {
+    await assert.rejects(requestAIJson(config, "chat/completions", "{}", 1000, guard),
+      error => error.kind === "connection");
+  }
+  assert.equal(calls, before, "Cancelled or expired reservations cannot dispatch requests");
   scenario = "timeout";
   await assert.rejects(requestAIJson(config, "chat/completions", "{}", 25), e => e.kind === "connection");
   state.row = { ...row, baseUrl: "http://169.254.169.254/v1" };

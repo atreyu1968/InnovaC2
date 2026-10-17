@@ -44,3 +44,24 @@ changing the named fields' meaning.
 explicit, backed-up addition of proven missing definitions may precede a full
 structural baseline. Never overwrite differing guards to make a comparison pass.
 A structural baseline does not certify the historical data or course approval.
+
+Regenerate the structural migration reference from a fresh owned PostgreSQL
+cluster whenever the migration journal changes; do not derive it from an
+existing installation.
+
+**Why:** The upgrade preflight intentionally rejects a reference that does not
+cover every journal entry. A new additive migration can therefore block unrelated
+fresh-database test suites until the reference is regenerated too.
+
+**How to apply:** Use the documented reference-generation command and run its
+restore/upgrade checks, not merely fresh migration execution.
+
+Use PostgreSQL's canonical pretty deparsing for CHECK fingerprints rather than
+raw redundant-parenthesis formatting.
+
+**Why:** Dump/restore can flatten nested associative AND expressions introduced
+by BETWEEN without changing their meaning. Raw formatting produced a false
+structural mismatch on an otherwise unchanged restored installation.
+
+**How to apply:** Keep checks that changed literal values and changed AND/OR
+precedence are still rejected; never strip parentheses with a text replacement.

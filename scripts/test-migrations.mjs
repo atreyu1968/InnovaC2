@@ -107,7 +107,7 @@ try {
   assert.deepEqual(await ledger(fresh), beforeLedger);
   console.log("PASS: clean installation and second update do not repeat migrations.");
 
-  // Legacy deployment at the prefix before the final migration, populated,
+  // Populated legacy deployment before AI provider settings (fixed prefix),
   // empty (but valid) Drizzle ledger. Dump then restore into a DIFFERENT DB.
   await admin.query("CREATE DATABASE legacy");
   const legacy = await connect("legacy");
@@ -207,6 +207,14 @@ try {
     ["extra", `CREATE TABLE unexpected_data(id integer)`],
     ["index", `CREATE INDEX extra_index ON centers(name)`],
     ["constraint", `ALTER TABLE users DROP CONSTRAINT users_center_id_centers_id_fk`],
+    ["check-values", `ALTER TABLE space_reservations DROP CONSTRAINT space_reservations_space_kinds_check;
+      ALTER TABLE space_reservations ADD CONSTRAINT space_reservations_space_kinds_check
+      CHECK (cardinality(space_kinds) BETWEEN 1 AND 2 AND space_kinds <@ ARRAY['ateca','other']::text[]
+        AND (cardinality(space_kinds)=1 OR space_kinds[1]<>space_kinds[2]))`],
+    ["check-precedence", `ALTER TABLE space_reservations DROP CONSTRAINT space_reservations_space_kinds_check;
+      ALTER TABLE space_reservations ADD CONSTRAINT space_reservations_space_kinds_check
+      CHECK ((cardinality(space_kinds) BETWEEN 1 AND 2 AND space_kinds <@ ARRAY['ateca','fablab']::text[])
+        OR cardinality(space_kinds)=1 OR space_kinds[1]<>space_kinds[2])`],
     ["trigger", `ALTER TABLE school_years DISABLE TRIGGER ALL`],
     ["function", `CREATE OR REPLACE FUNCTION guard_closed_year() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NEW; END $$`],
     ["enum", `ALTER TYPE user_role ADD VALUE 'unexpected_role'`],

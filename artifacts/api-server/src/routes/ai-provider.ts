@@ -9,7 +9,7 @@ import { resolveAIEndpoint } from "../lib/ai-http";
 import { UpdateAdminAIProviderSettingsBody, CheckAdminAIProviderBody, CheckAdminAIProviderResponse } from "@workspace/api-zod";
 import { AIProviderError, encryptAIProviderKey, loadAIProvider, type AIProviderMode } from "../lib/ai-provider";
 import { checkAIProvider } from "../lib/ai-provider-check";
-import { AIProviderCheckLimits } from "../lib/ai-provider-check-limits";
+import { AIProviderCheckLimits, AIProviderCheckLimitsUnavailable } from "../lib/ai-provider-check-limits";
 
 const router = Router();
 const checkLimits = new AIProviderCheckLimits();
@@ -67,7 +67,7 @@ async function normalizeBaseUrl(mode: AIProviderMode, input: string): Promise<st
 }
 
 function replyError(res: Response, error: unknown): void {
-  if (error instanceof SettingsFailure || error instanceof AIProviderError) {
+  if (error instanceof SettingsFailure || error instanceof AIProviderError || error instanceof AIProviderCheckLimitsUnavailable) {
     res.status(error.status).json({ error: error.message });
     return;
   }
@@ -96,18 +96,20 @@ router.post("/admin/ai/provider/check", requireAuth, requireCsrf, async (req, re
     if (config.revision !== parsed.data.expectedRevision) {
       throw new SettingsFailure(409, "La configuración cambió. Recárgala y confirma de nuevo la comprobación.");
     }
-    const admission = checkLimits.acquire(identity);
+    const admission = await checkLimits.acquire(identity);
     if (!admission.allowed) {
       res.set("Retry-After", String(admission.retryAfterSeconds));
       res.status(429).json({ error: admission.message });
       return;
     }
+    let result;
     try {
-      res.json(CheckAdminAIProviderResponse.parse(await checkAIProvider(config)));
+      result = CheckAdminAIProviderResponse.parse(await checkAIProvider(config, admission));
     } finally {
       // Completion and errors both release concurrency, but keep the usage count.
-      admission.release();
+      await admission.release();
     }
+    res.json(result);
   } catch (error) { replyError(res, error); }
 });
 

@@ -1,5 +1,5 @@
 import type { AIProviderConfig } from "./ai-provider";
-import { AIHttpError, requestAIJson } from "./ai-http";
+import { AIHttpError, requestAIJson, type AIRequestGuard } from "./ai-http";
 
 /** One second of synthetic 440 Hz PCM. Never reads an upload or a meeting. */
 function syntheticAudio(): Blob {
@@ -37,14 +37,14 @@ function failure(error: unknown) {
   return { status: statuses[kind], message: messages[kind] };
 }
 
-export async function checkAIProvider(config: AIProviderConfig) {
+export async function checkAIProvider(config: AIProviderConfig, guard?: AIRequestGuard) {
   const transcription = (async () => {
     try {
       const form = new FormData();
       form.set("model", config.transcriptionModel);
       form.set("language", "es");
       form.set("file", syntheticAudio(), "comprobacion-sintetica.wav");
-      const result = await requestAIJson(config, "audio/transcriptions", form, 20_000);
+      const result = await requestAIJson(config, "audio/transcriptions", form, 20_000, guard);
       // Silence/tones may legitimately yield an empty transcript.
       if (!result || typeof result !== "object" || typeof (result as { text?: unknown }).text !== "string") {
         throw new AIHttpError("format");
@@ -58,7 +58,7 @@ export async function checkAIProvider(config: AIProviderConfig) {
         model: config.minutesModel,
         temperature: 0.2,
         messages: [{ role: "user", content: "Prueba técnica con datos ficticios, no es una reunión real: resume en una frase que un equipo imaginario acordó revisar un documento de ejemplo." }],
-      }), 20_000);
+      }), 20_000, guard);
       const content = (result as { choices?: { message?: { content?: unknown } }[] } | null)?.choices?.[0]?.message?.content;
       if (typeof content !== "string" || !content.trim()) throw new AIHttpError("format");
       return { status: "ok" as const, message: "Conexión y acceso al modelo de redacción correctos; respuesta compatible. No se ha evaluado la calidad." };

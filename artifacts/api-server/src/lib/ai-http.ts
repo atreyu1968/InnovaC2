@@ -4,6 +4,7 @@ import { request as httpRequest } from "node:http";
 import { request as httpsRequest } from "node:https";
 
 type Mode = "local" | "external_authorized";
+export type AIRequestGuard = { signal: AbortSignal; deadline: number };
 
 export class AIHttpError extends Error {
   constructor(readonly kind: "authorization" | "model" | "format" | "connection" | "provider") {
@@ -76,8 +77,15 @@ export async function requestAIJson(
   path: string,
   body: FormData | string,
   timeoutMs = 120_000,
+  guard?: AIRequestGuard,
 ): Promise<unknown> {
-  const signal = AbortSignal.timeout(timeoutMs);
+  const signal = guard
+    ? AbortSignal.any([guard.signal, AbortSignal.timeout(timeoutMs)])
+    : AbortSignal.timeout(timeoutMs);
+  const checkGuard = () => {
+    if (signal.aborted || (guard && Date.now() >= guard.deadline)) throw new AIHttpError("connection");
+  };
+  checkGuard();
   let endpoint: Awaited<ReturnType<typeof resolveAIEndpoint>>;
   let onAbort: (() => void) | undefined;
   try {
@@ -105,6 +113,8 @@ export async function requestAIJson(
     ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
   };
   try {
+    // In particular, fence a process resumed after losing its database session.
+    checkGuard();
     return await new Promise<unknown>((resolve, reject) => {
       const send = url.protocol === "https:" ? httpsRequest : httpRequest;
       const outgoing = send({

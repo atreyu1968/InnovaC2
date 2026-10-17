@@ -2108,6 +2108,28 @@
         "trigger:software_versions.software_course_guard": "CREATE TRIGGER software_course_guard BEFORE INSERT OR DELETE OR UPDATE ON public.software_versions FOR EACH ROW EXECUTE FUNCTION guard_course_write()",
         "trigger:software_versions.software_history_guard": "CREATE TRIGGER software_history_guard BEFORE DELETE OR UPDATE ON public.software_versions FOR EACH ROW EXECUTE FUNCTION guard_software_history()"
       }
+    },
+    {
+      "tag": "0016_ai_provider_check_usage",
+      "hash": "df1d1a473621e88f40905ddd12cabdd94f9a8f6f88628bff497ddb1d065f3896",
+      "when": 1792258460055,
+      "set": {
+        "column:ai_provider_check_usage.center_id": "53516b6693b5969a06a2a0ecbb294e0e172954f6c38f785f2d4c5f9cafeb4f5c",
+        "column:ai_provider_check_usage.id": "53516b6693b5969a06a2a0ecbb294e0e172954f6c38f785f2d4c5f9cafeb4f5c",
+        "column:ai_provider_check_usage.reserved_until": "44109d039eb9b0b280b4fc65ded7178b4663736fcbedf859310cdbebf691b3bb",
+        "column:ai_provider_check_usage.started_at": "815b6774431a4a1f3b38ab72832f78e6c70aaddee8e743d0467b327f5e6e4954",
+        "column:ai_provider_check_usage.user_id": "53516b6693b5969a06a2a0ecbb294e0e172954f6c38f785f2d4c5f9cafeb4f5c",
+        "constraint:ai_provider_check_usage.ai_provider_check_usage_pkey": "642434b1de07e58d59bbd63d9e12f146320838c32d7250d16502b3a7ed52e5fb",
+        "index:ai_provider_check_usage_center_started": "b0f1af62f0334f794ce188656a7e6c6dcfcdd97746ec77ecb0e91a013dc99c08",
+        "index:ai_provider_check_usage_pkey": "abcdabb9cc51c5642783929742ff9fc6edf26ded76bd2caeaf298c6e964c7b5b",
+        "index:ai_provider_check_usage_user_started": "574e267e5a197414eae652c78c84c92623e636ac7c2a049469921f4e5ed10651",
+        "relation:ai_provider_check_usage": "d930280b8f36c9baa632452a3c2109ed7e6dbc0da544fa467c52b83127f61b2b",
+        "relation:ai_provider_check_usage_center_started": "6256ae59d5f0cc24bf7eb74f6ff391ab81241cd6265995829ee1238f33601dd0",
+        "relation:ai_provider_check_usage_pkey": "6256ae59d5f0cc24bf7eb74f6ff391ab81241cd6265995829ee1238f33601dd0",
+        "relation:ai_provider_check_usage_user_started": "6256ae59d5f0cc24bf7eb74f6ff391ab81241cd6265995829ee1238f33601dd0"
+      },
+      "remove": [],
+      "guards": {}
     }
   ]
 }

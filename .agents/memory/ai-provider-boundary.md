@@ -15,6 +15,18 @@ Technical diagnostics must ask for confirmation before sending synthetic samples
 
 **How to apply:** Keep diagnostic content independent of meeting records. A synthetic tone without speech may legitimately return an empty transcription; accept that as a compatible response, not as evidence of precision.
 
+Do not replace distributed diagnostic exclusion with an expiring lease alone.
+Keep a non-expiring live-session lock as well as a durable recovery quarantine,
+and fence outgoing calls after the admission deadline or loss of the lock session.
+
+**Why:** A paused but live replica can outlast a lease and later resume. Expiry alone
+would allow another replica to send overlapping diagnostics. The quarantine also
+covers the gap between loss of the database session and local HTTP cancellation.
+
+**How to apply:** Preserve session affinity for PostgreSQL locks; transaction-pooling
+proxies are incompatible. Do not claim that closing an HTTP socket cancels work
+already accepted internally by an external provider.
+
 Keep technical diagnostics deliberate and manual. Do not automatically run or retry them on page load, settings changes, background polling or routine validation.
 
 **Why:** Preventing accidental provider consumption is a product requirement. Even failed diagnostic calls may consume quota or incur costs.
