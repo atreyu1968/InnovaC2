@@ -19,3 +19,4 @@
 
 export * from "./innova";
 export * from "./capture";
+export * from "./school-cycle";

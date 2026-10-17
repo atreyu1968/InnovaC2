@@ -5,20 +5,15 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
-
-export interface ErrorResponse {
-  error: string;
-}
-
-export interface SuccessResponse {
-  success: boolean;
-}
-
-export interface SetupStatus {
-  initialized: boolean;
+export interface SchoolYear {
+  id: string;
+  label: string;
+  active: boolean;
+  revision: number;
+  /** @nullable */
+  closedAt: string | null;
+  /** @nullable */
+  closeReason: string | null;
 }
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];
@@ -34,6 +29,86 @@ export const UserRole = {
   consulta_c1: 'consulta_c1',
   consulta_auditora: 'consulta_auditora',
 } as const;
+
+export interface SchoolYearAssignment {
+  userId: string;
+  role: UserRole;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  professionalFamily: string | null;
+}
+
+export interface SchoolYearAccount {
+  userId: string;
+  name: string;
+  role: UserRole;
+  /** @nullable */
+  professionalFamily: string | null;
+  assigned: boolean;
+}
+
+export interface SchoolYearOpening {
+  /** @pattern ^\d{4}-\d{4}$ */
+  label: string;
+  previousYearId: string;
+  /** @minimum 1 */
+  expectedRevision: number;
+  /** @minItems 1 */
+  assignments: SchoolYearAssignment[];
+  permissionsReviewed: boolean;
+}
+
+export interface SchoolYearClosure {
+  /** @minimum 1 */
+  expectedRevision: number;
+  confirmation: string;
+  /**
+     * @minLength 10
+     * @maxLength 2000
+     */
+  reason: string;
+}
+
+export interface SchoolYearValidation {
+  canClose: boolean;
+  revision: number;
+  blockers: string[];
+  warnings: string[];
+}
+
+export type SchoolYearSourceData = {[key: string]: unknown};
+
+export interface SchoolYearSource {
+  source: string;
+  id: string;
+  data: SchoolYearSourceData;
+}
+
+export interface SchoolYearHistory {
+  schoolYearId: string;
+  label: string;
+  closedAt: string;
+  sourceHash: string;
+  sources: SchoolYearSource[];
+}
+
+export interface HealthStatus {
+  status: string;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export interface SuccessResponse {
+  success: boolean;
+}
+
+export interface SetupStatus {
+  initialized: boolean;
+}
 
 export interface User {
   id: string;

@@ -7,6 +7,8 @@ import {
   picCatalogsTable,
   picPlansTable,
   schoolYearsTable,
+  schoolYearAssignmentsTable,
+  schoolYearSnapshotsTable,
   usersTable,
 } from "@workspace/db";
 import type { UserRole } from "@workspace/api-zod";
@@ -42,7 +44,15 @@ export async function loadCaptureActor(userId: string): Promise<CaptureActor | n
     .from(usersTable)
     .where(and(eq(usersTable.id, userId), eq(usersTable.active, true)))
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  const year = await loadActiveSchoolYear(row.centerId);
+  if (!year) return row;
+  const assignments = await db.select().from(schoolYearAssignmentsTable)
+    .where(eq(schoolYearAssignmentsTable.schoolYearId, year.id));
+  if (!assignments.length) return row; // Existing course before explicit lifecycle review.
+  const assignment = assignments.find(a => a.userId === userId);
+  if (!assignment) return row.role === "admin_tecnico" ? row : null;
+  return { ...row, professionalFamily: assignment.professionalFamily };
 }
 
 export async function loadActiveSchoolYear(
@@ -82,6 +92,30 @@ export async function loadCurrentPlan(
   return row ?? null;
 }
 
+export async function loadResourceActor(
+  actor: CaptureActor,
+  schoolYearId: string,
+  permission?: string,
+): Promise<CaptureActor | null> {
+  const [year] = await db.select().from(schoolYearsTable)
+    .where(and(eq(schoolYearsTable.id, schoolYearId), eq(schoolYearsTable.centerId, actor.centerId)));
+  if (!year) return null;
+  if (!year.closedAt || actor.role === "admin_tecnico") return actor;
+  const [snapshot] = await db.select().from(schoolYearSnapshotsTable)
+    .where(eq(schoolYearSnapshotsTable.schoolYearId, schoolYearId));
+  const sources = snapshot?.content.sources as
+    { source: string; id: string; data: Record<string, unknown> }[] | undefined;
+  const historical = sources?.find(s => s.source === "course_accounts" && s.id === actor.id)?.data;
+  if (!historical || !historical.assigned || !historical.active) return null;
+  if (permission && !sources?.some(s => s.source === "role_permissions" &&
+      s.data.role === historical.role && s.data.permission === permission)) return null;
+  return {
+    ...actor,
+    // Neither a later promotion nor an earlier revoked C2 role expands scope.
+    role: historical.role === actor.role ? actor.role : "profesorado",
+    professionalFamily: typeof historical.professional_family === "string" ? historical.professional_family : null,
+  };
+}
 export async function loadCatalogPayload(catalogRowId?: string): Promise<unknown | null> {
   const [row] = await db
     .select({ payload: picCatalogsTable.payload })
@@ -219,8 +253,12 @@ export async function canReadDocument(
     accessScope: string;
     createdBy: string | null;
     id: string;
+    schoolYearId: string;
   },
 ): Promise<boolean> {
+  const scopedActor = await loadResourceActor(actor, document.schoolYearId, "documents.read");
+  if (!scopedActor) return false;
+  actor = scopedActor;
   if (hasCoordinationAccess(actor.role) || document.createdBy === actor.id) {
     return true;
   }

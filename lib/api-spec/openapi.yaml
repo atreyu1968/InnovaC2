@@ -1428,8 +1428,148 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /school-years:
+    get:
+      operationId: listSchoolYears
+      responses:
+        "200":
+          description: Cursos del centro
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/SchoolYear" } }
+    post:
+      operationId: openSchoolYear
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SchoolYearOpening" }
+      responses:
+        "201":
+          description: Curso abierto sin datos heredados
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SchoolYear" }
+  /school-years/review:
+    get:
+      operationId: getSchoolYearReview
+      responses:
+        "200":
+          description: Cuentas y asignaciones para revisión explícita
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/SchoolYearAccount" } }
+  /school-years/{yearId}/validation:
+    get:
+      operationId: validateSchoolYearClosure
+      parameters:
+        - { name: yearId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Validación previa al cierre, repetida dentro de la transacción de cierre
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SchoolYearValidation" }
+  /school-years/{yearId}/close:
+    post:
+      operationId: closeSchoolYear
+      parameters:
+        - { name: yearId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SchoolYearClosure" }
+      responses:
+        "200":
+          description: Cierre irreversible con expediente inmutable
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SchoolYear" }
+  /school-years/{yearId}/history:
+    get:
+      operationId: getSchoolYearHistory
+      parameters:
+        - { name: yearId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Fuentes históricas autorizadas, nunca una nueva captura ni un logro del curso actual
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SchoolYearHistory" }
 components:
   schemas:
+    SchoolYear:
+      type: object
+      required: [id, label, active, revision, closedAt, closeReason]
+      properties:
+        id: { type: string, format: uuid }
+        label: { type: string }
+        active: { type: boolean }
+        revision: { type: integer }
+        closedAt: { type: [string, "null"], format: date-time }
+        closeReason: { type: [string, "null"] }
+    SchoolYearAssignment:
+      type: object
+      required: [userId, role, professionalFamily]
+      properties:
+        userId: { type: string, format: uuid }
+        role: { $ref: "#/components/schemas/UserRole" }
+        professionalFamily: { type: [string, "null"], maxLength: 200 }
+    SchoolYearAccount:
+      type: object
+      required: [userId, name, role, professionalFamily, assigned]
+      properties:
+        userId: { type: string }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/UserRole" }
+        professionalFamily: { type: [string, "null"] }
+        assigned: { type: boolean }
+    SchoolYearOpening:
+      type: object
+      required: [label, previousYearId, expectedRevision, assignments, permissionsReviewed]
+      properties:
+        label: { type: string, pattern: '^\d{4}-\d{4}$' }
+        previousYearId: { type: string, format: uuid }
+        expectedRevision: { type: integer, minimum: 1 }
+        assignments:
+          type: array
+          minItems: 1
+          items: { $ref: "#/components/schemas/SchoolYearAssignment" }
+        permissionsReviewed: { type: boolean }
+    SchoolYearClosure:
+      type: object
+      required: [expectedRevision, confirmation, reason]
+      properties:
+        expectedRevision: { type: integer, minimum: 1 }
+        confirmation: { type: string }
+        reason: { type: string, minLength: 10, maxLength: 2000 }
+    SchoolYearValidation:
+      type: object
+      required: [canClose, revision, blockers, warnings]
+      properties:
+        canClose: { type: boolean }
+        revision: { type: integer }
+        blockers: { type: array, items: { type: string } }
+        warnings: { type: array, items: { type: string } }
+    SchoolYearSource:
+      type: object
+      required: [source, id, data]
+      properties:
+        source: { type: string }
+        id: { type: string }
+        data: { type: object, additionalProperties: {} }
+    SchoolYearHistory:
+      type: object
+      required: [schoolYearId, label, closedAt, sourceHash, sources]
+      properties:
+        schoolYearId: { type: string }
+        label: { type: string }
+        closedAt: { type: string, format: date-time }
+        sourceHash: { type: string }
+        sources:
+          type: array
+          items: { $ref: "#/components/schemas/SchoolYearSource" }
     HealthStatus:
       type: object
       properties:

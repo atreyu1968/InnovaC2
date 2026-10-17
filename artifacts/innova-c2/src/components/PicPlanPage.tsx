@@ -150,7 +150,7 @@ function SectionHeading({
 }) {
   return (
     <div className="mb-5 border-b border-[#eee9df] pb-4">
-      <p className="eyebrow">Apartado {number} · PIC 2026–2027</p>
+      <p className="eyebrow">Apartado {number} · Plan del curso</p>
       <h2 className="mt-1 font-[var(--app-font-serif)] text-xl font-bold text-[#26363c]">
         {title}
       </h2>
@@ -274,7 +274,8 @@ export function PicPlanPage({ user }: { user: User }) {
   const [submissionMessage, setSubmissionMessage] = useState("");
   const [laycosOpen, setLaycosOpen] = useState(false);
 
-  const plan = current.data as PicPlan | undefined;
+  const missingPlan = current.isError && (current.error as { status?: number } | null)?.status === 404;
+  const plan = (missingPlan ? undefined : current.data) as PicPlan | undefined;
   const catalog = catalogQuery.data as PicCatalog | undefined;
   const planId = plan?.id ?? "";
   const dirty = useMemo(
@@ -311,7 +312,7 @@ export function PicPlanPage({ user }: { user: User }) {
   const recordSubmission = useRecordPicSubmission();
 
   useEffect(() => {
-    if (plan) setContent(plan.content);
+    setContent(plan?.content ?? null);
   }, [plan?.id, plan?.revision]);
 
   const patch = (updater: (current: PicPlanContent) => PicPlanContent) => {
@@ -483,6 +484,12 @@ export function PicPlanPage({ user }: { user: User }) {
   if (!catalog) {
     return <section className="panel p-6"><h2 className="font-bold">No se pudo cargar el catálogo oficial</h2><p className="mt-2 text-sm text-[#68746e]">{errorText(catalogQuery.error)}</p></section>;
   }
+  if (current.isError && !missingPlan) {
+    return <section className="panel p-6" role="alert">
+      <p className="text-sm text-red-800">{errorText(current.error)}</p>
+      <button className="secondary-action mt-4" onClick={() => current.refetch()}>Reintentar consulta del curso actual</button>
+    </section>;
+  }
   if (!plan) {
     return (
       <section className="fade-up max-w-3xl">
@@ -624,7 +631,7 @@ export function PicPlanPage({ user }: { user: User }) {
 
           <section id="pic-section-4" className={classPanel}>
             <SectionHeading number={4} title="Proyectos de innovación" help="El inventario interno no tiene límite. Marca explícitamente hasta seis proyectos para incorporarlos a este formulario PIC." />
-            <SelectField label="¿Se desarrolla algún proyecto de innovación en el centro durante 2026–2027?" value={content.projectsInCenter ? "Sí" : "No"} values={["Sí", "No"]} onChange={(answer) => patch((value) => ({ ...value, projectsInCenter: answer === "Sí", projects: answer === "No" ? value.projects.map((project) => ({ ...project, includedInPic: false })) : value.projects }))} />
+            <SelectField label={`¿Se desarrolla algún proyecto de innovación en el centro durante ${plan.schoolYear}?`} value={content.projectsInCenter ? "Sí" : "No"} values={["Sí", "No"]} onChange={(answer) => patch((value) => ({ ...value, projectsInCenter: answer === "Sí", projects: answer === "No" ? value.projects.map((project) => ({ ...project, includedInPic: false })) : value.projects }))} />
             {content.projectsInCenter && <>
             <div className="mt-4 space-y-4">
               {content.projects.map((project, index) => (

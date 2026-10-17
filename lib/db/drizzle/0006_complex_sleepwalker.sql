@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "school_years_one_active_uq" ON "school_years" USING btree ("center_id") WHERE "school_years"."active";

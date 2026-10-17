@@ -13,6 +13,8 @@ import {
   db,
   rolePermissionsTable,
   usersTable,
+  schoolYearsTable,
+  schoolYearAssignmentsTable,
 } from "@workspace/db";
 import type { UserRole } from "@workspace/api-zod";
 
@@ -214,6 +216,31 @@ export function requirePermission(permission: string): RequestHandler {
     if (!context) {
       res.status(401).json({ error: "Se requiere iniciar sesión." });
       return;
+    }
+    // Annual access is explicit once a course has reviewed assignments. Global
+    // account permissions remain an upper bound, never an automatic carry-over.
+    if (context.user.role !== "admin_tecnico" && /^(pic\.plan\.|activities\.|documents\.|information\.|indicators\.|staff\.)/.test(permission)) {
+      const [account] = await db.select({ centerId: usersTable.centerId }).from(usersTable)
+        .where(eq(usersTable.id, context.user.id));
+      const [year] = account ? await db.select({ id: schoolYearsTable.id }).from(schoolYearsTable)
+        .where(and(eq(schoolYearsTable.centerId, account.centerId), eq(schoolYearsTable.active, true))) : [];
+      if (year) {
+        const assignments = await db.select().from(schoolYearAssignmentsTable)
+          .where(eq(schoolYearAssignmentsTable.schoolYearId, year.id));
+        const assignment = assignments.find(a => a.userId === context.user.id);
+        if (assignments.length && !assignment) {
+          res.status(403).json({ error: "Esta cuenta no tiene una asignación revisada para el curso activo." });
+          return;
+        }
+        if (assignment) {
+          const [annualGrant] = await db.select().from(rolePermissionsTable).where(and(
+            eq(rolePermissionsTable.role, assignment.role), eq(rolePermissionsTable.permission, permission),
+          )).limit(1);
+          if (!annualGrant) {
+            res.status(403).json({ error: "La asignación del curso no permite esta operación." }); return;
+          }
+        }
+      }
     }
     const [grant] = await db
       .select({ permission: rolePermissionsTable.permission })

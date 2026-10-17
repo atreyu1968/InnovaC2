@@ -5,6 +5,8 @@ import {
   auditLogsTable,
   db,
   usersTable,
+  schoolYearsTable,
+  schoolYearAssignmentsTable,
 } from "@workspace/db";
 import { CreateUserBody, UpdateUserFamilyBody, UpdateUserFamilyParams } from "@workspace/api-zod";
 import {
@@ -90,7 +92,8 @@ router.post(
       parallelism: 1,
     });
     try {
-      const [created] = await db
+      const created = await db.transaction(async tx => {
+      const [created] = await tx
         .insert(usersTable)
         .values({
           centerId: creator.centerId,
@@ -109,13 +112,26 @@ router.post(
           active: usersTable.active,
           createdAt: usersTable.createdAt,
         });
-      await db.insert(auditLogsTable).values({
+      const [year] = await tx.select().from(schoolYearsTable).where(and(
+        eq(schoolYearsTable.centerId, creator.centerId), eq(schoolYearsTable.active, true),
+      )).for("update");
+      if (year) {
+        const reviewed = await tx.select().from(schoolYearAssignmentsTable)
+          .where(eq(schoolYearAssignmentsTable.schoolYearId, year.id)).limit(1);
+        if (reviewed.length) await tx.insert(schoolYearAssignmentsTable).values({
+          schoolYearId: year.id, userId: created.id, role: created.role,
+          professionalFamily: created.professionalFamily, reviewedBy: context.user.id,
+        });
+      }
+      await tx.insert(auditLogsTable).values({
         userId: context.user.id,
         action: "users.created",
         entityType: "user",
         entityId: created.id,
         details: { role: created.role },
         ipHash: keyedHash(getClientIp(req)),
+      });
+      return created;
       });
       res.status(201).json(created);
     } catch (error) {
@@ -171,6 +187,18 @@ router.post(
         active: usersTable.active, createdAt: usersTable.createdAt,
       });
       if (!account) return null;
+      // An explicit administrative family review affects only the open course;
+      // closed assignments and their immutable snapshots are never rewritten.
+      const [activeYear] = await tx.select().from(schoolYearsTable).where(and(
+        eq(schoolYearsTable.centerId, target.centerId),
+        eq(schoolYearsTable.active, true),
+      )).for("update");
+      if (activeYear) await tx.update(schoolYearAssignmentsTable).set({
+        professionalFamily: account.professionalFamily, reviewedBy: context.user.id, reviewedAt: new Date(),
+      }).where(and(
+        eq(schoolYearAssignmentsTable.schoolYearId, activeYear.id),
+        eq(schoolYearAssignmentsTable.userId, account.id),
+      ));
       await tx.insert(auditLogsTable).values({
         userId: context.user.id, action: "user.family.updated", entityType: "user",
         entityId: account.id, ipHash: keyedHash(getClientIp(req)),

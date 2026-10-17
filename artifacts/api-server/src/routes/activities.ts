@@ -41,6 +41,7 @@ import {
   loadCurrentPlan,
   recordCaptureAudit,
   sameFamily,
+  loadResourceActor,
 } from "../lib/capture-scope";
 
 const router = Router();
@@ -152,10 +153,11 @@ async function loadVisibleActivity(
       ),
     )
     .limit(1);
-  if (!activity || !canReadActivity(actor, activity)) {
+  const scopedActor = activity ? await loadResourceActor(actor, activity.schoolYearId, "activities.read") : null;
+  if (!activity || !scopedActor || !canReadActivity(scopedActor, activity)) {
     return { actor, activity: null };
   }
-  return { actor, activity };
+  return { actor: scopedActor, activity };
 }
 
 async function validateIndicatorLinks(
@@ -254,9 +256,7 @@ router.post(
       return;
     }
     const year = await loadActiveSchoolYear(actor.centerId);
-    const plan = year
-      ? await loadCurrentPlan(actor.centerId, year.id)
-      : null;
+    const plan = year ? await loadCurrentPlan(actor.centerId, year.id) : null;
     if (!year) {
       res.status(409).json({ error: "El centro no tiene un curso activo." });
       return;
@@ -299,18 +299,17 @@ router.post(
         ),
       )
       .limit(1);
-    if (!responsible) {
-      res.status(400).json({ error: "La persona responsable no pertenece al centro o está inactiva." });
+
+    const responsibleActor = await loadCaptureActor(responsibleUserId);
+    if (!responsible || !responsibleActor || responsibleActor.centerId !== actor.centerId) {
+      res.status(400).json({ error: "La persona responsable no pertenece al centro o no tiene asignación activa." });
       return;
     }
     if (!(await validateProjectForPlan(parsed.data.projectId, plan?.id ?? null))) {
       res.status(400).json({ error: "El proyecto no pertenece al PIC activo." });
       return;
     }
-    const linkedActions = await validateIndicatorLinks(
-      plan?.id ?? null,
-      parsed.data.indicatorCodes,
-    );
+    const linkedActions = await validateIndicatorLinks(plan?.id ?? null, parsed.data.indicatorCodes);
     if (!linkedActions) {
       res.status(400).json({ error: "Selecciona solo indicadores incluidos en el PIC del curso activo." });
       return;
@@ -532,14 +531,9 @@ router.patch(
           activityDate,
           professionalFamily: newFamily,
           projectId:
-            parsed.data.projectId === undefined
-              ? activity.projectId
-              : parsed.data.projectId,
+            parsed.data.projectId === undefined ? activity.projectId : parsed.data.projectId,
           fingerprint: fingerprint(
-            parsed.data.title ?? activity.title,
-            activityDate,
-            newFamily,
-            activity.responsibleUserId,
+            parsed.data.title ?? activity.title, activityDate, newFamily, activity.responsibleUserId,
           ),
           revision: activity.revision + 1,
           status: "pendiente_c2",
@@ -559,19 +553,13 @@ router.patch(
         .returning();
       if (!saved) return null;
       if (codes !== undefined) {
-        await tx
-          .delete(activityIndicatorLinksTable)
+        await tx.delete(activityIndicatorLinksTable)
           .where(eq(activityIndicatorLinksTable.activityId, activity.id));
         if (codes.length > 0) {
-          await tx.insert(activityIndicatorLinksTable).values(
-            codes.map((indicatorCode) => ({
-              activityId: activity.id,
-              planId: plan!.id,
-              actionCode: linkedActions!.get(indicatorCode)!,
-              indicatorCode,
-              linkedBy: actor.id,
-            })),
-          );
+          await tx.insert(activityIndicatorLinksTable).values(codes.map(indicatorCode => ({
+            activityId: activity.id, planId: plan!.id, actionCode: linkedActions!.get(indicatorCode)!,
+            indicatorCode, linkedBy: actor.id,
+          })));
         }
       }
       await saveActivityVersion(tx, saved, actor.id);
@@ -643,14 +631,9 @@ router.post(
       res.status(409).json({ error: "La actuación cambió durante la confirmación." });
       return;
     }
-    await recordCaptureAudit(
-      req,
-      actor.id,
-      "activity.confirmed",
-      "activity",
-      activity.id,
-      { informationStatus: updated.informationStatus },
-    );
+    await recordCaptureAudit(req, actor.id, "activity.confirmed", "activity", activity.id, {
+      informationStatus: updated.informationStatus,
+    });
     res.json(await activityView(updated));
   },
 );
@@ -679,12 +662,8 @@ router.post(
       res.status(403).json({ error: "La validación corresponde a C2." });
       return;
     }
-    if (
-      activity.revision !== parsed.data.expectedRevision ||
-      activity.status !== "pendiente_c2" ||
-      activity.informationStatus !== "confirmada" ||
-      !activity.activityDate
-    ) {
+    if (activity.revision !== parsed.data.expectedRevision ||
+        activity.status !== "pendiente_c2" || activity.informationStatus !== "confirmada" || !activity.activityDate) {
       res.status(409).json({ error: "Confirma los datos y la fecha antes de validar la actuación." });
       return;
     }

@@ -36,6 +36,27 @@
       "when": 1792248461767,
       "tag": "0004_parallel_wendell_vaughn",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792251338904,
+      "tag": "0005_tiresome_thunderbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792251550981,
+      "tag": "0006_complex_sleepwalker",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792251552114,
+      "tag": "0007_course_guards",
+      "breakpoints": true
     }
   ]
 }

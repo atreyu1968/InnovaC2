@@ -69,6 +69,12 @@ app.use("/api/v1", (_req, res) => {
   res.status(404).json({ error: "No existe la ruta solicitada." });
 });
 app.use((err: unknown, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  const failure = err as { code?: string; message?: string; cause?: { code?: string; message?: string } };
+  const databaseFailure = failure.cause ?? failure;
+  if (databaseFailure.code === "23514" && databaseFailure.message?.startsWith("COURSE_")) {
+    res.status(409).json({ error: "El curso está cerrado o la referencia pertenece a otro curso. Actualiza la vista; el expediente histórico no se puede modificar." });
+    return;
+  }
   logger.error({ err, method: req.method, path: req.path }, "Unhandled API error");
   if (res.headersSent) return;
   res.status(500).json({ error: "Se produjo un error interno." });

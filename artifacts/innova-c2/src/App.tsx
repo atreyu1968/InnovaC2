@@ -24,6 +24,7 @@ import { PicPlanPage } from '@/components/PicPlanPage';
 import { ActivitiesPhaseTwo } from '@/components/ActivitiesPhaseTwo';
 import { UserFamilyAssignment } from '@/components/UserFamilyAssignment';
 import { AccountPage } from '@/components/AccountPage';
+import { SchoolYearsPage } from '@/components/SchoolYearsPage';
 
 const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
 
@@ -44,6 +45,7 @@ const roleNames: Record<UserRoleValue, string> = {
 
 const routeLabels: Record<string, string> = {
   '/cuenta': 'Mi cuenta',
+  '/cursos': 'Cursos académicos',
   '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro', '/actuaciones': 'Actuaciones y evidencias',
 };
 
@@ -76,6 +78,7 @@ function Routed() {
         <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/usuarios"><ProtectedPage page="users" /></Route>
         <Route path="/cuenta"><ProtectedPage page="account" /></Route>
+        <Route path="/cursos"><ProtectedPage page="years" /></Route>
         <Route path="/catalogo"><ProtectedPage page="catalog" /></Route>
         <Route path="/plan-pic"><ProtectedPage page="pic" /></Route>
         <Route path="/actuaciones"><ProtectedPage page="activities" /></Route>
@@ -86,7 +89,7 @@ function Routed() {
   );
 }
 
-function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' | 'activities' | 'account' }) {
+function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' | 'activities' | 'account' | 'years' }) {
   const [, setLocation] = useLocation();
   const status = useGetSetupStatus({ query: { queryKey: getGetSetupStatusQueryKey(), retry: false } });
   const current = useGetCurrentUser({
@@ -107,6 +110,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
     return <LoadingScreen label="Preparando el espacio de coordinación" />;
   }
   if (current.isError) return <LoadingScreen label="Redirigiendo al acceso" />;
+  if (page === 'years' && !hasCoordinationAccess(current.data.user.role)) return <NotFound />;
   if (
     page === 'activities' &&
     ![
@@ -121,7 +125,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
   }
   return (
     <Workspace user={current.data.user}>
-      {page === 'account' ? <AccountPage user={current.data.user} /> : page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
+      {page === 'years' ? <SchoolYearsPage /> : page === 'account' ? <AccountPage user={current.data.user} /> : page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
         page === 'users' ? <UsersPage /> : page === 'catalog' ? <CatalogPage user={current.data.user} /> : page === 'pic' ? <PicPlanPage user={current.data.user} /> : <ActivitiesPhaseTwo user={current.data.user} />}
     </Workspace>
   );
@@ -167,6 +171,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
             <NavItem href="/" active={location === '/'} icon={<LayoutDashboard size={18} />} label="Panel principal" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             {user.role === UserRole.admin_tecnico && <NavItem href="/usuarios" active={location === '/usuarios'} icon={<Users size={18} />} label="Usuarios y permisos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {hasCoordinationAccess(user.role) && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {hasCoordinationAccess(user.role) && <NavItem href="/cursos" active={location === '/cursos'} icon={<CalendarDays size={18} />} label="Cursos académicos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {[UserRole.admin_tecnico, UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={18} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             <NavItem href="/cuenta" active={location === '/cuenta'} icon={<ShieldCheck size={18} />} label="Mi cuenta" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />

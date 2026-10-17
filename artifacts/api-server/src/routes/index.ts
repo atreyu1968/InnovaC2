@@ -10,11 +10,13 @@ import informationRouter from "./information";
 import plansRouter from "./plans";
 import staffRouter from "./staff";
 import usersRouter from "./users";
+import schoolYearsRouter from "./school-years";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+router.use(schoolYearsRouter);
 router.use(dashboardRouter);
 router.use(activitiesRouter);
 router.use(documentsRouter);

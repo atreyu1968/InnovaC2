@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const userRoleEnum = pgEnum("user_role", [
   "admin_tecnico",
@@ -41,12 +42,17 @@ export const schoolYearsTable = pgTable(
       .references(() => centersTable.id, { onDelete: "cascade" }),
     label: text("label").notNull(),
     active: boolean("active").notNull().default(true),
+    revision: integer("revision").notNull().default(1),
+    closedAt: timestamp("closed_at", { withTimezone: true }),
+    closedBy: uuid("closed_by"),
+    closeReason: text("close_reason"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
   (table) => [
     uniqueIndex("school_years_center_label_uq").on(table.centerId, table.label),
+    uniqueIndex("school_years_one_active_uq").on(table.centerId).where(sql`${table.active}`),
     index("school_years_active_idx").on(table.centerId, table.active),
   ],
 );

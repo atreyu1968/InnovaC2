@@ -172,3 +172,65 @@ despliegue con el servicio real, antes del uso con documentos del centro.
 
 Variables de ejemplo: `.env.example`. La API sirve el frontend compilado y
 responde en `/api/v1/health`.
+
+
+## Cierre y apertura de cursos
+
+Administración técnica y C2 disponen de **Cursos académicos** (`/cursos`).
+El cierre exige validación reciente, escribir el nombre exacto del curso y
+justificarlo. Bloquean el cierre las actuaciones sin validar/descartar,
+las solicitudes de información pendientes y los documentos sin revisar.
+Un PIC inexistente o en borrador se muestra como advertencia: cerrar el curso
+no equivale a aprobar el PIC ni a acreditar su entrega.
+
+El cierre guarda una instantánea completa con huella SHA-256, catálogo
+referenciado, PIC, fuentes de actuaciones, indicadores, metadatos/versiones
+documentales y contexto de asignaciones/permisos. El curso y sus registros
+quedan protegidos contra cambios y borrados mediante restricciones y triggers
+PostgreSQL, no solo mediante botones deshabilitados. Los archivos físicos no
+se copian ni se sobrescriben; el histórico conserva sus identificadores y
+checksums. No deben eliminarse esos archivos desde operaciones de mantenimiento.
+
+Solo después del cierre se abre el siguiente curso consecutivo. Se seleccionan
+expresamente las cuentas activas, sus familias y sus roles vigentes, incluyendo
+al menos un responsable C2. Las asignaciones anuales limitan los permisos
+globales de la cuenta; omitir una persona no le traslada acceso al curso nuevo.
+La administración técnica conserva su supervisión operativa global del centro.
+La creación administrativa de una cuenta durante un curso revisado también la
+asigna a ese curso; cambiar su familia afecta al curso abierto, nunca al cerrado.
+El nuevo curso comienza sin PIC, actuaciones, logros, valores de indicadores
+ni documentos heredados.
+
+La consulta consolidada del expediente es exclusiva de administración técnica y C2 autorizada
+del centro. La API `GET /api/v1/school-years/{id}/history` devuelve curso,
+huella y fuentes con tipo/identificador/datos, sin rutas de almacenamiento ni
+credenciales. Cada lectura se audita. Es la base para una futura recuperación
+autorizada del asistente, que deberá citar curso y fuente, sin presentar el
+antecedente como resultado actual. No se ha activado ningún proveedor de IA.
+Salvo la supervisión global de administración técnica, la consulta exige que
+la cuenta también tuviera acceso C2 en el curso archivado. Una promoción posterior
+no concede ese acceso ni amplía el alcance de los documentos o actuaciones antiguos.
+Los accesos individuales a actuaciones/documentos conservan su autorización
+propia y usan la familia registrada al cierre; una reasignación posterior no
+abre documentos históricos de la familia nueva.
+
+
+### Prueba aislada del ciclo
+
+```bash
+pnpm run test:school-cycle
+```
+
+Requiere los ejecutables PostgreSQL `initdb`, `pg_ctl` y `postgres`, disponibles
+en el entorno de desarrollo. Crea un clúster local temporal, aplica todas las
+migraciones y genera su propia clave de sesión; no utiliza `DATABASE_URL` ni
+`TEST_DATABASE_URL` del centro. Comprueba dos cursos, permisos, CSRF, fuentes,
+validaciones pendientes, revisiones antiguas, cierres/aperturas concurrentes,
+inmutabilidad y ausencia de traslados. Al terminar o recibir una señal normal
+detiene los procesos y elimina su directorio.
+
+En desarrollo, el setup posterior a la integración aplica `drizzle push` y
+`scripts/apply-course-guards.mjs`: los triggers no se representan en un simple
+`push`. Las instalaciones independientes siguen las migraciones versionadas,
+incluida `0007_course_guards.sql`, mediante el procedimiento de migración
+existente. No basta con crear las columnas para garantizar la inmutabilidad.

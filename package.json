@@ -12,6 +12,7 @@
     "test:phase2": "pnpm --filter @workspace/api-server run build && node scripts/test-phase2.mjs",
     "test:clamav": "node scripts/test-clamav.mjs",
     "test:password-reset": "node scripts/run-password-reset-test.mjs",
+    "test:school-cycle": "pnpm --filter @workspace/api-server run build && node scripts/test-course-cache.mjs && node scripts/test-school-cycle.mjs",
     "test:password-change": "pnpm --filter @workspace/api-server run build && node scripts/test-password-change.mjs",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },

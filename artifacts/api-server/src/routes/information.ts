@@ -235,44 +235,35 @@ router.post(
         ),
       )
       .limit(1);
-    if (!recipient) {
-      res.status(400).json({ error: "La persona destinataria no está activa en este centro." });
+
+    const recipientActor = await loadCaptureActor(parsed.data.recipientUserId);
+    if (!recipient || !recipientActor || recipientActor.centerId !== actor.centerId) {
+      res.status(400).json({ error: "La persona destinataria no está activa en el curso de este centro." });
       return;
     }
-
     let missingFields: string[] = [...parsed.data.requestedFields];
     if (parsed.data.subjectType === "activity") {
-      const activity = await currentActivity(
-        actor.id,
-        actor.centerId,
-        year.id,
-        parsed.data.subjectId,
-      );
+      const activity = await currentActivity(actor.id, actor.centerId, year.id, parsed.data.subjectId);
       if (!activity) {
         res.status(404).json({ error: "No se encontró la actuación en el ámbito de C2." });
         return;
       }
       if (
         recipient.id !== activity.responsibleUserId &&
-        !sameFamily(recipient.professionalFamily, activity.professionalFamily)
+        !sameFamily(recipientActor.professionalFamily, activity.professionalFamily)
       ) {
         res.status(400).json({ error: "La persona destinataria no corresponde a la familia responsable." });
         return;
       }
       missingFields = missingActivityFields(activity, missingFields);
     } else {
-      const [project] = await db
-        .select({ id: picProjectsTable.id })
-        .from(picProjectsTable)
+      const [project] = await db.select({ id: picProjectsTable.id }).from(picProjectsTable)
         .innerJoin(picPlansTable, eq(picProjectsTable.planId, picPlansTable.id))
-        .where(
-          and(
-            eq(picProjectsTable.id, parsed.data.subjectId),
-            eq(picPlansTable.centerId, actor.centerId),
-            eq(picPlansTable.schoolYearId, year.id),
-          ),
-        )
-        .limit(1);
+        .where(and(
+          eq(picProjectsTable.id, parsed.data.subjectId),
+          eq(picPlansTable.centerId, actor.centerId),
+          eq(picPlansTable.schoolYearId, year.id),
+        )).limit(1);
       if (!project) {
         res.status(404).json({ error: "No se encontró el proyecto del curso activo." });
         return;
@@ -371,6 +362,7 @@ router.post(
             and(
               eq(informationRequestsTable.id, pathParam(req, "requestId")),
               eq(informationRequestsTable.centerId, actor.centerId),
+              eq(informationRequestsTable.schoolYearId, (await loadActiveSchoolYear(actor.centerId))?.id ?? ""),
             ),
           )
           .limit(1)
@@ -387,10 +379,8 @@ router.post(
       res.status(409).json({ error: "La solicitud ya se respondió o cerró." });
       return;
     }
-    const answers =
-      parsed.data.responseStatus === "respondida"
-        ? safeAnswers(request.requestedFields, parsed.data.answers)
-        : {};
+    const answers = parsed.data.responseStatus === "respondida"
+      ? safeAnswers(request.requestedFields, parsed.data.answers) : {};
     if (!answers) {
       res.status(400).json({ error: "Responde solo a los campos solicitados y con valores simples." });
       return;
