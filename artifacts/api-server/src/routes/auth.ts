@@ -33,7 +33,10 @@ import {
   touchSession,
   type AuthContext,
 } from "../lib/auth";
-import { sendPasswordResetEmail } from "../lib/password-reset-email";
+import {
+  sendPasswordChangeNoticeEmail,
+  sendPasswordResetEmail,
+} from "../lib/password-reset-email";
 
 const router = Router();
 const ARGON2_OPTIONS = {
@@ -416,10 +419,14 @@ router.post("/auth/password-reset/complete", async (req, res): Promise<void> => 
       .returning({ userId: passwordResetTokensTable.userId });
     if (!claimed) return null;
 
-    await tx
+    const [updatedUser] = await tx
       .update(usersTable)
       .set({ passwordHash, updatedAt: new Date() })
-      .where(eq(usersTable.id, claimed.userId));
+      .where(eq(usersTable.id, claimed.userId))
+      .returning({ email: usersTable.email });
+    if (!updatedUser) {
+      throw new Error("Password reset user no longer exists.");
+    }
     await tx
       .delete(authSessionsTable)
       .where(eq(authSessionsTable.userId, claimed.userId));
@@ -438,12 +445,23 @@ router.post("/auth/password-reset/complete", async (req, res): Promise<void> => 
       entityId: claimed.userId,
       ipHash: keyedHash(getClientIp(req)),
     });
-    return claimed;
+    return { userId: claimed.userId, email: updatedUser.email };
   });
 
   if (!reset) {
     res.status(400).json({ error: "El enlace no es válido o ha caducado." });
     return;
+  }
+
+  try {
+    await sendPasswordChangeNoticeEmail(reset.email);
+  } catch (error) {
+    req.log.error(
+      {
+        errorCategory: error instanceof Error ? "email_delivery_error" : "unknown_error",
+      },
+      "Password change notification could not be sent",
+    );
   }
 
   clearSessionCookie(res);

@@ -29,6 +29,8 @@ const email = `reset-admin-${testId}@example.invalid`;
 const centerName = `INNOVA-C2 password reset test ${testId}`;
 const initialPassword = `Before-${randomUUID()}-Secure`;
 const newPassword = `After-${randomUUID()}-Secure`;
+const hashKey = (value) =>
+  createHmac("sha256", process.env.SESSION_SECRET).update(value).digest("hex");
 const apiPort = String(35_000 + Math.floor(Math.random() * 8_000));
 const mailPort = String(44_000 + Math.floor(Math.random() * 8_000));
 const base = `http://127.0.0.1:${apiPort}/api/v1`;
@@ -124,8 +126,6 @@ async function cleanup() {
     );
     await pool.query("DELETE FROM centers WHERE id = $1", [row.id]);
   }
-  const hashKey = (value) =>
-    createHmac("sha256", process.env.SESSION_SECRET).update(value).digest("hex");
   const keys = [
     ...Array.from({ length: 12 }, (_, i) => hashKey(`password-reset-ip:203.0.113.${100 + i}`)),
     ...[
@@ -245,6 +245,14 @@ try {
     body: { token, password: newPassword },
   });
   assert.equal(completed.response.status, 200);
+  const changeNotice = sentEmails.at(-1);
+  assert.equal(changeNotice.to[0], email, "change notice goes to the account email");
+  assert.match(changeNotice.subject, /se cambió la contraseña/i);
+  assert.match(changeNotice.text, /se ha cambiado/i);
+  assert.ok(!changeNotice.text.includes(token), "change notice must not include the reset token");
+  assert.ok(!changeNotice.html.includes(token), "HTML change notice must not include the reset token");
+  assert.ok(!changeNotice.text.includes(newPassword), "change notice must not include the new password");
+  assert.ok(!changeNotice.html.includes(newPassword), "HTML change notice must not include the new password");
   assert.match(completed.response.headers.get("set-cookie") ?? "", /Max-Age=0|Expires=/i);
   const revokedSession = await request("/auth/me", { cookie: oldCookie });
   assert.equal(revokedSession.response.status, 401, "password change revokes existing sessions");
@@ -269,6 +277,42 @@ try {
   );
   assert.equal(audit.rows[0].count, 1, "password change is audited");
 
+  await pool.query("DELETE FROM auth_login_attempts WHERE key = $1", [
+    hashKey(`password-reset-email:${email}`),
+  ]);
+  const noticeFailureRequest = await request("/auth/password-reset/request", {
+    method: "POST",
+    body: { email },
+    forwardedFor: "203.0.113.106",
+  });
+  assert.equal(noticeFailureRequest.response.status, 202);
+  const noticeFailureToken = new URL(
+    sentEmails.at(-1).text.match(/https?:\/\/\S+/)[0],
+  ).searchParams.get("token");
+  assert.ok(noticeFailureToken);
+  const passwordWithNoticeFailure = `NoticeFailure-${randomUUID()}-Secure`;
+  const sentBeforeNoticeFailure = sentEmails.length;
+  failNextEmail = true;
+  const logStart = apiOutput.length;
+  const completedWithNoticeFailure = await request("/auth/password-reset/complete", {
+    method: "POST",
+    body: { token: noticeFailureToken, password: passwordWithNoticeFailure },
+  });
+  assert.equal(completedWithNoticeFailure.response.status, 200, "notice failure must not undo a password change");
+  assert.equal(sentEmails.length, sentBeforeNoticeFailure, "failed notice must not be recorded as delivered");
+  const failureLogs = apiOutput.slice(logStart);
+  assert.ok(!failureLogs.includes(noticeFailureToken), "failure logs must not include the reset token");
+  assert.ok(!failureLogs.includes(passwordWithNoticeFailure), "failure logs must not include the password");
+  assert.ok(!failureLogs.includes(email), "failure logs must not include the account email");
+  const loginAfterNoticeFailure = await request("/auth/login", {
+    method: "POST",
+    body: { email, password: passwordWithNoticeFailure },
+  });
+  assert.equal(loginAfterNoticeFailure.response.status, 200, "password remains changed when notice delivery fails");
+
+  await pool.query("DELETE FROM auth_login_attempts WHERE key = $1", [
+    hashKey(`password-reset-email:${email}`),
+  ]);
   const expiredRequest = await request("/auth/password-reset/request", {
     method: "POST",
     body: { email },
@@ -286,6 +330,14 @@ try {
   });
   assert.equal(expired.response.status, 400, "expired tokens are rejected");
 
+  for (const [index, forwardedFor] of ["203.0.113.107", "203.0.113.108"].entries()) {
+    const countedRequest = await request("/auth/password-reset/request", {
+      method: "POST",
+      body: { email },
+      forwardedFor,
+    });
+    assert.equal(countedRequest.response.status, 202, `request ${index + 1} remains within the email limit`);
+  }
   const beforeEmailLimit = sentEmails.length;
   const emailLimit = await request("/auth/password-reset/request", {
     method: "POST",
@@ -311,7 +363,7 @@ try {
   });
   assert.equal(ipLimited.response.status, 429, "repeated requests from one IP are rate limited");
 
-  console.log("Password reset test passed: generic responses, hashed and expiring one-time tokens, request limits, email failure handling, session revocation, and audit record.");
+  console.log("Password reset test passed: generic responses, hashed and expiring one-time tokens, request limits, reset and change-notice email handling, session revocation, and audit record.");
 } catch (error) {
   await new Promise((resolve) => setTimeout(resolve, 150));
   console.error(`Password reset test failed. Recent API output:\n${apiOutput.slice(-10000)}`);
