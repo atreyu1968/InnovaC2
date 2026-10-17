@@ -20,3 +20,17 @@ New course-scoped tables need both versioned migrations and the development setu
 **Why:** Schema push creates tables but does not install PostgreSQL triggers. A clean migration test alone can pass while a push-based installation lacks closure, concurrency or history protections.
 
 **How to apply:** Keep guard SQL independently replayable, register it in development setup, and verify replay alongside fresh migrations. Do not replay table-creation DDL as a substitute for installing guards.
+
+Schema synchronization can create PIC follow-up tables without installing their
+hand-written immutability and course-scope guards. Their existence is not proof
+that the corresponding migration's protections ran.
+
+**Why:** A read-only comparison of the development installation found missing
+follow-up functions/triggers even though the tables and AI settings were present.
+Physical column order also differed from migration-created tables without
+changing the named fields' meaning.
+
+**How to apply:** Treat missing guards separately from changed guards: only an
+explicit, backed-up addition of proven missing definitions may precede a full
+structural baseline. Never overwrite differing guards to make a comparison pass.
+A structural baseline does not certify the historical data or course approval.

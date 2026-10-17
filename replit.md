@@ -10,6 +10,8 @@ Aplicación local para la coordinación del programa PIC de innovación y mejora
 - `pnpm --filter @workspace/api-spec run codegen` — regenerar cliente y validadores desde `lib/api-spec/openapi.yaml`.
 - `pnpm --filter @workspace/db run push` — sincronizar el esquema de la base de desarrollo, nunca producción.
 - `pnpm --filter @workspace/db run generate` / `migrate` — crear y aplicar migraciones versionadas.
+- `pnpm run test:migrations` — instalación limpia, copia con datos y mantenimiento en un clúster nuevo; no usa la conexión de la aplicación.
+- Actualizaciones de bases existentes: seguir `docs/database-upgrades.md`. `scripts/migrate.sh` sin argumentos solo consulta; `--apply` conserva respaldo antes de escribir.
 - `pnpm run test:phase0` — prueba real de API/PostgreSQL; exige que el asistente de configuración siga sin completar.
 - `pnpm run test:password-change` — prueba del cambio desde la cuenta; exige `TEST_DATABASE_URL` de una base temporal vacía con el esquema aplicado y «test» en su nombre, distinta de `DATABASE_URL`.
 - `python3 docs/reference/paquete-original/qa/validate_catalog.py config/pic_2026_2027_catalogo.json` — comprobar el catálogo original.

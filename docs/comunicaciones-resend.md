@@ -78,11 +78,16 @@ proveedor.
 Desde el directorio de la instalación:
 
 ```bash
-sudo ./scripts/migrate.sh
-docker compose up -d --build
+docker compose build api
+sudo ./scripts/migrate.sh --preflight
+sudo ./scripts/migrate.sh --apply
+docker compose up -d
 docker compose ps
 docker compose logs -f api
 ```
+
+Si el ledger está vacío, no repetir las migraciones históricas: seguir
+[la reconciliación con respaldo](database-upgrades.md).
 
 El correo institucional usa las migraciones PostgreSQL existentes y los mismos
 procedimientos autónomos de actualización y copia de seguridad. Mantén

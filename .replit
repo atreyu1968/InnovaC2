@@ -20,6 +20,10 @@ author = "agent"
 task = "workflow.run"
 args = "password-reset"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "database-upgrades"
+
 [[workflows.workflow]]
 name = "password-reset"
 author = "agent"
@@ -27,6 +31,17 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "pnpm run test:password-reset"
+
+[workflows.workflow.metadata]
+isValidation = true
+
+[[workflows.workflow]]
+name = "database-upgrades"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm run test:migrations"
 
 [workflows.workflow.metadata]
 isValidation = true

@@ -70,3 +70,9 @@ pnpm run test:pic-followups
 `test:pic-followups` crea un clúster PostgreSQL nuevo en un directorio temporal, ejecuta todas las migraciones, arranca una API aislada y lo elimina al finalizar. Filtra `DATABASE_URL`, `TEST_DATABASE_URL`, secretos de sesión y rutas de datos existentes antes de crear su propia configuración temporal. Comprueba las fuentes elegibles, permisos, revisiones, snapshots inmutables, formatos de exportación, confirmación humana, restricciones del justificante y conservación en el archivo anual.
 
 Las migraciones nuevas están versionadas y no reescriben los documentos de referencia originales ni snapshots históricos.
+
+El comando `migrate` anterior solo inicializa directamente una base nueva.
+Para instalaciones existentes, seguir [la actualización con respaldo y preflight](database-upgrades.md).
+Tras añadir migraciones, regenerar la referencia en el clúster aislado y ejecutar
+`pnpm run test:migrations`; no fabricar un ledger a partir de la mera existencia
+de tablas.

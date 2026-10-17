@@ -134,8 +134,9 @@ La clave se introduce en esa pantalla, se cifra con AES-256-GCM en PostgreSQL,
 no vuelve a mostrarse y nunca se incluye en la auditoría. La llave de cifrado
 deriva de `SESSION_SECRET`: conservarlo en la instalación autónoma y sus copias
 seguras. Si cambia, hay que volver a introducir la credencial; no se recupera
-en claro desde la interfaz. Aplicar migraciones con
-`pnpm --filter @workspace/db run migrate` antes de arrancar el servidor actualizado.
+en claro desde la interfaz. Aplicar migraciones siguiendo
+el [procedimiento de actualización con respaldo y preflight](docs/database-upgrades.md)
+antes de arrancar el servidor actualizado.
 El formulario controla revisiones para no pisar cambios simultáneos.
 
 En ese mismo apartado, **Comprobar proveedor guardado** permite a administración
@@ -242,7 +243,10 @@ No se verificó en navegador el selector de adjuntos por no disponer de un
 documento limpio aprobado en ese entorno; no se falsificó el análisis antivirus.
 
 Ubuntu/Proxmox conserva el procedimiento autónomo existente: reconstruir la
-imagen, ejecutar `./scripts/migrate.sh` y arrancar `docker compose up -d`.
+imagen, ejecutar `./scripts/migrate.sh --preflight`, después
+`./scripts/migrate.sh --apply` y arrancar `docker compose up -d`.
+Si el ledger está vacío, seguir el [procedimiento de reconciliación](docs/database-upgrades.md)
+en lugar de volver a ejecutar las migraciones antiguas.
 Las migraciones `0008` y `0009` crean las tablas y los bloqueos de cursos
 cerrados/versiones inmutables. En desarrollo se aplica `pnpm --filter
 @workspace/db run push` seguido de `node scripts/apply-course-guards.mjs`;
@@ -317,8 +321,14 @@ Operaciones:
 docker compose ps
 docker compose logs -f api
 ./scripts/migrate.sh
+./scripts/migrate.sh --apply
 ./scripts/backup.sh
 ```
+
+`migrate.sh` sin argumentos solo comprueba. `--apply` detiene la API, conserva una
+copia cifrada y valida el resultado antes de permitir su arranque manual. Las
+bases con tablas y ledger vacío requieren reconocimiento explícito y coincidencia
+estructural; véase [actualización segura de bases existentes](docs/database-upgrades.md).
 
 `backup.sh` genera copias cifradas de la base de datos y de los documentos en
 `backups/`; conserva `BACKUP_ENCRYPTION_KEY` fuera del servidor y por separado
