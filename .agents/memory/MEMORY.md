@@ -1,3 +1,4 @@
 - [Workspace visual direction](workspace-visual-direction.md) — Keep the aquamarine shell and collapse behavior; public sign-in is a full-screen split with local, credited illustrative photography.
 - [GitHub authentication boundaries](github-authentication.md) — Connector authorization does not imply Git CLI authentication; never extract its token to make a push work.
 - [Test database isolation](test-database-isolation.md) — A “test” database name is not proof of disposability; provision fresh clusters independently of application settings.
+- [Antivirus verification boundaries](antivirus-verification.md) — Keep real-engine regression tests independent of signature downloads; verify production feed health separately.

@@ -43,10 +43,12 @@ export function scanWithClamAv(data: Buffer): Promise<AntivirusResult> {
       }
       if (!reply.includes("\0")) return;
       const response = reply.split("\0", 1)[0] ?? "";
-      if (/\bFOUND\b/.test(response)) finish("infectado");
-      else if (/\bOK\b/.test(response)) finish("limpio");
+      if (/^stream: .+ FOUND$/.test(response)) finish("infectado");
+      else if (response === "stream: OK") finish("limpio");
       else finish("no_disponible");
     });
+    socket.on("end", () => finish("no_disponible"));
+    socket.on("close", () => finish("no_disponible"));
     socket.on("connect", () => {
       socket.write(Buffer.from("zINSTREAM\0", "ascii"));
       for (let offset = 0; offset < data.length; offset += CHUNK_BYTES) {

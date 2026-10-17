@@ -1,11 +1,12 @@
 import { createHash, randomUUID } from "node:crypto";
 import { hasCoordinationAccess } from "../lib/role-access";
-import { access, mkdir, unlink, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
 import {
   activitiesTable,
+  auditLogsTable,
   activityIndicatorLinksTable,
   db,
   documentAccessGrantsTable,
@@ -18,6 +19,8 @@ import {
 } from "@workspace/db";
 import {
   ApproveDocumentBody,
+  RescanDocumentVersionBody,
+  RescanDocumentVersionParams,
   GetDocumentResponse,
   LinkDocumentEvidenceBody,
   SetDocumentAccessBody,
@@ -35,7 +38,7 @@ import {
 } from "../lib/capture-scope";
 import { scanWithClamAv } from "../lib/clamav";
 import { dataDirectory } from "../lib/storage";
-import { requireAuth, requireCsrf, requirePermission, type AuthContext } from "../lib/auth";
+import { getClientIp, keyedHash, requireAuth, requireCsrf, requirePermission, type AuthContext } from "../lib/auth";
 
 const router = Router();
 const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024;
@@ -756,6 +759,101 @@ router.post(
         return;
       }
       throw error;
+    }
+  },
+);
+
+router.post(
+  "/documents/:documentId/versions/:version/rescan",
+  requireAuth,
+  requireCsrf,
+  requirePermission("documents.write"),
+  async (req, res): Promise<void> => {
+    const params = RescanDocumentVersionParams.safeParse(req.params);
+    const body = RescanDocumentVersionBody.safeParse(req.body);
+    if (!params.success || !body.success) {
+      res.status(400).json({ error: "La versión o revisión no es válida." });
+      return;
+    }
+    const actor = await loadCaptureActor(authContext(res).user.id);
+    const document = actor ? await getDocumentRow(params.data.documentId, actor.centerId) : null;
+    if (!actor || !document || !(await canReadDocument(actor, document))) {
+      res.status(404).json({ error: "No se encontró el documento en tu ámbito." });
+      return;
+    }
+    if (!hasCoordinationAccess(actor.role) && document.createdBy !== actor.id) {
+      res.status(403).json({ error: "Solo el propietario o C2 puede reanalizar el archivo." });
+      return;
+    }
+    // Row lock spans the bounded network scan and is released even on process failure.
+    // NOWAIT rejects simultaneous scans (also across API instances) instead of queuing them.
+    try {
+      const result = await db.transaction(async (tx) => {
+        const [locked] = await tx.select().from(documentsTable)
+          .where(eq(documentsTable.id, document.id)).for("update", { noWait: true });
+        const conflict = (error: string) => ({ error });
+        if (!locked || locked.revision !== body.data.expectedRevision) {
+          return conflict("El documento cambió; recarga antes de reanalizar.");
+        }
+        const [version] = await tx.select().from(documentVersionsTable).where(and(
+          eq(documentVersionsTable.documentId, document.id),
+          eq(documentVersionsTable.version, params.data.version),
+        ));
+        if (!version) return { missing: true };
+        if (version.scanStatus === "limpio") return conflict("La versión ya tiene un análisis limpio.");
+        const startedAt = new Date();
+        let data: Buffer | null = null;
+        try {
+          if (path.basename(version.storageKey) === version.storageKey) {
+            data = await readFile(path.join(DOCUMENT_DIRECTORY, version.storageKey));
+          }
+        } catch {
+          // Missing/unreadable bytes never receive clearance.
+        }
+        const integrityOk = Boolean(data && data.length === version.sizeBytes &&
+          createHash("sha256").update(data).digest("hex") === version.sha256);
+        const scanStatus = integrityOk ? await scanWithClamAv(data!) : "no_disponible";
+        await tx.update(documentVersionsTable).set({ scanStatus })
+          .where(eq(documentVersionsTable.id, version.id));
+        await tx.update(evidencesTable)
+          .set({ status: scanStatus === "limpio" ? "pendiente_validacion" : "pendiente_antivirus" })
+          .where(eq(evidencesTable.documentVersionId, version.id));
+        const [updated] = await tx.update(documentsTable).set({
+          revision: locked.revision + 1,
+          updatedAt: new Date(),
+          ...(version.version === locked.currentVersion ? {
+            status: "pendiente_revision", approvedBy: null, approvedAt: null,
+          } : {}),
+        }).where(eq(documentsTable.id, document.id)).returning();
+        await tx.insert(auditLogsTable).values({
+          userId: actor.id, action: "document.version.rescanned",
+          entityType: "document", entityId: document.id,
+          ipHash: keyedHash(getClientIp(req)),
+          details: {
+            version: version.version, sha256: version.sha256,
+            previousScanStatus: version.scanStatus, scanStatus, integrityOk,
+            startedAt: startedAt.toISOString(), finishedAt: new Date().toISOString(),
+            expectedRevision: body.data.expectedRevision, revision: updated.revision,
+          },
+        });
+        return integrityOk ? { updated } : conflict("El contenido no está disponible o su huella no coincide; permanece bloqueado.");
+      });
+      if ("missing" in result) res.status(404).json({ error: "No se encontró la versión." });
+      else if ("error" in result) {
+        await recordCaptureAudit(req, actor.id, "document.version.rescan_conflict", "document", document.id, {
+          version: params.data.version, expectedRevision: body.data.expectedRevision, reason: result.error,
+        });
+        res.status(409).json({ error: result.error });
+      }
+      else res.json(await documentView(result.updated));
+    } catch (error) {
+      const code = (error as { code?: string; cause?: { code?: string } }).cause?.code ??
+        (error as { code?: string }).code;
+      if (code !== "55P03") throw error;
+      await recordCaptureAudit(req, actor.id, "document.version.rescan_conflict", "document", document.id, {
+        version: params.data.version, expectedRevision: body.data.expectedRevision,
+      });
+      res.status(409).json({ error: "Hay otra operación en curso sobre este documento; recarga y reintenta." });
     }
   },
 );

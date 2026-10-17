@@ -1118,6 +1118,41 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}/versions/{version}/rescan:
+    post:
+      operationId: rescanDocumentVersion
+      tags: [documents]
+      summary: Owner or C2 retries quarantine scanning without changing stored bytes
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: version
+          in: path
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevisionInput"
+      responses:
+        "200":
+          description: Scan recorded; unavailable or infected content remains quarantined
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          description: Invalid request
+        "403":
+          description: Only the owner or C2 may retry
+        "404":
+          description: Document or version not found in permitted scope
+        "409":
+          description: Stale revision, scan already running, clean version, or stored integrity failure
   /documents/{documentId}/approve:
     post:
       operationId: approveDocument

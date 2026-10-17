@@ -51,6 +51,8 @@ const headAPassword = `Test-${randomUUID()}-Secure`;
 const port = String(33_000 + Math.floor(Math.random() * 10_000));
 const base = `http://127.0.0.1:${port}/api/v1`;
 const testDataDirectory = path.join("/tmp", `innova-c2-phase2-${testId}`);
+const realClamAv = process.env.TEST_REAL_CLAMAV === "1";
+const clamPort = 20_000 + Math.floor(Math.random() * 10_000);
 const server = spawn(
   process.execPath,
   [path.join(root, "artifacts/api-server/dist/index.mjs")],
@@ -63,7 +65,8 @@ const server = spawn(
       NODE_ENV: "test",
       TRUST_PROXY: "1",
       DATA_DIR: testDataDirectory,
-      CLAMAV_HOST: "",
+      CLAMAV_HOST: realClamAv ? "127.0.0.1" : "",
+      CLAMAV_PORT: String(clamPort),
       SESSION_SECRET: randomUUID(),
     },
     stdio: ["ignore", "pipe", "pipe"],
@@ -629,6 +632,15 @@ try {
   assert.equal(newVersion.data.currentVersion, 2);
   assert.equal(newVersion.data.status, "pendiente_revision");
   assert.notEqual(newVersion.data.sha256, uploaded.data.sha256);
+
+  if (realClamAv) {
+    const { verifyRealClamAv } = await import("./clamav-integration.mjs");
+    await verifyRealClamAv({
+      request, expectStatus, pool, testDataDirectory, clamPort, teacherASession,
+      teacherBSession, headASession, c2Session, admin, documentId, uploaded,
+      newVersion, uploadParams, numericIndicator, activity,
+    });
+  }
 
   const requestsForTeacher = await request("/information-requests", {
     cookie: teacherASession.cookie,

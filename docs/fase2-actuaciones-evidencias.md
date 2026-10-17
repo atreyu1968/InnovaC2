@@ -1,5 +1,8 @@
 # Fase 2: actuaciones, documentos e indicadores
 
+Recuperación de versiones en cuarentena y pruebas contra el motor ClamAV real:
+[procedimiento Ubuntu y comprobaciones aisladas](clamav-cuarentena.md).
+
 ## Uso
 
 1. Administración técnica asigna una familia oficial al profesorado, jefaturas

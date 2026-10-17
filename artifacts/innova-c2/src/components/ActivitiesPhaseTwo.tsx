@@ -17,7 +17,7 @@ import {
   useListCurrentIndicators, useListDocuments, useListInformationRequests,
   useListStaffOptions, useRespondToInformationRequest, useSetDocumentAccess,
   useUpdateActivity, useUploadDocument, useValidateActivity,
-  useValidateInformationResponse,
+  useValidateInformationResponse, useRescanDocumentVersion,
 } from "@workspace/api-client-react";
 import type {
   Activity, CreateActivityInput, CreateIndicatorObservationInput,
@@ -81,7 +81,7 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
   const c2 = roleIsC2(user);
   const canOperate = operationalRoles.some(role => role === user.role);
   const activitiesQuery = useListActivities({ query: { queryKey: getListActivitiesQueryKey(), enabled: canOperate, refetchOnMount: "always" } });
-  const documentsQuery = useListDocuments({ query: { queryKey: getListDocumentsQueryKey(), enabled: canOperate, refetchOnMount: "always" } });
+  const documentsQuery = useListDocuments({ query: { queryKey: getListDocumentsQueryKey(), enabled: canOperate, refetchOnMount: "always", refetchInterval: 30_000 } });
   const requestsQuery = useListInformationRequests({ query: { queryKey: getListInformationRequestsQueryKey(), enabled: canOperate, refetchOnMount: "always" } });
   const indicatorsQuery = useListCurrentIndicators({ query: { queryKey: getListCurrentIndicatorsQueryKey(), enabled: c2, refetchOnMount: "always" } });
   const staffQuery = useListStaffOptions({ query: { queryKey: getListStaffOptionsQueryKey(), enabled: c2, refetchOnMount: "always" } });
@@ -100,6 +100,7 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
     },
   });
   const approveDocument = useApproveDocument();
+  const rescanDocument = useRescanDocumentVersion();
   const setDocumentAccess = useSetDocumentAccess();
   const linkEvidence = useLinkDocumentEvidence();
   const createRequest = useCreateInformationRequest();
@@ -129,7 +130,7 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
   const currentRequest = requests.find(item => item.id === selectedRequest);
   const currentIndicator = indicators.find(item => item.code === selectedIndicator);
   const detail = useGetDocument(selectedDocument || "not-selected", {
-    query: { queryKey: getGetDocumentQueryKey(selectedDocument || "not-selected"), enabled: Boolean(selectedDocument), retry: false },
+    query: { queryKey: getGetDocumentQueryKey(selectedDocument || "not-selected"), enabled: Boolean(selectedDocument), retry: false, refetchInterval: 30_000 },
   });
   const download = useDownloadDocumentVersion(selectedDocument || "not-selected", downloadVersion, {
     query: {
@@ -277,6 +278,21 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
     approveDocument.mutate({ documentId: document.id, data: { expectedRevision: document.revision } }, {
       onSuccess: async () => { await refresh(getListDocumentsQueryKey(), getListActivitiesQueryKey(), getListCurrentIndicatorsQueryKey()); succeed("Documento aprobado."); },
       onError: fail,
+    });
+  };
+  const handleRescan = (document: PicDocument, version: number) => {
+    rescanDocument.mutate({
+      documentId: document.id, version, data: { expectedRevision: document.revision },
+    }, {
+      onSuccess: async () => {
+        await refresh(getListDocumentsQueryKey(), getGetDocumentQueryKey(document.id),
+          getListActivitiesQueryKey(), getListCurrentIndicatorsQueryKey());
+        succeed(`Análisis registrado para la versión ${version}. Solo un resultado limpio permite descargar y solicitar aprobación.`);
+      },
+      onError: async (issue) => {
+        await refresh(getListDocumentsQueryKey(), getGetDocumentQueryKey(document.id));
+        fail(issue);
+      },
     });
   };
   const handleLink = (event: FormEvent<HTMLFormElement>) => {
@@ -464,7 +480,10 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
             {detail.data?.versions.find(item => item.version === downloadVersion)?.scanStatus === "limpio" ? <button className="p2-secondary" onClick={() => void handleDownload()} disabled={download.isFetching} data-testid="button-download-document"><ArrowDownToLine size={15} />{download.isFetching ? "Preparando…" : `Descargar versión ${downloadVersion}`}</button> : <button className="p2-secondary" disabled title="Disponible tras un escaneo limpio"><ArrowDownToLine size={15} />Descarga bloqueada</button>}
             {c2 && <button className="p2-primary" onClick={() => handleApprove(currentDocument)} disabled={approveDocument.isPending || currentDocument.scanStatus !== "limpio" || currentDocument.status === "aprobado"} data-testid="button-approve-document"><Check size={15} />{currentDocument.status === "aprobado" ? "Aprobado" : "Aprobar documento"}</button>}
           </div>
-          {detail.isLoading ? <div className="p2-skeleton-row" /> : detail.isError ? <Notice tone="error">No se pudo cargar el historial de versiones. <button onClick={() => void detail.refetch()}>Reintentar</button></Notice> : <div className="p2-versions"><h3>Versiones conservadas</h3>{detail.data?.versions.map(version => <button type="button" className={`p2-version-row p2-version-select ${downloadVersion === version.version ? "is-selected" : ""}`} key={version.version} onClick={() => setDownloadVersion(version.version)} disabled={version.scanStatus !== "limpio"} title={version.scanStatus === "limpio" ? "Seleccionar versión" : "No disponible hasta que el escaneo sea limpio"}><span><strong>Versión {version.version}</strong><small>{version.originalName} · {readableDate(version.createdAt)}</small></span><StatusPill tone={version.scanStatus === "limpio" ? "good" : "warn"}>{scanLabel[version.scanStatus] ?? version.scanStatus}</StatusPill></button>)}</div>}
+          {detail.isLoading ? <div className="p2-skeleton-row" /> : detail.isError ? <Notice tone="error">No se pudo cargar el historial de versiones. <button onClick={() => void detail.refetch()}>Reintentar</button></Notice> : <div className="p2-versions"><h3>Versiones conservadas</h3>{detail.data?.versions.map(version => <div key={version.version}>
+            <button type="button" className={`p2-version-row p2-version-select ${downloadVersion === version.version ? "is-selected" : ""}`} onClick={() => setDownloadVersion(version.version)} disabled={version.scanStatus !== "limpio"} title={version.scanStatus === "limpio" ? "Seleccionar versión" : "No disponible hasta que el escaneo sea limpio"}><span><strong>Versión {version.version}</strong><small>{version.originalName} · {readableDate(version.createdAt)}</small></span><StatusPill tone={version.scanStatus === "limpio" ? "good" : "warn"}>{scanLabel[version.scanStatus] ?? version.scanStatus}</StatusPill></button>
+            {version.scanStatus !== "limpio" && (c2 || currentDocument.createdBy === user.id) && <button type="button" className="p2-secondary" disabled={rescanDocument.isPending} onClick={() => handleRescan(currentDocument, version.version)} data-testid={`button-rescan-version-${version.version}`}><RefreshCw size={14} />{rescanDocument.isPending ? "Analizando…" : `Reanalizar versión ${version.version}`}</button>}
+          </div>)}</div>}
           <form className="p2-compact-form" onSubmit={submitVersion}><label>Añadir versión<input className="field" type="file" name="versionFile" required /></label><p className="p2-helper">Se conserva el historial; se reutiliza el nombre del archivo actual si no se envía otro.</p><button className="p2-secondary" disabled={addVersion.isPending} data-testid="button-add-version">{addVersion.isPending ? "Subiendo…" : "Añadir versión"}</button></form>
           {currentDocument.accessScope !== "center" && c2 && <form className="p2-compact-form" onSubmit={handleAccess}><h3>Compartir acceso</h3><label>Persona<select className="field" name="userId" required defaultValue=""><option value="" disabled>Seleccionar personal…</option>{staff.map(person => <option key={person.id} value={person.id}>{person.name} · {person.professionalFamily ?? "Sin familia"}</option>)}</select></label><label>Permiso<select className="field" name="granted" defaultValue="true"><option value="true">Conceder acceso</option><option value="false">Revocar acceso</option></select></label><button className="p2-secondary" disabled={setDocumentAccess.isPending} data-testid="button-set-document-access">{setDocumentAccess.isPending ? "Aplicando…" : "Actualizar acceso"}</button></form>}
           <form className="p2-compact-form" onSubmit={handleLink}><h3>Vincular evidencia</h3><label>Actuación<select className="field" name="activityId" required defaultValue=""><option value="" disabled>Seleccionar actuación…</option>{activities.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><label>Indicador<input className="field" name="indicatorCode" placeholder="Código (opcional)" /></label><label>Nota<input className="field" name="note" maxLength={500} /></label><button className="p2-secondary" disabled={linkEvidence.isPending} data-testid="button-link-evidence"><Link2 size={14} />{linkEvidence.isPending ? "Vinculando…" : "Vincular documento"}</button></form>

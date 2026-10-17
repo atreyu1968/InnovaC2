@@ -10,6 +10,7 @@
     "test:phase0": "pnpm --filter @workspace/api-server run build && node scripts/test-phase0.mjs",
     "test:phase1": "pnpm --filter @workspace/api-server run build && node scripts/test-phase1.mjs",
     "test:phase2": "pnpm --filter @workspace/api-server run build && node scripts/test-phase2.mjs",
+    "test:clamav": "node scripts/test-clamav.mjs",
     "test:password-reset": "node scripts/run-password-reset-test.mjs",
     "test:password-change": "pnpm --filter @workspace/api-server run build && node scripts/test-password-change.mjs",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
