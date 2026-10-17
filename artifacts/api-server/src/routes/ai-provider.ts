@@ -3,11 +3,12 @@ import { Router, type Response } from "express";
 import {
   aiProviderSettingsTable, auditLogsTable, centersTable, db, usersTable,
 } from "@workspace/db";
-import { UpdateAdminAIProviderSettingsBody } from "@workspace/api-zod";
 import { requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
-import { encryptAIProviderKey, type AIProviderMode } from "../lib/ai-provider";
 import { logger } from "../lib/logger";
 import { resolveAIEndpoint } from "../lib/ai-http";
+import { UpdateAdminAIProviderSettingsBody, CheckAdminAIProviderBody, CheckAdminAIProviderResponse } from "@workspace/api-zod";
+import { AIProviderError, encryptAIProviderKey, loadAIProvider, type AIProviderMode } from "../lib/ai-provider";
+import { checkAIProvider } from "../lib/ai-provider-check";
 
 const router = Router();
 
@@ -64,7 +65,7 @@ async function normalizeBaseUrl(mode: AIProviderMode, input: string): Promise<st
 }
 
 function replyError(res: Response, error: unknown): void {
-  if (error instanceof SettingsFailure) {
+  if (error instanceof SettingsFailure || error instanceof AIProviderError) {
     res.status(error.status).json({ error: error.message });
     return;
   }
@@ -78,6 +79,22 @@ router.get("/admin/ai/provider", requireAuth, async (_req, res) => {
     const [row] = await db.select().from(aiProviderSettingsTable)
       .where(eq(aiProviderSettingsTable.centerId, identity.centerId)).limit(1);
     res.json(dto(row));
+  } catch (error) { replyError(res, error); }
+});
+
+router.post("/admin/ai/provider/check", requireAuth, requireCsrf, async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  try {
+    const identity = await adminIdentity(res);
+    const parsed = CheckAdminAIProviderBody.strict().safeParse(req.body);
+    if (!parsed.success || parsed.data.syntheticSampleConfirmed !== true) {
+      throw new SettingsFailure(400, "Confirma el envío de muestras sintéticas con un formato válido.");
+    }
+    const config = await loadAIProvider(identity.centerId);
+    if (config.revision !== parsed.data.expectedRevision) {
+      throw new SettingsFailure(409, "La configuración cambió. Recárgala y confirma de nuevo la comprobación.");
+    }
+    res.json(CheckAdminAIProviderResponse.parse(await checkAIProvider(config)));
   } catch (error) { replyError(res, error); }
 });
 

@@ -20,6 +20,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AIProviderCheckInput,
+  AIProviderCheckResult,
   Activity,
   ActivityCreateResult,
   AdminAIProviderSettings,
@@ -1758,6 +1760,91 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getUpdateAdminAIProviderSettingsMutationOptions(options));
+    }
+
+export const getCheckAdminAIProviderUrl = () => {
+
+
+
+
+  return `/api/v1/admin/ai/provider/check`
+}
+
+/**
+ * Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados.
+ */
+export const checkAdminAIProvider = async (aIProviderCheckInput: AIProviderCheckInput, options?: Parameters<typeof customFetch>[1]): Promise<AIProviderCheckResult> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AIProviderCheckResult>(getCheckAdminAIProviderUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(aIProviderCheckInput)
+  }
+);}
+
+
+
+
+
+export const getCheckAdminAIProviderMutationKey = () => ['checkAdminAIProvider'] as const;
+
+export const getCheckAdminAIProviderMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext> => {
+
+const mutationKey = getCheckAdminAIProviderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkAdminAIProvider>>, CheckAdminAIProviderMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  checkAdminAIProvider(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckAdminAIProviderMutationResult = NonNullable<Awaited<ReturnType<typeof checkAdminAIProvider>>>
+    export type CheckAdminAIProviderMutationBody = BodyType<AIProviderCheckInput>
+    export type CheckAdminAIProviderMutationError = ErrorType<void>
+    export type CheckAdminAIProviderMutationVariables = {data: BodyType<AIProviderCheckInput>}
+
+    export const useCheckAdminAIProvider = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkAdminAIProvider>>,
+        TError,
+        CheckAdminAIProviderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCheckAdminAIProviderMutationOptions(options));
     }
 
 export const getReceiveResendWebhookUrl = () => {

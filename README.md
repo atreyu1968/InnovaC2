@@ -92,6 +92,18 @@ en claro desde la interfaz. Aplicar migraciones con
 `pnpm --filter @workspace/db run migrate` antes de arrancar el servidor actualizado.
 El formulario controla revisiones para no pisar cambios simultáneos.
 
+En ese mismo apartado, **Comprobar proveedor guardado** permite a administración
+técnica verificar conexión, autenticación y compatibilidad de ambos modelos.
+Exige confirmar antes de enviar un tono sintético de un segundo y un texto
+ficticio al proveedor guardado; puede generar consumo. No usa reuniones reales,
+no modifica ajustes ni guarda actas o resultados. Se bloquea si hay cambios sin
+guardar y rechaza una revisión desactualizada. Muestra por separado los errores
+de autorización, modelo/ruta/parámetros, formato y conexión. Una respuesta
+compatible no acredita precisión de transcripción ni calidad de redacción;
+un tono sin voz puede devolver texto vacío. La comprobación limita cada solicitud
+a 20 segundos. Pruebas aisladas, sin base de datos ni proveedor real:
+`pnpm run test:ai-provider-check`.
+
 C2 o administración técnica pueden grabar una reunión **convocada**, de manera
 presencial por micrófono o mezclando audio de una pestaña online y, opcionalmente,
 su propio micrófono. Es obligatorio informar a participantes y confirmar su

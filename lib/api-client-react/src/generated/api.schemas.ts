@@ -293,6 +293,37 @@ export interface MailAdminSettings {
   domainRecords?: MailDomainRecord[];
 }
 
+export interface AIProviderCheckInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  syntheticSampleConfirmed: true;
+}
+
+export type AIProviderCheckStepStatus = typeof AIProviderCheckStepStatus[keyof typeof AIProviderCheckStepStatus];
+
+
+export const AIProviderCheckStepStatus = {
+  ok: 'ok',
+  authorization_error: 'authorization_error',
+  model_error: 'model_error',
+  format_error: 'format_error',
+  connection_error: 'connection_error',
+  provider_error: 'provider_error',
+} as const;
+
+export interface AIProviderCheckStep {
+  status: AIProviderCheckStepStatus;
+  message: string;
+}
+
+export interface AIProviderCheckResult {
+  revision: number;
+  checkedAt: string;
+  transcription: AIProviderCheckStep;
+  minutes: AIProviderCheckStep;
+  qualityAssessed: false;
+}
+
 export type AdminAIProviderSettingsProvider = typeof AdminAIProviderSettingsProvider[keyof typeof AdminAIProviderSettingsProvider];
 
 

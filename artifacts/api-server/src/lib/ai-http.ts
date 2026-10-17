@@ -5,6 +5,12 @@ import { request as httpsRequest } from "node:https";
 
 type Mode = "local" | "external_authorized";
 
+export class AIHttpError extends Error {
+  constructor(readonly kind: "authorization" | "model" | "format" | "connection" | "provider") {
+    super(`AI request failed: ${kind}`);
+  }
+}
+
 function mappedIPv4(address: string): string {
   if (!address.toLowerCase().startsWith("::ffff:")) return address;
   const suffix = address.slice(7);
@@ -69,8 +75,23 @@ export async function requestAIJson(
   config: { mode: Mode; baseUrl: string; apiKey: string | null },
   path: string,
   body: FormData | string,
+  timeoutMs = 120_000,
 ): Promise<unknown> {
-  const { url, hostname, address } = await resolveAIEndpoint(config.mode, `${config.baseUrl}/${path}`);
+  const signal = AbortSignal.timeout(timeoutMs);
+  let endpoint: Awaited<ReturnType<typeof resolveAIEndpoint>>;
+  let onAbort: (() => void) | undefined;
+  try {
+    endpoint = await Promise.race([
+      resolveAIEndpoint(config.mode, `${config.baseUrl}/${path}`),
+      new Promise<never>((_resolve, reject) => {
+        onAbort = () => reject(new AIHttpError("connection"));
+        signal.addEventListener("abort", onAbort, { once: true });
+      }),
+    ]);
+  }
+  catch { throw new AIHttpError("connection"); }
+  finally { if (onAbort) signal.removeEventListener("abort", onAbort); }
+  const { url, hostname, address } = endpoint;
   const serialized = new Request(url, {
     method: "POST",
     headers: typeof body === "string" ? { "Content-Type": "application/json" } : {},
@@ -94,11 +115,15 @@ export async function requestAIJson(
         method: "POST",
         headers,
         ...(url.protocol === "https:" ? { servername: hostname } : {}),
-        signal: AbortSignal.timeout(120_000),
+        signal,
       }, (response) => {
         if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300) {
           response.destroy();
-          reject(new Error(`HTTP ${response.statusCode ?? 502}`));
+          const status = response.statusCode;
+          reject(new AIHttpError(
+            status === 401 || status === 403 ? "authorization" :
+            status === 400 || status === 404 || status === 422 ? "model" : "provider",
+          ));
           return;
         }
         const chunks: Buffer[] = [];
@@ -106,7 +131,7 @@ export async function requestAIJson(
         response.on("data", (chunk: Buffer) => {
           bytes += chunk.length;
           if (bytes > 2 * 1024 * 1024) {
-            response.destroy(new Error("La respuesta del proveedor supera el límite admitido."));
+            response.destroy(new AIHttpError("format"));
             return;
           }
           chunks.push(chunk);
@@ -114,12 +139,14 @@ export async function requestAIJson(
         response.on("error", reject);
         response.on("end", () => {
           try { resolve(JSON.parse(Buffer.concat(chunks).toString("utf8"))); }
-          catch { reject(new Error("El proveedor no devolvió JSON válido.")); }
+          catch { reject(new AIHttpError("format")); }
         });
       });
       outgoing.on("error", reject);
       outgoing.end(payload);
     });
+  } catch (error) {
+    throw error instanceof AIHttpError ? error : new AIHttpError("connection");
   } finally {
     payload.fill(0);
   }

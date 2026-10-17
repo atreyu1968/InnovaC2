@@ -341,6 +341,29 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/AdminAIProviderSettings"}
+  /admin/ai/provider/check:
+    post:
+      operationId: checkAdminAIProvider
+      description: Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados.
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/AIProviderCheckInput"}
+      responses:
+        "200":
+          description: Resultados técnicos independientes; no evalúan la calidad
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AIProviderCheckResult"}
+        "400": {description: Confirmación o formato no válidos}
+        "401": {description: Sesión requerida}
+        "403": {description: Rol o CSRF no válido}
+        "409": {description: La configuración guardada ha cambiado}
+        "503": {description: Proveedor desactivado o incompleto}
+        "500": {description: No se pudo completar la comprobación}
   /webhooks/resend:
     post:
       operationId: receiveResendWebhook
@@ -2512,6 +2535,28 @@ components:
         domainRecords:
           type: array
           items: {$ref: "#/components/schemas/MailDomainRecord"}
+    AIProviderCheckInput:
+      type: object
+      additionalProperties: false
+      required: [expectedRevision, syntheticSampleConfirmed]
+      properties:
+        expectedRevision: {type: integer, minimum: 0}
+        syntheticSampleConfirmed: {type: boolean, enum: [true]}
+    AIProviderCheckStep:
+      type: object
+      required: [status, message]
+      properties:
+        status: {type: string, enum: [ok, authorization_error, model_error, format_error, connection_error, provider_error]}
+        message: {type: string}
+    AIProviderCheckResult:
+      type: object
+      required: [revision, checkedAt, transcription, minutes, qualityAssessed]
+      properties:
+        revision: {type: integer}
+        checkedAt: {type: string, format: date-time}
+        transcription: {$ref: "#/components/schemas/AIProviderCheckStep"}
+        minutes: {$ref: "#/components/schemas/AIProviderCheckStep"}
+        qualityAssessed: {type: boolean, enum: [false]}
     AdminAIProviderSettings:
       type: object
       required: [provider, baseUrl, transcriptionModel, minutesModel, apiKeyConfigured, externalAuthorizedAt, revision, updatedAt]

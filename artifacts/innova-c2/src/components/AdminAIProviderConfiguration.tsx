@@ -4,6 +4,7 @@ import {
   getGetAdminAIProviderSettingsQueryKey,
   useGetAdminAIProviderSettings,
   useUpdateAdminAIProviderSettings,
+  useCheckAdminAIProvider,
 } from "@workspace/api-client-react";
 
 type ProviderMode = "disabled" | "local" | "external_authorized";
@@ -17,6 +18,8 @@ export function AdminAIProviderConfiguration() {
     query: { queryKey: getGetAdminAIProviderSettingsQueryKey(), retry: false },
   });
   const update = useUpdateAdminAIProviderSettings();
+  const check = useCheckAdminAIProvider();
+  const [confirmCheck, setConfirmCheck] = useState(false);
   const [provider, setProvider] = useState<ProviderMode>("disabled");
   const [baseUrl, setBaseUrl] = useState("");
   const [transcriptionModel, setTranscriptionModel] = useState("");
@@ -34,7 +37,21 @@ export function AdminAIProviderConfiguration() {
     setTranscriptionModel(settings.data.transcriptionModel ?? "");
     setMinutesModel(settings.data.minutesModel ?? "");
     setExternalAuthorizationConfirmed(false);
+    setConfirmCheck(false);
+    check.reset();
   }, [settings.data]);
+
+  const unsaved = Boolean(settings.data && (
+    provider !== settings.data.provider || baseUrl !== (settings.data.baseUrl ?? "") ||
+    transcriptionModel !== (settings.data.transcriptionModel ?? "") ||
+    minutesModel !== (settings.data.minutesModel ?? "") || apiKey || clearApiKey
+  ));
+
+  function runCheck() {
+    if (!settings.data || unsaved) return;
+    setConfirmCheck(false);
+    check.mutate({ data: { expectedRevision: settings.data.revision, syntheticSampleConfirmed: true } });
+  }
 
   function saveSettings(event: FormEvent) {
     event.preventDefault();
@@ -119,7 +136,7 @@ export function AdminAIProviderConfiguration() {
       </label>}
 
       <div className="flex flex-wrap items-center gap-3">
-        <button className="primary-action" type="submit" disabled={update.isPending}>
+        <button className="primary-action" type="submit" disabled={update.isPending || check.isPending}>
           <Save size={15} />{update.isPending ? "Guardando…" : "Guardar proveedor de IA"}
         </button>
         <span className="inline-flex items-center gap-1 text-xs text-slate-500">
@@ -129,6 +146,38 @@ export function AdminAIProviderConfiguration() {
         </span>
       </div>
     </form>}
+
+    {settings.data && <div className="mt-5 space-y-3 border-t border-slate-200 pt-5">
+      <h3 className="font-semibold text-[#20393b]">Comprobar conexión con la IA</h3>
+      <p className="text-sm text-slate-600">Comprueba conexión, autenticación y compatibilidad de los dos modelos guardados. No modifica la configuración ni guarda audio, transcripciones o actas.</p>
+      {settings.data.provider === "disabled" && <p className="text-sm text-slate-600">Activa y guarda un proveedor para comprobarlo.</p>}
+      {unsaved && <p className="text-sm text-amber-800">Guarda o descarta los cambios del formulario antes de comprobar la configuración guardada.</p>}
+      <button type="button" className="secondary-action" disabled={settings.data.provider === "disabled" || unsaved || update.isPending || check.isPending} onClick={() => { check.reset(); setConfirmCheck(true); }}>
+        {check.isPending ? "Comprobando los dos modelos…" : "Comprobar proveedor guardado"}
+      </button>
+      {confirmCheck && !unsaved && <div role="alertdialog" aria-labelledby="ai-check-title" aria-describedby="ai-check-description" className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <h4 id="ai-check-title" className="font-semibold">Confirmar envío de muestras sintéticas</h4>
+        <p id="ai-check-description" className="mt-2 text-sm">Se enviarán un tono de audio sintético de un segundo (sin voz) y un texto ficticio al proveedor {settings.data.provider === "local" ? "local" : "externo autorizado"} guardado. Nunca se usan reuniones reales. Puede generar consumo o costes; el proveedor aplica sus propias políticas de tratamiento.</p>
+        <dl className="my-3 text-sm">
+          <dt className="font-semibold">Endpoint guardado</dt><dd>{settings.data.baseUrl}</dd>
+          <dt className="font-semibold">Transcripción</dt><dd>{settings.data.transcriptionModel}</dd>
+          <dt className="font-semibold">Redacción</dt><dd>{settings.data.minutesModel}</dd>
+        </dl>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" className="primary-action" disabled={update.isPending || check.isPending} onClick={runCheck}>Confirmar y enviar muestras</button>
+          <button type="button" className="secondary-action" onClick={() => setConfirmCheck(false)}>Cancelar</button>
+        </div>
+      </div>}
+      {check.isPending && <p role="status" className="text-sm text-slate-600">Esperando al proveedor; cada modelo tiene un límite de 20 segundos.</p>}
+      {check.isError && <p role="alert" className="text-sm text-red-800">No se pudo completar la comprobación. {message(check.error)}</p>}
+      {check.data && <div role="status" className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm">
+        <p className="font-semibold">Resultado de la revisión {check.data.revision} · {new Date(check.data.checkedAt).toLocaleString("es-ES")}</p>
+        <p className={check.data.transcription.status === "ok" ? "text-teal-900" : "text-red-800"}><strong>Transcripción: </strong>{check.data.transcription.message}</p>
+        <p className={check.data.minutes.status === "ok" ? "text-teal-900" : "text-red-800"}><strong>Redacción: </strong>{check.data.minutes.message}</p>
+        <p>Esta prueba no evalúa la calidad del resultado ni garantiza futuras solicitudes. Un tono sin voz puede producir una transcripción vacía. Las actas reales siempre requieren revisión humana.</p>
+        {unsaved && <p className="text-amber-800">Este resultado corresponde a la configuración guardada, no a los cambios sin guardar.</p>}
+      </div>}
+    </div>}
 
     <p className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs leading-relaxed text-slate-600">
       La grabación requiere consentimiento explícito. Se procesa en memoria, no se guarda el audio original y se conservan la transcripción y el borrador para revisión humana. El modo externo solo se activa tras la confirmación expresa.
