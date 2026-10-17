@@ -15,10 +15,12 @@ import ciclopeRouter from "./ciclope";
 import mailRouter from "./mail";
 import followupsRouter from "./followups";
 import aiProviderRouter from "./ai-provider";
+import spacesRouter from "./spaces";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(spacesRouter);
 router.use(authRouter);
 router.use(schoolYearsRouter);
 router.use(ciclopeRouter);

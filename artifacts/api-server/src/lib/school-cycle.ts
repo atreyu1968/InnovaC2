@@ -13,6 +13,7 @@ export const courseTables = [
   "pic_followup_reports", "pic_followup_snapshots", "pic_followup_deliveries",
   "ciclope_policies", "ciclope_meetings", "ciclope_versions", "ciclope_tasks", "ciclope_notices",
   "mail_contacts", "mail_templates", "mail_threads", "mail_messages", "mail_attachments",
+  "learning_spaces", "space_reservations", "space_versions",
 ] as const;
 
 export class CycleConflict extends Error {}

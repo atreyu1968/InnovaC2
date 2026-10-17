@@ -14,3 +14,9 @@ Do not replay historical migrations or declare them all applied merely because t
 **Why:** The existing development installation already had application tables with an empty Drizzle ledger, so a full migration replay failed despite the same journal succeeding on a fresh isolated cluster.
 
 **How to apply:** Inspect the live schema first. Apply only verified missing, additive changes without deleting data; baselining the old ledger requires a separate schema comparison, not fabricated migration history.
+
+New course-scoped tables need both versioned migrations and the development setup's idempotent SQL-guard replay.
+
+**Why:** Schema push creates tables but does not install PostgreSQL triggers. A clean migration test alone can pass while a push-based installation lacks closure, concurrency or history protections.
+
+**How to apply:** Keep guard SQL independently replayable, register it in development setup, and verify replay alongside fresh migrations. Do not replay table-creation DDL as a substitute for installing guards.

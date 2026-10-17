@@ -32,10 +32,56 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
   Resend firmados e idempotentes y adjuntos privados con análisis y revisión.
   El envío requiere dos confirmaciones independientes del servidor, los secretos,
   DNS SPF/DKIM/DMARC y la verificación del dominio. La prueba de esta fase no envía correo.
-- **Fases 4–6 — memoria, ATECA/FABLab y asistente IA: pendientes.** No se
-  simulan envíos, respuestas, lectura ni capacidades aún no implementadas.
-  La grabación/transcripción y el borrador de actas son una extensión parcial de
-  IA; no implican que el asistente documental/RAG esté terminado.
+- **Fase 4 — seguimientos, memoria y expediente: implementada.** Apartados
+  11–14, referencias a evidencias, comprobaciones humanas de certificación,
+  instantáneas inmutables, exportaciones y recibos de entrega manual.
+  Véase `docs/fase-4-seguimientos-memoria.md`; no emite certificados oficiales.
+- **Fase 5 — primer bloque implementado: ATECA y FABLab.** Fichas separadas,
+  calendario/reservas, usos documentados mediante actuaciones existentes,
+  historial y cierre de curso. Pendientes el catálogo de productos propios,
+  las fichas SCORM y el circuito de transferencia/difusión.
+- **Fase 6 — parcial.** Grabación/transcripción y borrador de actas,
+  configuración y comprobación del proveedor. Pendientes el asistente
+  documental/RAG y sus circuitos de aprobación. No se simulan capacidades no
+  implementadas ni se activa un proveedor sin configuración institucional.
+
+### Fase 5: espacios y usos documentados
+
+En **ATECA y FABLab**, C2 o administración técnica inicializa expresamente dos
+fichas vacías del curso activo; no se presuponen equipamientos, horarios ni
+resultados. Se editan por separado finalidad, horario de referencia, responsables,
+recursos y servicios. FABLab está disponible para todas las familias durante el
+curso: no es otro nombre del aula ATECA ni está reservado a una sola familia.
+
+Cada reserva tiene familia oficial, grupo agregado, inicio/fin en horario de
+Canarias y uno o ambos espacios. Se rechazan solapes, rangos fuera del curso y
+duraciones de más de 24 horas. Las reservas adyacentes sí son posibles. La
+comprobación de solapes también está en PostgreSQL y se serializa con el curso,
+para que dos envíos simultáneos no ocupen el mismo espacio. Las cancelaciones
+requieren motivo y conservan el registro.
+
+El profesorado reserva con su familia anual y solo modifica sus propias
+reservas; C2 y administración técnica pueden gestionarlas. Otros perfiles
+consultan ocupación sin acceder a notas, grupos o detalles ajenos fuera de su
+ámbito. Los perfiles de consulta no crean reservas. No introducir nombres del
+alumnado ni calificaciones en el campo de grupo.
+
+Un uso solo se registra como **realizado** cuando finaliza y se vincula
+expresamente a una actuación confirmada y validada del mismo curso, familia y
+fecha. La reserva nunca crea una actuación ni incrementa indicadores. Si se
+usan ambos espacios se conserva una sola referencia; los contadores distinguen
+ocupación de actuaciones únicas y no certifican logros.
+
+Los guardados tienen control de revisión e historial inmutable. Las fichas,
+reservas e historial se incluyen al archivar el curso, quedan bloqueados tras su
+cierre y no se copian al nuevo. La vista actual no sustituye a la consulta del
+archivo histórico. El catálogo de software/SCORM y la transferencia autonómica
+siguen pendientes, no se presentan como terminados.
+
+**Pruebas:** `pnpm run test:spaces` provisiona PostgreSQL y servidor privados,
+ejecuta todas las migraciones desde cero y comprueba permisos, CSRF, privacidad,
+concurrencia, solapes, cancelación, vinculación a actuaciones, historial, archivo
+y aislamiento entre cursos. Nunca usa ni borra la base real de la aplicación.
 
 ### Fase 3: uso, límites y comprobaciones
 

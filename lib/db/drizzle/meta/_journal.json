@@ -113,6 +113,20 @@
       "when": 1792258460050,
       "tag": "0013_ai_provider_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1792258460051,
+      "tag": "0014_learning_spaces",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1792258460052,
+      "tag": "0015_space_guards",
+      "breakpoints": true
     }
   ]
 }

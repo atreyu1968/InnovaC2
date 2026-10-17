@@ -9,7 +9,7 @@ import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter
 import {
   Activity, ArrowDownRight, ArrowLeft, ArrowRight, BookOpen, ChevronDown, ChevronRight,
   CalendarDays, CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu,
-  FileCheck2, Mail, RefreshCw, Settings, ShieldCheck, Users, X,
+  Building2, FileCheck2, Mail, RefreshCw, Settings, ShieldCheck, Users, X,
 } from 'lucide-react';
 import {
   UserRole, getGetCurrentUserQueryKey, getGetDashboardSummaryQueryKey,
@@ -31,6 +31,7 @@ import { SchoolYearsPage } from '@/components/SchoolYearsPage';
 import { CiclopePage } from '@/components/CiclopePage';
 import { PicFollowupPage } from '@/components/PicFollowupPage';
 import { SectionHeader } from '@/components/SectionHeader';
+import { LearningSpacesPage } from '@/components/spaces/LearningSpacesPage';
 
 const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
 
@@ -61,6 +62,7 @@ const routeLabels: Record<string, string> = {
   '/seguimientos': 'Seguimientos PIC',
   '/actuaciones': 'Actuaciones y evidencias',
   '/ciclope': 'CICLOPE · reuniones y actas',
+  '/espacios': 'ATECA y FABLab',
 };
 const restrictedCommunicationRoles: readonly UserRoleValue[] = [UserRole.consulta_c1, UserRole.consulta_auditora];
 
@@ -100,6 +102,7 @@ function Routed() {
         <Route path="/plan-pic"><ProtectedPage page="pic" /></Route>
         <Route path="/seguimientos"><ProtectedPage page="followups" /></Route>
         <Route path="/ciclope"><ProtectedPage page="ciclope" /></Route>
+        <Route path="/espacios"><ProtectedPage page="spaces" /></Route>
         <Route path="/actuaciones"><ProtectedPage page="activities" /></Route>
         <Route path="/"><ProtectedPage page="dashboard" /></Route>
         <Route component={NotFound} />
@@ -108,7 +111,7 @@ function Routed() {
   );
 }
 
-function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration' | 'communications' | 'catalog' | 'pic' | 'followups' | 'activities' | 'account' | 'years' | 'ciclope' }) {
+function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration' | 'communications' | 'catalog' | 'pic' | 'followups' | 'activities' | 'account' | 'years' | 'ciclope' | 'spaces' }) {
   const [, setLocation] = useLocation();
   const status = useGetSetupStatus({ query: { queryKey: getGetSetupStatusQueryKey(), retry: false } });
   const current = useGetCurrentUser({
@@ -151,6 +154,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration'
         page === 'configuration' ? <AdminConfigurationPage /> :
           page === 'followups' ? <PicFollowupPage user={current.data.user} /> :
             page === 'ciclope' ? <CiclopePage user={current.data.user} /> :
+              page === 'spaces' ? <LearningSpacesPage user={current.data.user} /> :
               page === 'years' ? <SchoolYearsPage /> :
                 page === 'account' ? <AccountPage user={current.data.user} /> :
                   page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
@@ -212,6 +216,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
             {hasCoordinationAccess(user.role) && <NavItem href="/cursos" active={location === '/cursos'} icon={<CalendarDays size={18} />} label="Cursos académicos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {[UserRole.admin_tecnico, UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             <NavItem href="/ciclope" active={location === '/ciclope'} icon={<Users size={18} />} label="CICLOPE" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
+            <NavItem href="/espacios" active={location === '/espacios'} icon={<Building2 size={18} />} label="ATECA y FABLab" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={18} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             <NavItem href="/cuenta" active={location === '/cuenta'} icon={<ShieldCheck size={18} />} label="Mi cuenta" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
           </nav>
@@ -240,6 +245,7 @@ const sectionCopy: Record<string, { kicker: string; title: string; subtitle: str
   '/catalogo': { kicker: 'Referencia institucional', title: 'Catálogo oficial', subtitle: 'Consulta la estructura vigente de objetivos, acciones e indicadores del programa.', status: 'Versión oficial persistida del centro' },
   '/plan-pic': { kicker: 'Planificación', title: 'Plan de Innovación del Centro', subtitle: 'Diagnóstico, objetivos y acciones del curso, enlazados al catálogo oficial.', status: 'Borradores revisables · versiones trazables' },
   '/ciclope': { kicker: 'Comisión CICLOPE', title: 'Reuniones, actas y acuerdos', subtitle: 'Convocatorias, actas y tareas de la comisión, con refrendo de dirección.', status: 'Actas validadas por personas autorizadas' },
+  '/espacios': { kicker: 'Fase 5 · espacios de aprendizaje', title: 'ATECA y FABLab', subtitle: 'Fichas de los espacios del curso y calendario de ocupación. Una reserva organiza el uso; no acredita actividad realizada.', status: 'Hora de Canarias · registros versionados' },
   '/actuaciones': { kicker: 'Fase 2 · seguimiento del PIC', title: 'Actuaciones y evidencias', subtitle: 'Registra lo realizado, conserva su trazabilidad y reúne la documentación que permite revisar cada indicador.', status: 'Registro del centro · revisión por roles' },
 };
 

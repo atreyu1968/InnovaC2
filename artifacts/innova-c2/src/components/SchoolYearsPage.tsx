@@ -10,7 +10,7 @@ import {
   useGetSchoolYearHistory, getGetSchoolYearHistoryQueryKey, exportSchoolYear, exportSchoolYearOriginals,
   useGetCurrentCatalog, getGetCurrentCatalogQueryKey,
   getGetDashboardSummaryQueryKey, getGetCurrentPicPlanQueryKey, getListActivitiesQueryKey,
-  getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey, getGetCiclopeQueryKey,
+  getListDocumentsQueryKey, getListCurrentIndicatorsQueryKey, getListUsersQueryKey, getGetCiclopeQueryKey, getGetLearningSpacesQueryKey,
 } from '@workspace/api-client-react';
 import type { SchoolYear, SchoolYearAccount, SchoolYearSource, UserRole as UserRoleValue } from '@workspace/api-client-react';
 import { discardCourseCache } from '@/lib/course-cache';
@@ -98,7 +98,7 @@ export function SchoolYearsPage() {
     await discardCourseCache(client, [
       getGetDashboardSummaryQueryKey(), getGetCurrentPicPlanQueryKey(),
       getListActivitiesQueryKey(), getListDocumentsQueryKey(), getListCurrentIndicatorsQueryKey(),
-      getGetCiclopeQueryKey(),
+      getGetCiclopeQueryKey(), getGetLearningSpacesQueryKey(),
     ]);
     await Promise.all([
       getListSchoolYearsQueryKey(), getGetSchoolYearReviewQueryKey(), getGetDashboardSummaryQueryKey(), getGetCurrentPicPlanQueryKey(),

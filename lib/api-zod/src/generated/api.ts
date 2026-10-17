@@ -8,6 +8,364 @@
 import * as zod from 'zod';
 
 
+
+export const getLearningSpacesResponseSpacesItemOneNameMax = 160;
+
+export const getLearningSpacesResponseSpacesItemOnePurposeMax = 3000;
+
+export const getLearningSpacesResponseSpacesItemOneReferenceScheduleMax = 1500;
+
+export const getLearningSpacesResponseSpacesItemOneResponsiblesMax = 1500;
+
+export const getLearningSpacesResponseSpacesItemOneResourcesMax = 4000;
+
+export const getLearningSpacesResponseSpacesItemOneServicesMax = 3000;
+
+export const getLearningSpacesResponseReservationsItemOneExpectedRevisionMin = 0;
+
+export const getLearningSpacesResponseReservationsItemOneTitleMax = 200;
+
+export const getLearningSpacesResponseReservationsItemOneSpaceKindsMax = 2;
+
+export const getLearningSpacesResponseReservationsItemOneProfessionalFamilyMax = 200;
+
+export const getLearningSpacesResponseReservationsItemOneGroupLabelMax = 160;
+
+export const getLearningSpacesResponseReservationsItemOneNotesMax = 3000;
+
+
+
+export const GetLearningSpacesResponse = zod.object({
+  "schoolYearId": zod.string(),
+  "schoolYear": zod.string(),
+  "canManage": zod.boolean(),
+  "actorFamily": zod.string().nullable(),
+  "families": zod.array(zod.string()),
+  "spaces": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "name": zod.string().min(1).max(getLearningSpacesResponseSpacesItemOneNameMax),
+  "purpose": zod.string().max(getLearningSpacesResponseSpacesItemOnePurposeMax),
+  "referenceSchedule": zod.string().max(getLearningSpacesResponseSpacesItemOneReferenceScheduleMax),
+  "responsibles": zod.string().max(getLearningSpacesResponseSpacesItemOneResponsiblesMax),
+  "resources": zod.string().max(getLearningSpacesResponseSpacesItemOneResourcesMax),
+  "services": zod.string().max(getLearningSpacesResponseSpacesItemOneServicesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['ateca', 'fablab']),
+  "revision": zod.number().int()
+}))),
+  "reservations": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(getLearningSpacesResponseReservationsItemOneExpectedRevisionMin),
+  "title": zod.string().min(1).max(getLearningSpacesResponseReservationsItemOneTitleMax),
+  "spaceKinds": zod.array(zod.enum(['ateca', 'fablab'])).min(1).max(getLearningSpacesResponseReservationsItemOneSpaceKindsMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "professionalFamily": zod.string().min(1).max(getLearningSpacesResponseReservationsItemOneProfessionalFamilyMax),
+  "groupLabel": zod.string().max(getLearningSpacesResponseReservationsItemOneGroupLabelMax),
+  "status": zod.enum(['reservada', 'realizado', 'cancelada']),
+  "activityId": zod.string().uuid().nullable(),
+  "notes": zod.string().max(getLearningSpacesResponseReservationsItemOneNotesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "canEdit": zod.boolean(),
+  "detailsVisible": zod.boolean()
+}))),
+  "activities": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "professionalFamily": zod.string(),
+  "activityDate": zod.string().nullable(),
+  "status": zod.string()
+}))
+})
+
+
+export const InitializeLearningSpacesHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const initializeLearningSpacesResponseSpacesItemOneNameMax = 160;
+
+export const initializeLearningSpacesResponseSpacesItemOnePurposeMax = 3000;
+
+export const initializeLearningSpacesResponseSpacesItemOneReferenceScheduleMax = 1500;
+
+export const initializeLearningSpacesResponseSpacesItemOneResponsiblesMax = 1500;
+
+export const initializeLearningSpacesResponseSpacesItemOneResourcesMax = 4000;
+
+export const initializeLearningSpacesResponseSpacesItemOneServicesMax = 3000;
+
+export const initializeLearningSpacesResponseReservationsItemOneExpectedRevisionMin = 0;
+
+export const initializeLearningSpacesResponseReservationsItemOneTitleMax = 200;
+
+export const initializeLearningSpacesResponseReservationsItemOneSpaceKindsMax = 2;
+
+export const initializeLearningSpacesResponseReservationsItemOneProfessionalFamilyMax = 200;
+
+export const initializeLearningSpacesResponseReservationsItemOneGroupLabelMax = 160;
+
+export const initializeLearningSpacesResponseReservationsItemOneNotesMax = 3000;
+
+
+
+export const InitializeLearningSpacesResponse = zod.object({
+  "schoolYearId": zod.string(),
+  "schoolYear": zod.string(),
+  "canManage": zod.boolean(),
+  "actorFamily": zod.string().nullable(),
+  "families": zod.array(zod.string()),
+  "spaces": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "name": zod.string().min(1).max(initializeLearningSpacesResponseSpacesItemOneNameMax),
+  "purpose": zod.string().max(initializeLearningSpacesResponseSpacesItemOnePurposeMax),
+  "referenceSchedule": zod.string().max(initializeLearningSpacesResponseSpacesItemOneReferenceScheduleMax),
+  "responsibles": zod.string().max(initializeLearningSpacesResponseSpacesItemOneResponsiblesMax),
+  "resources": zod.string().max(initializeLearningSpacesResponseSpacesItemOneResourcesMax),
+  "services": zod.string().max(initializeLearningSpacesResponseSpacesItemOneServicesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['ateca', 'fablab']),
+  "revision": zod.number().int()
+}))),
+  "reservations": zod.array(zod.object({
+  "expectedRevision": zod.number().int().min(initializeLearningSpacesResponseReservationsItemOneExpectedRevisionMin),
+  "title": zod.string().min(1).max(initializeLearningSpacesResponseReservationsItemOneTitleMax),
+  "spaceKinds": zod.array(zod.enum(['ateca', 'fablab'])).min(1).max(initializeLearningSpacesResponseReservationsItemOneSpaceKindsMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "professionalFamily": zod.string().min(1).max(initializeLearningSpacesResponseReservationsItemOneProfessionalFamilyMax),
+  "groupLabel": zod.string().max(initializeLearningSpacesResponseReservationsItemOneGroupLabelMax),
+  "status": zod.enum(['reservada', 'realizado', 'cancelada']),
+  "activityId": zod.string().uuid().nullable(),
+  "notes": zod.string().max(initializeLearningSpacesResponseReservationsItemOneNotesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "canEdit": zod.boolean(),
+  "detailsVisible": zod.boolean()
+}))),
+  "activities": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "professionalFamily": zod.string(),
+  "activityDate": zod.string().nullable(),
+  "status": zod.string()
+}))
+})
+
+
+export const UpdateLearningSpaceParams = zod.object({
+  "spaceId": zod.coerce.string().uuid()
+})
+
+export const UpdateLearningSpaceHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const updateLearningSpaceBodyNameMax = 160;
+
+export const updateLearningSpaceBodyPurposeMax = 3000;
+
+export const updateLearningSpaceBodyReferenceScheduleMax = 1500;
+
+export const updateLearningSpaceBodyResponsiblesMax = 1500;
+
+export const updateLearningSpaceBodyResourcesMax = 4000;
+
+export const updateLearningSpaceBodyServicesMax = 3000;
+
+
+
+export const UpdateLearningSpaceBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "name": zod.string().min(1).max(updateLearningSpaceBodyNameMax),
+  "purpose": zod.string().max(updateLearningSpaceBodyPurposeMax),
+  "referenceSchedule": zod.string().max(updateLearningSpaceBodyReferenceScheduleMax),
+  "responsibles": zod.string().max(updateLearningSpaceBodyResponsiblesMax),
+  "resources": zod.string().max(updateLearningSpaceBodyResourcesMax),
+  "services": zod.string().max(updateLearningSpaceBodyServicesMax)
+})
+
+
+export const updateLearningSpaceResponseOneNameMax = 160;
+
+export const updateLearningSpaceResponseOnePurposeMax = 3000;
+
+export const updateLearningSpaceResponseOneReferenceScheduleMax = 1500;
+
+export const updateLearningSpaceResponseOneResponsiblesMax = 1500;
+
+export const updateLearningSpaceResponseOneResourcesMax = 4000;
+
+export const updateLearningSpaceResponseOneServicesMax = 3000;
+
+
+
+export const UpdateLearningSpaceResponse = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "name": zod.string().min(1).max(updateLearningSpaceResponseOneNameMax),
+  "purpose": zod.string().max(updateLearningSpaceResponseOnePurposeMax),
+  "referenceSchedule": zod.string().max(updateLearningSpaceResponseOneReferenceScheduleMax),
+  "responsibles": zod.string().max(updateLearningSpaceResponseOneResponsiblesMax),
+  "resources": zod.string().max(updateLearningSpaceResponseOneResourcesMax),
+  "services": zod.string().max(updateLearningSpaceResponseOneServicesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "kind": zod.enum(['ateca', 'fablab']),
+  "revision": zod.number().int()
+}))
+
+
+export const CreateSpaceReservationHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const createSpaceReservationBodyExpectedRevisionMin = 0;
+
+export const createSpaceReservationBodyTitleMax = 200;
+
+export const createSpaceReservationBodySpaceKindsMax = 2;
+
+export const createSpaceReservationBodyProfessionalFamilyMax = 200;
+
+export const createSpaceReservationBodyGroupLabelMax = 160;
+
+export const createSpaceReservationBodyNotesMax = 3000;
+
+
+
+export const CreateSpaceReservationBody = zod.object({
+  "expectedRevision": zod.number().int().min(createSpaceReservationBodyExpectedRevisionMin),
+  "title": zod.string().min(1).max(createSpaceReservationBodyTitleMax),
+  "spaceKinds": zod.array(zod.enum(['ateca', 'fablab'])).min(1).max(createSpaceReservationBodySpaceKindsMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "professionalFamily": zod.string().min(1).max(createSpaceReservationBodyProfessionalFamilyMax),
+  "groupLabel": zod.string().max(createSpaceReservationBodyGroupLabelMax),
+  "status": zod.enum(['reservada', 'realizado', 'cancelada']),
+  "activityId": zod.string().uuid().nullable(),
+  "notes": zod.string().max(createSpaceReservationBodyNotesMax)
+})
+
+export const createSpaceReservationResponseOneExpectedRevisionMin = 0;
+
+export const createSpaceReservationResponseOneTitleMax = 200;
+
+export const createSpaceReservationResponseOneSpaceKindsMax = 2;
+
+export const createSpaceReservationResponseOneProfessionalFamilyMax = 200;
+
+export const createSpaceReservationResponseOneGroupLabelMax = 160;
+
+export const createSpaceReservationResponseOneNotesMax = 3000;
+
+
+
+export const CreateSpaceReservationResponse = zod.object({
+  "expectedRevision": zod.number().int().min(createSpaceReservationResponseOneExpectedRevisionMin),
+  "title": zod.string().min(1).max(createSpaceReservationResponseOneTitleMax),
+  "spaceKinds": zod.array(zod.enum(['ateca', 'fablab'])).min(1).max(createSpaceReservationResponseOneSpaceKindsMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "professionalFamily": zod.string().min(1).max(createSpaceReservationResponseOneProfessionalFamilyMax),
+  "groupLabel": zod.string().max(createSpaceReservationResponseOneGroupLabelMax),
+  "status": zod.enum(['reservada', 'realizado', 'cancelada']),
+  "activityId": zod.string().uuid().nullable(),
+  "notes": zod.string().max(createSpaceReservationResponseOneNotesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "canEdit": zod.boolean(),
+  "detailsVisible": zod.boolean()
+}))
+
+
+export const UpdateSpaceReservationParams = zod.object({
+  "reservationId": zod.coerce.string().uuid()
+})
+
+export const UpdateSpaceReservationHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const updateSpaceReservationBodyExpectedRevisionMin = 0;
+
+export const updateSpaceReservationBodyTitleMax = 200;
+
+export const updateSpaceReservationBodySpaceKindsMax = 2;
+
+export const updateSpaceReservationBodyProfessionalFamilyMax = 200;
+
+export const updateSpaceReservationBodyGroupLabelMax = 160;
+
+export const updateSpaceReservationBodyNotesMax = 3000;
+
+
+
+export const UpdateSpaceReservationBody = zod.object({
+  "expectedRevision": zod.number().int().min(updateSpaceReservationBodyExpectedRevisionMin),
+  "title": zod.string().min(1).max(updateSpaceReservationBodyTitleMax),
+  "spaceKinds": zod.array(zod.enum(['ateca', 'fablab'])).min(1).max(updateSpaceReservationBodySpaceKindsMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "professionalFamily": zod.string().min(1).max(updateSpaceReservationBodyProfessionalFamilyMax),
+  "groupLabel": zod.string().max(updateSpaceReservationBodyGroupLabelMax),
+  "status": zod.enum(['reservada', 'realizado', 'cancelada']),
+  "activityId": zod.string().uuid().nullable(),
+  "notes": zod.string().max(updateSpaceReservationBodyNotesMax)
+})
+
+export const updateSpaceReservationResponseOneExpectedRevisionMin = 0;
+
+export const updateSpaceReservationResponseOneTitleMax = 200;
+
+export const updateSpaceReservationResponseOneSpaceKindsMax = 2;
+
+export const updateSpaceReservationResponseOneProfessionalFamilyMax = 200;
+
+export const updateSpaceReservationResponseOneGroupLabelMax = 160;
+
+export const updateSpaceReservationResponseOneNotesMax = 3000;
+
+
+
+export const UpdateSpaceReservationResponse = zod.object({
+  "expectedRevision": zod.number().int().min(updateSpaceReservationResponseOneExpectedRevisionMin),
+  "title": zod.string().min(1).max(updateSpaceReservationResponseOneTitleMax),
+  "spaceKinds": zod.array(zod.enum(['ateca', 'fablab'])).min(1).max(updateSpaceReservationResponseOneSpaceKindsMax),
+  "startsAt": zod.coerce.date(),
+  "endsAt": zod.coerce.date(),
+  "professionalFamily": zod.string().min(1).max(updateSpaceReservationResponseOneProfessionalFamilyMax),
+  "groupLabel": zod.string().max(updateSpaceReservationResponseOneGroupLabelMax),
+  "status": zod.enum(['reservada', 'realizado', 'cancelada']),
+  "activityId": zod.string().uuid().nullable(),
+  "notes": zod.string().max(updateSpaceReservationResponseOneNotesMax)
+}).and(zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "canEdit": zod.boolean(),
+  "detailsVisible": zod.boolean()
+}))
+
+
+export const GetSpaceRecordVersionsParams = zod.object({
+  "entityId": zod.coerce.string().uuid()
+})
+
+export const GetSpaceRecordVersionsResponseItem = zod.object({
+  "id": zod.string(),
+  "revision": zod.number().int(),
+  "createdAt": zod.coerce.date(),
+  "summary": zod.string()
+})
+export const GetSpaceRecordVersionsResponse = zod.array(GetSpaceRecordVersionsResponseItem)
+
+
 export const GetMailOverviewResponse = zod.object({
   "yearLabel": zod.string(),
   "canManage": zod.boolean(),
@@ -132,6 +490,7 @@ export const replyToMailThreadBodyBodyTextMax = 20000;
 export const replyToMailThreadBodyAttachmentDocumentIdsMax = 10;
 
 
+
 export const ReplyToMailThreadBody = zod.object({
   "bodyText": zod.string().min(1).max(replyToMailThreadBodyBodyTextMax),
   "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
@@ -155,6 +514,7 @@ export const createMailContactBodyInstitutionMax = 200;
 
 export const createMailContactBodyAuthorizationNoteMin = 4;
 export const createMailContactBodyAuthorizationNoteMax = 1000;
+
 
 
 export const CreateMailContactBody = zod.object({
@@ -201,6 +561,7 @@ export const updateMailContactBodyAuthorizationNoteMin = 4;
 export const updateMailContactBodyAuthorizationNoteMax = 1000;
 
 
+
 export const UpdateMailContactBody = zod.object({
   "email": zod.string().email().max(updateMailContactBodyEmailMax),
   "displayName": zod.string().min(1).max(updateMailContactBodyDisplayNameMax),
@@ -236,6 +597,7 @@ export const createMailTemplateBodySubjectMax = 250;
 export const createMailTemplateBodyBodyMax = 20000;
 
 
+
 export const CreateMailTemplateBody = zod.object({
   "name": zod.string().min(1).max(createMailTemplateBodyNameMax),
   "subject": zod.string().min(1).max(createMailTemplateBodySubjectMax),
@@ -268,6 +630,7 @@ export const updateMailTemplateBodySubjectMax = 250;
 export const updateMailTemplateBodyBodyMax = 20000;
 
 
+
 export const UpdateMailTemplateBody = zod.object({
   "name": zod.string().min(1).max(updateMailTemplateBodyNameMax),
   "subject": zod.string().min(1).max(updateMailTemplateBodySubjectMax),
@@ -296,6 +659,7 @@ export const createMailDraftBodySubjectMax = 250;
 export const createMailDraftBodyBodyTextMax = 20000;
 
 export const createMailDraftBodyAttachmentDocumentIdsMax = 10;
+
 
 
 export const CreateMailDraftBody = zod.object({
@@ -363,6 +727,7 @@ export const updateMailDraftBodyBodyTextMax = 20000;
 export const updateMailDraftBodyAttachmentDocumentIdsMax = 10;
 
 
+
 export const UpdateMailDraftBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "subject": zod.string().min(1).max(updateMailDraftBodySubjectMax),
@@ -392,6 +757,8 @@ export const QueueMailDraftParams = zod.object({
 export const QueueMailDraftHeader = zod.object({
   "X-CSRF-Token": zod.string()
 })
+
+
 
 
 export const QueueMailDraftBody = zod.object({
@@ -566,6 +933,7 @@ export const UpdateAdminMailSettingsHeader = zod.object({
 export const updateAdminMailSettingsBodyReplyToMax = 250;
 
 
+
 export const UpdateAdminMailSettingsBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "sendEnabled": zod.boolean(),
@@ -646,6 +1014,7 @@ export const updateAdminAIProviderSettingsBodyMinutesModelMax = 160;
 export const updateAdminAIProviderSettingsBodyApiKeyMax = 4096;
 
 
+
 export const UpdateAdminAIProviderSettingsBody = zod.object({
   "expectedRevision": zod.number().int().min(updateAdminAIProviderSettingsBodyExpectedRevisionMin),
   "provider": zod.enum(['disabled', 'local', 'external_authorized']),
@@ -668,12 +1037,38 @@ export const UpdateAdminAIProviderSettingsResponse = zod.object({
   "updatedAt": zod.coerce.date().nullable()
 })
 
+
 /**
  * Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados.
  */
 export const CheckAdminAIProviderHeader = zod.object({
   "X-CSRF-Token": zod.string()
 })
+
+export const checkAdminAIProviderBodyExpectedRevisionMin = 0;
+
+
+
+export const CheckAdminAIProviderBody = zod.object({
+  "expectedRevision": zod.number().int().min(checkAdminAIProviderBodyExpectedRevisionMin),
+  "syntheticSampleConfirmed": zod.literal(true)
+})
+
+export const CheckAdminAIProviderResponse = zod.object({
+  "revision": zod.number().int(),
+  "checkedAt": zod.coerce.date(),
+  "transcription": zod.object({
+  "status": zod.enum(['ok', 'authorization_error', 'model_error', 'format_error', 'connection_error', 'provider_error']),
+  "message": zod.string()
+}),
+  "minutes": zod.object({
+  "status": zod.enum(['ok', 'authorization_error', 'model_error', 'format_error', 'connection_error', 'provider_error']),
+  "message": zod.string()
+}),
+  "qualityAssessed": zod.literal(false)
+})
+
+
 /**
  * Verifica firma Svix y evita reintentos y eventos duplicados
  */
@@ -716,6 +1111,7 @@ export const getCiclopeResponseMeetingsItemDataValidatorUserIdsMax = 20;
 export const getCiclopeResponseMeetingsItemDataAttachmentIdsMax = 30;
 
 export const getCiclopeResponseMeetingsItemDataExternalSenderMax = 500;
+
 
 
 export const GetCiclopeResponse = zod.object({
@@ -818,6 +1214,7 @@ export const GetCiclopeResponse = zod.object({
 export const updateCiclopePolicyBodyExpectedRevisionMin = 0;
 
 
+
 export const UpdateCiclopePolicyBody = zod.object({
   "expectedRevision": zod.number().int().min(updateCiclopePolicyBodyExpectedRevisionMin),
   "requireInstitutionalApproval": zod.boolean(),
@@ -856,6 +1253,7 @@ export const createCiclopeMeetingBodyValidatorUserIdsMax = 20;
 export const createCiclopeMeetingBodyAttachmentIdsMax = 30;
 
 export const createCiclopeMeetingBodyExternalSenderMax = 500;
+
 
 
 export const CreateCiclopeMeetingBody = zod.object({
@@ -934,6 +1332,7 @@ export const createCiclopeMeetingResponseDataValidatorUserIdsMax = 20;
 export const createCiclopeMeetingResponseDataAttachmentIdsMax = 30;
 
 export const createCiclopeMeetingResponseDataExternalSenderMax = 500;
+
 
 
 export const CreateCiclopeMeetingResponse = zod.object({
@@ -1033,6 +1432,7 @@ export const updateCiclopeMeetingBodyAttachmentIdsMax = 30;
 export const updateCiclopeMeetingBodyExternalSenderMax = 500;
 
 
+
 export const UpdateCiclopeMeetingBody = zod.object({
   "expectedRevision": zod.number().int().min(updateCiclopeMeetingBodyExpectedRevisionMin),
   "kind": zod.enum(['ciclope', 'red_c1']),
@@ -1111,6 +1511,7 @@ export const updateCiclopeMeetingResponseDataAttachmentIdsMax = 30;
 export const updateCiclopeMeetingResponseDataExternalSenderMax = 500;
 
 
+
 export const UpdateCiclopeMeetingResponse = zod.object({
   "id": zod.string(),
   "revision": zod.number().int(),
@@ -1178,6 +1579,8 @@ export const TranscribeCiclopeMeetingAudioParams = zod.object({
 })
 
 
+
+
 export const TranscribeCiclopeMeetingAudioHeader = zod.object({
   "X-CSRF-Token": zod.string(),
   "X-Recording-Consent": zod.enum(['true']),
@@ -1215,6 +1618,7 @@ export const transcribeCiclopeMeetingAudioResponseDataValidatorUserIdsMax = 20;
 export const transcribeCiclopeMeetingAudioResponseDataAttachmentIdsMax = 30;
 
 export const transcribeCiclopeMeetingAudioResponseDataExternalSenderMax = 500;
+
 
 
 export const TranscribeCiclopeMeetingAudioResponse = zod.object({
@@ -1287,6 +1691,7 @@ export const ActCiclopeMeetingParams = zod.object({
 export const actCiclopeMeetingBodyTextMax = 5000;
 
 
+
 export const ActCiclopeMeetingBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "action": zod.enum(['solicitar_refrendo', 'aprobar_convocatoria', 'convocar', 'celebrar', 'preparar_acta', 'validar_acta', 'cancelar', 'aportar']),
@@ -1329,6 +1734,7 @@ export const listCiclopeVersionsResponseContentDataValidatorUserIdsMax = 20;
 export const listCiclopeVersionsResponseContentDataAttachmentIdsMax = 30;
 
 export const listCiclopeVersionsResponseContentDataExternalSenderMax = 500;
+
 
 
 export const ListCiclopeVersionsResponseItem = zod.object({
@@ -1398,6 +1804,9 @@ export const ListCiclopeVersionsResponseItem = zod.object({
   "createdBy": zod.string()
 })
 export const ListCiclopeVersionsResponse = zod.array(ListCiclopeVersionsResponseItem)
+
+
+
 
 
 export const ExportCiclopeMeetingParams = zod.object({
@@ -1479,6 +1888,7 @@ export const InitializeSetupResponse = zod.object({
 export const loginBodyPasswordMax = 1024;
 
 
+
 export const LoginBody = zod.object({
   "email": zod.string().email(),
   "password": zod.string().min(1).max(loginBodyPasswordMax)
@@ -1504,6 +1914,7 @@ export const LoginResponse = zod.object({
 export const requestPasswordResetBodyEmailMax = 254;
 
 
+
 export const RequestPasswordResetBody = zod.object({
   "email": zod.string().email().max(requestPasswordResetBodyEmailMax)
 })
@@ -1521,6 +1932,7 @@ export const completePasswordResetBodyTokenMax = 200;
 
 export const completePasswordResetBodyPasswordMin = 12;
 export const completePasswordResetBodyPasswordMax = 1024;
+
 
 
 export const CompletePasswordResetBody = zod.object({
@@ -1544,6 +1956,7 @@ export const changePasswordBodyCurrentPasswordMax = 1024;
 
 export const changePasswordBodyPasswordMin = 12;
 export const changePasswordBodyPasswordMax = 1024;
+
 
 
 export const ChangePasswordBody = zod.object({
@@ -1622,6 +2035,7 @@ export const createUserBodyTemporaryPasswordMax = 1024;
 export const createUserBodyProfessionalFamilyMax = 120;
 
 
+
 export const CreateUserBody = zod.object({
   "email": zod.string().email(),
   "name": zod.string().min(1).max(createUserBodyNameMax),
@@ -1649,6 +2063,7 @@ export const UpdateUserFamilyParams = zod.object({
 })
 
 export const updateUserFamilyBodyProfessionalFamilyMax = 160;
+
 
 
 export const UpdateUserFamilyBody = zod.object({
@@ -1863,6 +2278,7 @@ export const getCurrentPicPlanResponseContentCalendarCiclopeMeetingDatesItemRegE
 export const getCurrentPicPlanResponseContentCalendarNotesMax = 1000;
 
 
+
 export const GetCurrentPicPlanResponse = zod.object({
   "id": zod.string().uuid(),
   "revision": zod.number().int(),
@@ -1991,6 +2407,7 @@ export const createCurrentPicPlanResponseContentCiclopeMembersItemNameMax = 200;
 export const createCurrentPicPlanResponseContentCalendarRedMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createCurrentPicPlanResponseContentCalendarCiclopeMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const createCurrentPicPlanResponseContentCalendarNotesMax = 1000;
+
 
 
 export const CreateCurrentPicPlanResponse = zod.object({
@@ -2128,6 +2545,7 @@ export const savePicPlanBodyContentCalendarCiclopeMeetingDatesItemRegExp = new R
 export const savePicPlanBodyContentCalendarNotesMax = 1000;
 
 
+
 export const SavePicPlanBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "content": zod.object({
@@ -2245,6 +2663,7 @@ export const savePicPlanResponseContentCiclopeMembersItemNameMax = 200;
 export const savePicPlanResponseContentCalendarRedMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const savePicPlanResponseContentCalendarCiclopeMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const savePicPlanResponseContentCalendarNotesMax = 1000;
+
 
 
 export const SavePicPlanResponse = zod.object({
@@ -2368,6 +2787,7 @@ export const createPicSnapshotBodyReasonMin = 4;
 export const createPicSnapshotBodyReasonMax = 400;
 
 
+
 export const CreatePicSnapshotBody = zod.object({
   "reason": zod.string().min(createPicSnapshotBodyReasonMin).max(createPicSnapshotBodyReasonMax)
 })
@@ -2441,6 +2861,7 @@ export const getPicSnapshotResponseTwoContentCiclopeMembersItemNameMax = 200;
 export const getPicSnapshotResponseTwoContentCalendarRedMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getPicSnapshotResponseTwoContentCalendarCiclopeMeetingDatesItemRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
 export const getPicSnapshotResponseTwoContentCalendarNotesMax = 1000;
+
 
 
 export const GetPicSnapshotResponse = zod.object({
@@ -2574,6 +2995,7 @@ export const recordPicSubmissionBodyEvidenceFileNameMax = 255;
 export const recordPicSubmissionBodyEvidenceFileBase64Max = 1400000;
 
 
+
 export const RecordPicSubmissionBody = zod.object({
   "snapshotId": zod.string().uuid(),
   "submissionDate": zod.string().regex(recordPicSubmissionBodySubmissionDateRegExp),
@@ -2703,6 +3125,7 @@ export const listPicFollowupsResponseReportsItemContentCertificationFinalMemoryO
 export const listPicFollowupsResponseReportsItemContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const listPicFollowupsResponseReportsItemContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
 
 
 export const ListPicFollowupsResponse = zod.object({
@@ -2849,6 +3272,7 @@ export const savePicFollowupBodyContentCertificationCertificationRequestedObserv
 export const savePicFollowupBodyContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
 
 
+
 export const SavePicFollowupBody = zod.object({
   "expectedRevision": zod.number().int().min(savePicFollowupBodyExpectedRevisionMin),
   "content": zod.object({
@@ -2952,6 +3376,7 @@ export const savePicFollowupResponseContentCertificationFinalMemoryOnTimeObserva
 export const savePicFollowupResponseContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const savePicFollowupResponseContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
 
 
 export const SavePicFollowupResponse = zod.object({
@@ -3108,6 +3533,7 @@ export const getPicFollowupResponseSnapshotsItemContentCertificationFinalMemoryO
 export const getPicFollowupResponseSnapshotsItemContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const getPicFollowupResponseSnapshotsItemContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
 
 
 export const GetPicFollowupResponse = zod.object({
@@ -3287,6 +3713,7 @@ export const createPicFollowupSnapshotBodyReasonMin = 4;
 export const createPicFollowupSnapshotBodyReasonMax = 400;
 
 
+
 export const CreatePicFollowupSnapshotBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "reason": zod.string().min(createPicFollowupSnapshotBodyReasonMin).max(createPicFollowupSnapshotBodyReasonMax)
@@ -3329,6 +3756,7 @@ export const createPicFollowupSnapshotResponseContentCertificationFinalMemoryOnT
 export const createPicFollowupSnapshotResponseContentCertificationCertificationRequestedObservationMax = 3000;
 
 export const createPicFollowupSnapshotResponseContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
 
 
 export const CreatePicFollowupSnapshotResponse = zod.object({
@@ -3450,6 +3878,7 @@ export const recordPicFollowupDeliveryBodyConfirmationMin = 15;
 export const recordPicFollowupDeliveryBodyConfirmationMax = 500;
 
 
+
 export const RecordPicFollowupDeliveryBody = zod.object({
   "snapshotId": zod.string().uuid(),
   "deliveryDate": zod.string().regex(recordPicFollowupDeliveryBodyDeliveryDateRegExp),
@@ -3561,6 +3990,7 @@ export const createActivityBodySourceLabelMax = 200;
 export const createActivityBodyIndicatorCodesItemMax = 80;
 
 
+
 export const CreateActivityBody = zod.object({
   "title": zod.string().min(1).max(createActivityBodyTitleMax),
   "description": zod.string().min(1).max(createActivityBodyDescriptionMax),
@@ -3644,6 +4074,7 @@ export const updateActivityBodyProfessionalFamilyMax = 120;
 export const updateActivityBodyIndicatorCodesItemMax = 80;
 
 
+
 export const UpdateActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "title": zod.string().min(1).max(updateActivityBodyTitleMax).optional(),
@@ -3684,6 +4115,8 @@ export const ConfirmActivityParams = zod.object({
 })
 
 
+
+
 export const ConfirmActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1),
   "informationStatus": zod.enum(['confirmada', 'sin_informacion', 'no_realizada'])
@@ -3719,6 +4152,8 @@ export const ValidateActivityParams = zod.object({
 })
 
 
+
+
 export const ValidateActivityBody = zod.object({
   "expectedRevision": zod.number().int().min(1)
 })
@@ -3751,6 +4186,8 @@ export const ValidateActivityResponse = zod.object({
 export const DiscardActivityParams = zod.object({
   "activityId": zod.coerce.string().uuid()
 })
+
+
 
 
 export const DiscardActivityBody = zod.object({
@@ -3813,6 +4250,7 @@ export const uploadDocumentQueryProfessionalFamilyMax = 120;
 export const uploadDocumentQueryIndicatorCodeMax = 80;
 
 export const uploadDocumentQueryFileNameMax = 255;
+
 
 
 export const UploadDocumentQueryParams = zod.object({
@@ -3894,6 +4332,7 @@ export const AddDocumentVersionParams = zod.object({
 export const addDocumentVersionHeaderXFileNameMax = 255;
 
 
+
 export const AddDocumentVersionHeader = zod.object({
   "X-File-Name": zod.string().max(addDocumentVersionHeaderXFileNameMax).optional()
 })
@@ -3923,10 +4362,13 @@ export const AddDocumentVersionResponse = zod.object({
  */
 
 
+
 export const RescanDocumentVersionParams = zod.object({
   "documentId": zod.coerce.string().uuid(),
   "version": zod.coerce.number().int().min(1)
 })
+
+
 
 
 export const RescanDocumentVersionBody = zod.object({
@@ -3959,6 +4401,8 @@ export const RescanDocumentVersionResponse = zod.object({
 export const ApproveDocumentParams = zod.object({
   "documentId": zod.coerce.string().uuid()
 })
+
+
 
 
 export const ApproveDocumentBody = zod.object({
@@ -4014,6 +4458,7 @@ export const linkDocumentEvidenceBodyIndicatorCodeMax = 80;
 export const linkDocumentEvidenceBodyNoteMax = 500;
 
 
+
 export const LinkDocumentEvidenceBody = zod.object({
   "activityId": zod.string().uuid(),
   "indicatorCode": zod.string().max(linkDocumentEvidenceBodyIndicatorCodeMax).nullish(),
@@ -4028,6 +4473,7 @@ export const LinkDocumentEvidenceResponse = zod.object({
 /**
  * @summary Download an authorized document version as an attachment
  */
+
 
 
 export const DownloadDocumentVersionParams = zod.object({
@@ -4068,6 +4514,7 @@ export const createInformationRequestBodyRequestedFieldsItemMax = 80;
 export const createInformationRequestBodyReasonMax = 1000;
 
 
+
 export const CreateInformationRequestBody = zod.object({
   "recipientUserId": zod.string().uuid(),
   "subjectType": zod.enum(['activity', 'project']),
@@ -4104,6 +4551,7 @@ export const RespondToInformationRequestParams = zod.object({
 export const respondToInformationRequestBodyCommentMax = 1000;
 
 
+
 export const RespondToInformationRequestBody = zod.object({
   "responseStatus": zod.enum(['respondida', 'sin_informacion', 'no_realizada']),
   "answers": zod.record(zod.string(), zod.unknown()),
@@ -4133,6 +4581,8 @@ export const RespondToInformationRequestResponse = zod.object({
 export const ValidateInformationResponseParams = zod.object({
   "requestId": zod.coerce.string().uuid()
 })
+
+
 
 
 export const ValidateInformationResponseBody = zod.object({
@@ -4195,6 +4645,7 @@ export const ListCurrentIndicatorsResponse = zod.array(ListCurrentIndicatorsResp
 export const createIndicatorObservationPathIndicatorCodeMax = 80;
 
 
+
 export const CreateIndicatorObservationParams = zod.object({
   "indicatorCode": zod.coerce.string().max(createIndicatorObservationPathIndicatorCodeMax)
 })
@@ -4204,6 +4655,7 @@ export const createIndicatorObservationBodyPeriodMax = 40;
 export const createIndicatorObservationBodyNumeratorMin = 0;
 
 export const createIndicatorObservationBodyDenominatorMin = 0;
+
 
 
 export const CreateIndicatorObservationBody = zod.object({
@@ -4244,6 +4696,8 @@ export const ListSchoolYearsResponse = zod.array(ListSchoolYearsResponseItem)
 export const openSchoolYearBodyLabelRegExp = new RegExp('^\\d{4}-\\d{4}$');
 
 export const openSchoolYearBodyAssignmentsItemProfessionalFamilyMax = 200;
+
+
 
 
 export const OpenSchoolYearBody = zod.object({
@@ -4297,6 +4751,7 @@ export const CloseSchoolYearParams = zod.object({
 
 export const closeSchoolYearBodyReasonMin = 10;
 export const closeSchoolYearBodyReasonMax = 2000;
+
 
 
 export const CloseSchoolYearBody = zod.object({
@@ -4377,25 +4832,3 @@ export const ExportSchoolYearOriginalsParams = zod.object({
 })
 
 export const ExportSchoolYearOriginalsResponse = zod.unknown()
-
-
-export const checkAdminAIProviderBodyExpectedRevisionMin = 0;
-
-export const CheckAdminAIProviderBody = zod.object({
-  "expectedRevision": zod.number().int().min(checkAdminAIProviderBodyExpectedRevisionMin),
-  "syntheticSampleConfirmed": zod.literal(true)
-})
-
-export const CheckAdminAIProviderResponse = zod.object({
-  "revision": zod.number().int(),
-  "checkedAt": zod.coerce.date(),
-  "transcription": zod.object({
-  "status": zod.enum(['ok', 'authorization_error', 'model_error', 'format_error', 'connection_error', 'provider_error']),
-  "message": zod.string()
-}),
-  "minutes": zod.object({
-  "status": zod.enum(['ok', 'authorization_error', 'model_error', 'format_error', 'connection_error', 'provider_error']),
-  "message": zod.string()
-}),
-  "qualityAssessed": zod.literal(false)
-})

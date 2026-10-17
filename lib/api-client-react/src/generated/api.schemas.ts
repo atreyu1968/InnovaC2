@@ -5,6 +5,121 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface LearningSpaceInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  name: string;
+  /** @maxLength 3000 */
+  purpose: string;
+  /** @maxLength 1500 */
+  referenceSchedule: string;
+  /** @maxLength 1500 */
+  responsibles: string;
+  /** @maxLength 4000 */
+  resources: string;
+  /** @maxLength 3000 */
+  services: string;
+}
+
+export type LearningSpaceKind = typeof LearningSpaceKind[keyof typeof LearningSpaceKind];
+
+
+export const LearningSpaceKind = {
+  ateca: 'ateca',
+  fablab: 'fablab',
+} as const;
+
+export type LearningSpace = LearningSpaceInput & {
+  id: string;
+  kind: LearningSpaceKind;
+  revision: number;
+};
+
+export type SpaceReservationInputSpaceKindsItem = typeof SpaceReservationInputSpaceKindsItem[keyof typeof SpaceReservationInputSpaceKindsItem];
+
+
+export const SpaceReservationInputSpaceKindsItem = {
+  ateca: 'ateca',
+  fablab: 'fablab',
+} as const;
+
+export type SpaceReservationInputStatus = typeof SpaceReservationInputStatus[keyof typeof SpaceReservationInputStatus];
+
+
+export const SpaceReservationInputStatus = {
+  reservada: 'reservada',
+  realizado: 'realizado',
+  cancelada: 'cancelada',
+} as const;
+
+export interface SpaceReservationInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+  /**
+     * @minItems 1
+     * @maxItems 2
+     */
+  spaceKinds: SpaceReservationInputSpaceKindsItem[];
+  startsAt: string;
+  endsAt: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  professionalFamily: string;
+  /** @maxLength 160 */
+  groupLabel: string;
+  status: SpaceReservationInputStatus;
+  /** @nullable */
+  activityId: string | null;
+  /** @maxLength 3000 */
+  notes: string;
+}
+
+export type SpaceReservation = SpaceReservationInput & {
+  id: string;
+  revision: number;
+  canEdit: boolean;
+  detailsVisible: boolean;
+};
+
+export interface SpaceActivityOption {
+  id: string;
+  title: string;
+  professionalFamily: string;
+  /** @nullable */
+  activityDate: string | null;
+  status: string;
+}
+
+export interface LearningSpacesOverview {
+  schoolYearId: string;
+  schoolYear: string;
+  canManage: boolean;
+  /** @nullable */
+  actorFamily: string | null;
+  families: string[];
+  spaces: LearningSpace[];
+  reservations: SpaceReservation[];
+  activities: SpaceActivityOption[];
+}
+
+export interface SpaceRecordVersion {
+  id: string;
+  revision: number;
+  createdAt: string;
+  summary: string;
+}
+
 export interface CiclopePerson {
   id: string;
   name: string;
