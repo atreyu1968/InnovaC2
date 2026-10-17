@@ -100,6 +100,22 @@ restauración planificada.
 
 ## Desarrollo y pruebas
 
+La recuperación de contraseña y su aviso se comprueban con:
+
+```bash
+pnpm run test:password-reset
+```
+
+Requiere las herramientas de PostgreSQL 16 o posterior (`initdb`, `pg_ctl`,
+`createdb`) en `PATH`, Node.js y pnpm; no se debe ejecutar como root.
+El comando crea un clúster PostgreSQL desechable con un socket privado, sin
+escuchar en la red, aplica las migraciones y construye la API. Genera su propio
+secreto de sesión y elimina el clúster al terminar, también si falla una prueba.
+Ignora los valores externos de `DATABASE_URL` y `TEST_DATABASE_URL`: nunca
+recurre a la base de la aplicación. No necesita Docker ni servicios de correo
+reales. Comprueba tanto la entrega del aviso como el fallo simulado del envío,
+sin deshacer el cambio de contraseña.
+
 El proyecto usa pnpm workspaces. Para las pruebas, prepara una base PostgreSQL
 desechable, separada de `DATABASE_URL`, y exporta `TEST_DATABASE_URL` con su
 cadena de conexión. Las pruebas rechazan usar la misma cadena que la aplicación:
