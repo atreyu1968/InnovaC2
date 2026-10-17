@@ -14,6 +14,7 @@ import schoolYearsRouter from "./school-years";
 import ciclopeRouter from "./ciclope";
 import mailRouter from "./mail";
 import followupsRouter from "./followups";
+import aiProviderRouter from "./ai-provider";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(usersRouter);
 router.use(catalogRouter);
 router.use(plansRouter);
 router.use(followupsRouter);
+router.use(aiProviderRouter);
 
 export default router;

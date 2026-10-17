@@ -106,6 +106,13 @@
       "when": 1792258460049,
       "tag": "0012_magenta_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792258460050,
+      "tag": "0013_ai_provider_settings",
+      "breakpoints": true
     }
   ]
 }

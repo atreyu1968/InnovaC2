@@ -317,6 +317,30 @@ paths:
           content:
             application/json:
               schema: {$ref: "#/components/schemas/MailAdminSettings"}
+  /admin/ai/provider:
+    get:
+      operationId: getAdminAIProviderSettings
+      responses:
+        "200":
+          description: Configuración del proveedor IA sin devolver credenciales
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AdminAIProviderSettings"}
+    put:
+      operationId: updateAdminAIProviderSettings
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/UpdateAdminAIProviderSettings"}
+      responses:
+        "200":
+          description: Configuración guardada; la clave nunca se devuelve
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/AdminAIProviderSettings"}
   /webhooks/resend:
     post:
       operationId: receiveResendWebhook
@@ -389,6 +413,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CiclopeMeeting"
+  /ciclope/meetings/{meetingId}/transcription:
+    parameters:
+      - in: path
+        name: meetingId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: transcribeCiclopeMeetingAudio
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+        - in: header
+          name: X-Recording-Consent
+          required: true
+          schema: {type: string, enum: ["true"]}
+        - in: header
+          name: X-Recording-Source
+          required: true
+          schema: {type: string, enum: [in_person, online, upload]}
+        - in: header
+          name: X-Replace-Draft
+          required: false
+          schema: {type: string, enum: ["true"]}
+      requestBody:
+        required: true
+        content:
+          audio/webm:
+            schema: {type: string, format: binary}
+          audio/wav:
+            schema: {type: string, format: binary}
+          audio/mpeg:
+            schema: {type: string, format: binary}
+          audio/mp4:
+            schema: {type: string, format: binary}
+          audio/ogg:
+            schema: {type: string, format: binary}
+          application/octet-stream:
+            schema: {type: string, format: binary}
+      responses:
+        "200":
+          description: Transcripción conservada y acta en borrador; el audio original se descarta
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/CiclopeMeeting"}
   /ciclope/meetings/{meetingId}/action:
     parameters:
       - in: path
@@ -2321,6 +2388,15 @@ components:
         contributions:
           type: array
           items: {type: string}
+        transcription: {$ref: "#/components/schemas/CiclopeTranscription"}
+    CiclopeTranscription:
+      type: object
+      required: [text, source, consentedAt, completedAt]
+      properties:
+        text: {type: string}
+        source: {type: string, enum: [in_person, online, upload]}
+        consentedAt: {type: string, format: date-time}
+        completedAt: {type: string, format: date-time}
     CiclopeTask:
       type: object
       required: [id, meetingId, sourceVersionId, title, responsibleUserId, dueDate, remindersEnabled, completedAt]
@@ -2432,6 +2508,30 @@ components:
         domainRecords:
           type: array
           items: {$ref: "#/components/schemas/MailDomainRecord"}
+    AdminAIProviderSettings:
+      type: object
+      required: [provider, baseUrl, transcriptionModel, minutesModel, apiKeyConfigured, externalAuthorizedAt, revision, updatedAt]
+      properties:
+        provider: {type: string, enum: [disabled, local, external_authorized]}
+        baseUrl: {type: string, nullable: true}
+        transcriptionModel: {type: string, nullable: true}
+        minutesModel: {type: string, nullable: true}
+        apiKeyConfigured: {type: boolean}
+        externalAuthorizedAt: {type: string, format: date-time, nullable: true}
+        revision: {type: integer}
+        updatedAt: {type: string, format: date-time, nullable: true}
+    UpdateAdminAIProviderSettings:
+      type: object
+      required: [expectedRevision, provider, baseUrl, transcriptionModel, minutesModel, clearApiKey, externalAuthorizationConfirmed]
+      properties:
+        expectedRevision: {type: integer, minimum: 0}
+        provider: {type: string, enum: [disabled, local, external_authorized]}
+        baseUrl: {type: string, maxLength: 2048}
+        transcriptionModel: {type: string, maxLength: 160}
+        minutesModel: {type: string, maxLength: 160}
+        apiKey: {type: string, maxLength: 4096}
+        clearApiKey: {type: boolean}
+        externalAuthorizationConfirmed: {type: boolean}
     MailSettingsInput:
       type: object
       required: [expectedRevision, sendEnabled, senderAlias, replyTo]

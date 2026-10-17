@@ -4,6 +4,7 @@ import {
   getGetAdminMailSettingsQueryKey, useGetAdminMailSettings,
   useUpdateAdminMailSettings, useVerifyAdminMailProvider,
 } from "@workspace/api-client-react";
+import { AdminAIProviderConfiguration } from "./AdminAIProviderConfiguration";
 
 type SenderAlias = "innovacion" | "ciclope" | "proyectos";
 function describeError(error: unknown) {
@@ -52,8 +53,8 @@ export function AdminConfigurationPage() {
     });
   }
 
-  if (status.isLoading) return <section className="panel p-8">Cargando configuración técnica…</section>;
-  if (!status.data || status.isError) return <section className="panel p-8"><h1 className="text-xl font-bold">Configuración técnica</h1><p className="mt-2 text-sm">No se pudo obtener la configuración. {describeError(status.error)}</p><button className="quiet-action mt-4" onClick={() => status.refetch()}>Reintentar</button></section>;
+  if (status.isLoading) return <main className="fade-up space-y-5"><section className="panel p-8">Cargando configuración de correo…</section><AdminAIProviderConfiguration /></main>;
+  if (!status.data || status.isError) return <main className="fade-up space-y-5"><section className="panel p-8"><h1 className="text-xl font-bold">Configuración técnica</h1><p className="mt-2 text-sm">No se pudo obtener la configuración de correo. {describeError(status.error)}</p><button className="quiet-action mt-4" onClick={() => status.refetch()}>Reintentar</button></section><AdminAIProviderConfiguration /></main>;
   const provider = status.data.provider;
   const records = status.data.domainRecords ?? [];
   const dns = status.data.dns;
@@ -92,5 +93,6 @@ export function AdminConfigurationPage() {
       <div className="flex flex-wrap items-center gap-3"><button className="primary-action" disabled={save.isPending}><Save size={15} />{save.isPending ? "Guardando…" : "Guardar configuración"}</button><span className="text-xs text-slate-500">Revisión {status.data.settings.revision} · aprobación obligatoria</span></div>
     </form>
      <section className="rounded-xl border border-slate-200 bg-white p-4 text-xs leading-relaxed text-slate-600"><strong>Para una instalación independiente:</strong> configura las variables privadas RESEND_API_KEY, RESEND_WEBHOOK_SECRET, EMAIL_ENABLED y EMAIL_ACTIVATION_CONFIRMED en el almacén seguro del servidor Ubuntu; no se muestran ni se guardan en esta pantalla. La verificación DNS es de solo lectura. La bandeja local funciona sin proveedor.</section>
+    <AdminAIProviderConfiguration />
   </main>;
 }

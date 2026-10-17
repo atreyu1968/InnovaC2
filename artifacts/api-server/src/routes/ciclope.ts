@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import { and, eq, desc, inArray, sql } from "drizzle-orm";
-import { Router, type RequestHandler, type ErrorRequestHandler } from "express";
+import { raw, Router, type RequestHandler, type ErrorRequestHandler } from "express";
 import {
   db, auditLogsTable, schoolYearsTable, schoolYearAssignmentsTable, usersTable, documentsTable, documentVersionsTable,
   ciclopePoliciesTable as policies, ciclopeMeetingsTable as meetings, ciclopeVersionsTable as versions,
@@ -16,6 +16,7 @@ import { requireAuth, requireCsrf, type AuthContext } from "../lib/auth";
 import { loadCaptureActor, loadActiveSchoolYear, type CaptureActor } from "../lib/capture-scope";
 import { exportCiclopeDocument } from "../lib/ciclope-exports";
 import { resendFromAddress } from "../lib/mail-provider";
+import { AIProviderError, draftMeetingMinutes, transcribeMeetingAudio } from "../lib/ai-provider";
 
 type ParsedInput = ReturnType<typeof CreateCiclopeMeetingBody.parse>;
 type Input = Omit<ParsedInput, "startsAt" | "endsAt" | "participants" | "agreements"> & {
@@ -29,6 +30,12 @@ type Scope = { actor: CaptureActor; year: { id: string; label: string }; manage:
 type Content = {
   data: Input; approvalRequested: boolean; approvedPolicyRevision: number | null;
   contributions: string[]; validatedBy?: string; validatedAt?: string; announcedAt?: string;
+  transcription?: {
+    text: string;
+    source: "in_person" | "online" | "upload";
+    consentedAt: string;
+    completedAt: string;
+  };
 };
 class Fault extends Error { constructor(public status: number, message: string) { super(message); } }
 const fail = (status: number, message: string): never => { throw new Fault(status, message); };
@@ -205,6 +212,88 @@ router.put("/ciclope/meetings/:meetingId", requireCsrf, async (req, res) => {
   });
   res.json(dto(saved));
 });
+router.post(
+  "/ciclope/meetings/:meetingId/transcription",
+  requireCsrf,
+  raw({ type: ["audio/*", "application/octet-stream"], limit: "50mb" }),
+  async (req, res) => {
+    const s = res.locals.ciclope as Scope;
+    if (!s.manage) return fail(403, "Solo C2 y administración técnica pueden preparar el acta.");
+    if (req.get("x-recording-consent") !== "true") return fail(400, "Confirma el consentimiento antes de enviar la grabación.");
+    const source = req.get("x-recording-source");
+    if (!["in_person", "online", "upload"].includes(source ?? "")) return fail(400, "Indica el origen de la grabación.");
+    const mediaType = (req.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
+    const extensions: Record<string, string> = {
+      "audio/webm": "webm", "audio/wav": "wav", "audio/x-wav": "wav",
+      "audio/mpeg": "mp3", "audio/mp3": "mp3", "audio/mp4": "m4a",
+      "audio/ogg": "ogg", "audio/flac": "flac", "application/octet-stream": "bin",
+    };
+    if (!extensions[mediaType]) return fail(415, "Formato de audio no admitido.");
+    const audio = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
+    if (!audio.length) return fail(400, "La grabación está vacía.");
+    const meetingId = String(req.params.meetingId);
+    const before = await meeting(db, s, meetingId);
+    if (!["celebrada", "acta_borrador"].includes(before.state)) {
+      return fail(409, "Solo se puede transcribir una reunión celebrada o con acta en borrador.");
+    }
+    if (getContent(before).data.notes.trim() && req.get("x-replace-draft") !== "true") {
+      return fail(409, "El borrador actual contiene notas. Confirma expresamente que quieres sustituirlo.");
+    }
+    try {
+      const consentedAt = new Date().toISOString();
+      const transcript = await transcribeMeetingAudio({
+        centerId: s.actor.centerId,
+        audio,
+        fileName: `meeting-recording.${extensions[mediaType]}`,
+        mediaType,
+      });
+      const draft = await draftMeetingMinutes({
+        centerId: s.actor.centerId,
+        meetingTitle: before.title,
+        meetingDate: before.startsAt.toISOString(),
+        transcript,
+      });
+      const completedAt = new Date().toISOString();
+      const saved = await transaction(s, async (tx) => {
+        const current = await meeting(tx, s, meetingId, true);
+        if (current.revision !== before.revision) fail(409, "La reunión cambió mientras se preparaba el borrador. Recarga e inténtalo de nuevo.");
+        if (!["celebrada", "acta_borrador"].includes(current.state)) fail(409, "La reunión ya no admite una transcripción.");
+        const content = structuredClone(getContent(current));
+        const updatedContent: Content = {
+          ...content,
+          data: { ...content.data, notes: draft },
+          transcription: {
+            text: transcript,
+            source: source as "in_person" | "online" | "upload",
+            consentedAt,
+            completedAt,
+          },
+        };
+        const [updated] = await tx.update(meetings).set({
+          state: "acta_borrador",
+          revision: current.revision + 1,
+          updatedAt: new Date(),
+          content: updatedContent,
+        }).where(eq(meetings.id, current.id)).returning();
+        await version(tx, s, updated!);
+        await tx.insert(auditLogsTable).values({
+          userId: s.actor.id,
+          action: "ciclope.ai_transcription",
+          entityType: "ciclope_meeting",
+          entityId: current.id,
+          details: { source, consentedAt, transcriptCharacters: transcript.length, audioBytes: audio.length },
+        });
+        return updated!;
+      });
+      res.json(dto(saved));
+    } catch (error) {
+      if (error instanceof AIProviderError) return fail(error.status, error.message);
+      throw error;
+    } finally {
+      audio.fill(0);
+    }
+  },
+);
 router.post("/ciclope/meetings/:meetingId/action", requireCsrf, async (req, res) => {
   const s = res.locals.ciclope as Scope;
   const parsed = ActCiclopeMeetingBody.safeParse(req.body);

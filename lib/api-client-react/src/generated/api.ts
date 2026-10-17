@@ -22,6 +22,7 @@ import type {
 import type {
   Activity,
   ActivityCreateResult,
+  AdminAIProviderSettings,
   AuthSession,
   CatalogImportInput,
   CatalogImportResult,
@@ -108,6 +109,7 @@ import type {
   StaffOption,
   SuccessResponse,
   UpdateActivityInput,
+  UpdateAdminAIProviderSettings,
   UpdateUserFamilyInput,
   UploadDocumentParams,
   User
@@ -1605,6 +1607,159 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getUpdateAdminMailSettingsMutationOptions(options));
     }
 
+export const getGetAdminAIProviderSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/admin/ai/provider`
+}
+
+export const getAdminAIProviderSettings = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminAIProviderSettings> => {
+
+  return customFetch<AdminAIProviderSettings>(getGetAdminAIProviderSettingsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminAIProviderSettingsQueryKey = () => {
+    return [
+    `/api/v1/admin/ai/provider`
+    ] as const;
+    }
+
+
+export const getGetAdminAIProviderSettingsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminAIProviderSettingsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAIProviderSettings>>> = ({ signal }) => getAdminAIProviderSettings({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminAIProviderSettingsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAIProviderSettings>>>
+export type GetAdminAIProviderSettingsQueryError = ErrorType<unknown>
+
+
+
+export function useGetAdminAIProviderSettings<TData = Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAIProviderSettings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminAIProviderSettingsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAdminAIProviderSettingsUrl = () => {
+
+
+
+
+  return `/api/v1/admin/ai/provider`
+}
+
+export const updateAdminAIProviderSettings = async (updateAdminAIProviderSettingsBody: UpdateAdminAIProviderSettings, options?: Parameters<typeof customFetch>[1]): Promise<AdminAIProviderSettings> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AdminAIProviderSettings>(getUpdateAdminAIProviderSettingsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(updateAdminAIProviderSettingsBody)
+  }
+);}
+
+
+
+
+
+export const getUpdateAdminAIProviderSettingsMutationKey = () => ['updateAdminAIProviderSettings'] as const;
+
+export const getUpdateAdminAIProviderSettingsMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminAIProviderSettings>>, TError,UpdateAdminAIProviderSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAdminAIProviderSettings>>, TError,UpdateAdminAIProviderSettingsMutationVariables, TContext> => {
+
+const mutationKey = getUpdateAdminAIProviderSettingsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAdminAIProviderSettings>>, UpdateAdminAIProviderSettingsMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAdminAIProviderSettings(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAdminAIProviderSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof updateAdminAIProviderSettings>>>
+    export type UpdateAdminAIProviderSettingsMutationBody = BodyType<UpdateAdminAIProviderSettings>
+    export type UpdateAdminAIProviderSettingsMutationError = ErrorType<unknown>
+    export type UpdateAdminAIProviderSettingsMutationVariables = {data: BodyType<UpdateAdminAIProviderSettings>}
+
+    export const useUpdateAdminAIProviderSettings = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAdminAIProviderSettings>>, TError,UpdateAdminAIProviderSettingsMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAdminAIProviderSettings>>,
+        TError,
+        UpdateAdminAIProviderSettingsMutationVariables,
+        TContext
+      > => {
+      return useMutation(getUpdateAdminAIProviderSettingsMutationOptions(options));
+    }
+
 export const getReceiveResendWebhookUrl = () => {
 
 
@@ -2006,6 +2161,89 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getUpdateCiclopeMeetingMutationOptions(options));
+    }
+
+export const getTranscribeCiclopeMeetingAudioUrl = (meetingId: string,) => {
+
+
+
+
+  return `/api/v1/ciclope/meetings/${meetingId}/transcription`
+}
+
+export const transcribeCiclopeMeetingAudio = async (meetingId: string,
+    transcribeCiclopeMeetingAudioBody: Blob, options?: Parameters<typeof customFetch>[1]): Promise<CiclopeMeeting> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<CiclopeMeeting>(getTranscribeCiclopeMeetingAudioUrl(meetingId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/webm', ...getHeaders(options?.headers) },
+    body: transcribeCiclopeMeetingAudioBody
+  }
+);}
+
+
+
+
+
+export const getTranscribeCiclopeMeetingAudioMutationKey = () => ['transcribeCiclopeMeetingAudio'] as const;
+
+export const getTranscribeCiclopeMeetingAudioMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>, TError,TranscribeCiclopeMeetingAudioMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>, TError,TranscribeCiclopeMeetingAudioMutationVariables, TContext> => {
+
+const mutationKey = getTranscribeCiclopeMeetingAudioMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>, TranscribeCiclopeMeetingAudioMutationVariables> = (props) => {
+          const {meetingId,data} = props ?? {};
+
+          return  transcribeCiclopeMeetingAudio(meetingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type TranscribeCiclopeMeetingAudioMutationResult = NonNullable<Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>>
+    export type TranscribeCiclopeMeetingAudioMutationBody = BodyType<Blob>
+    export type TranscribeCiclopeMeetingAudioMutationError = ErrorType<unknown>
+    export type TranscribeCiclopeMeetingAudioMutationVariables = {meetingId: string;data: BodyType<Blob>}
+
+    export const useTranscribeCiclopeMeetingAudio = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>, TError,TranscribeCiclopeMeetingAudioMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof transcribeCiclopeMeetingAudio>>,
+        TError,
+        TranscribeCiclopeMeetingAudioMutationVariables,
+        TContext
+      > => {
+      return useMutation(getTranscribeCiclopeMeetingAudioMutationOptions(options));
     }
 
 export const getActCiclopeMeetingUrl = (meetingId: string,) => {

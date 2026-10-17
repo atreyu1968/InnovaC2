@@ -7,6 +7,7 @@
  */
 import type { CiclopeMeetingInput } from './ciclopeMeetingInput';
 import type { CiclopeMeetingState } from './ciclopeMeetingState';
+import type { CiclopeTranscription } from './ciclopeTranscription';
 
 export interface CiclopeMeeting {
   id: string;
@@ -17,4 +18,5 @@ export interface CiclopeMeeting {
   /** @nullable */
   approvedPolicyRevision: number | null;
   contributions: string[];
+  transcription?: CiclopeTranscription;
 }

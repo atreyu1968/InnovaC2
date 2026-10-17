@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import type { PinnedAttachment } from './shared';
 import { CalendarClock, Download, History } from 'lucide-react';
+import { CiclopeMeetingRecording } from './CiclopeMeetingRecording';
 import {
   useActCiclopeMeeting, useListCiclopeVersions, getListCiclopeVersionsQueryKey, exportCiclopeMeeting, CiclopeActionInputAction,
   useListDocuments, getListDocumentsQueryKey,
@@ -48,7 +49,8 @@ export function MeetingDetail({ data, meeting, user, onEdit, onDone }: { data: C
         <Block title="Aportaciones de miembros">{meeting.contributions.length ? <ul className="space-y-1">{meeting.contributions.map((c, i) => { const pc = parseContribution(data, c); return <li key={i} className="rounded-md bg-[#f7f5ef] px-2.5 py-1.5" data-testid={`text-contribution-${i}`}>{pc.author && <span className="font-bold">{pc.author}: </span>}{pc.text}</li>; })}</ul> : <p className="text-[#77817c]">Sin aportaciones.</p>}</Block>
         <Block title="Composición y asistencia">{d.participants.length ? <ul className="divide-y divide-[#eee9df]">{d.participants.map(p => <li key={p.userId} className="flex flex-wrap justify-between gap-2 py-1.5"><span><strong>{name(p.userId, p.name)}</strong> · {p.formalRole}{p.appointedOn ? ` · nombrado/a ${p.appointedOn}` : ''}</span><span className="text-[#5f6e69]">{attendanceNames[p.attendance]}</span></li>)}</ul> : <p className="text-[#77817c]">Sin participantes.</p>}</Block>
         <Block title="Documentación adjunta"><DetailAttachments ids={d.attachmentIds} pinned={d.pinnedAttachments} /></Block>
-        <Block title="Notas / acta"><p className="whitespace-pre-wrap">{d.notes || 'Sin notas.'}</p></Block>
+         <Block title="Notas / acta"><p className="whitespace-pre-wrap">{d.notes || 'Sin notas.'}</p></Block>
+         {meeting.transcription && <Block title="Transcripción de la reunión"><p className="whitespace-pre-wrap">{meeting.transcription.text}</p><p className="mt-2 text-[10px] text-[#6b7774]">Origen: {meeting.transcription.source === 'in_person' ? 'presencial' : meeting.transcription.source === 'online' ? 'online' : 'archivo subido'} · Procesada {new Date(meeting.transcription.completedAt).toLocaleString()} · El audio original se eliminó tras procesarlo.</p></Block>}
         <Block title="Acuerdos">{d.agreements.length ? <ul className="space-y-1">{d.agreements.map((a, i) => <li key={i}>{a.title} · <span className="text-[#5f6e69]">{name(a.responsibleUserId, a.responsibleName)} · vence {a.dueDate}</span></li>)}</ul> : <p className="text-[#77817c]">Sin acuerdos.</p>}</Block>
       </div>
       <div className="space-y-4">
@@ -66,6 +68,7 @@ export function MeetingDetail({ data, meeting, user, onEdit, onDone }: { data: C
             {data.canManage && ['programada', 'convocada'].includes(meeting.state) && btn(A.cancelar, 'Cancelar reunión', { withText: true, danger: true, disabled: !text.trim() })}
           </div>
           {data.canManage && isC1 && meeting.state === 'programada' && !c1Ready && <p className="text-[10px] text-[#9b4337]">Para registrar la convocatoria recibida: remitente, lugar o enlace, participantes y orden del día.</p>}
+          {data.canManage && ['celebrada', 'acta_borrador'].includes(meeting.state) && <CiclopeMeetingRecording meetingId={meeting.id} meetingTitle={d.title} meetingStartsAt={d.startsAt} currentNotes={d.notes} onDone={onDone} />}
           {data.canManage && !isC1 && meeting.state === 'programada' && !policy.authorizedInternalChannel && <p className="text-[10px] text-[#9b4337]">Para convocar, la política debe autorizar el canal interno.</p>}
           {data.canManage && meeting.state === 'convocada' && !ended && <p className="text-[10px] text-[#77817c]">Solo puede marcarse como celebrada cuando haya pasado su hora de fin.</p>}
           {data.canManage && ['programada', 'convocada'].includes(meeting.state) && <p className="text-[10px] text-[#77817c]">La cancelación exige indicar el motivo en el campo de texto.</p>}

@@ -169,6 +169,22 @@ export const CiclopeMeetingState = {
   cancelada: 'cancelada',
 } as const;
 
+export type CiclopeTranscriptionSource = typeof CiclopeTranscriptionSource[keyof typeof CiclopeTranscriptionSource];
+
+
+export const CiclopeTranscriptionSource = {
+  in_person: 'in_person',
+  online: 'online',
+  upload: 'upload',
+} as const;
+
+export interface CiclopeTranscription {
+  text: string;
+  source: CiclopeTranscriptionSource;
+  consentedAt: string;
+  completedAt: string;
+}
+
 export interface CiclopeMeeting {
   id: string;
   revision: number;
@@ -178,6 +194,7 @@ export interface CiclopeMeeting {
   /** @nullable */
   approvedPolicyRevision: number | null;
   contributions: string[];
+  transcription?: CiclopeTranscription;
 }
 
 export interface CiclopeTask {
@@ -266,6 +283,7 @@ export interface MailPublicDnsStatus {
   ready: boolean;
   checkedAt: string;
 }
+
 export interface MailAdminSettings {
   settings: MailSettings;
   provider: MailProviderStatus;
@@ -273,6 +291,51 @@ export interface MailAdminSettings {
   lastDomainStatus?: string;
   dns: MailPublicDnsStatus;
   domainRecords?: MailDomainRecord[];
+}
+
+export type AdminAIProviderSettingsProvider = typeof AdminAIProviderSettingsProvider[keyof typeof AdminAIProviderSettingsProvider];
+
+
+export const AdminAIProviderSettingsProvider = {
+  disabled: 'disabled',
+  local: 'local',
+  external_authorized: 'external_authorized',
+} as const;
+
+export interface AdminAIProviderSettings {
+  provider: AdminAIProviderSettingsProvider;
+  baseUrl: string | null;
+  transcriptionModel: string | null;
+  minutesModel: string | null;
+  apiKeyConfigured: boolean;
+  externalAuthorizedAt: string | null;
+  revision: number;
+  updatedAt: string | null;
+}
+
+export type UpdateAdminAIProviderSettingsProvider = typeof UpdateAdminAIProviderSettingsProvider[keyof typeof UpdateAdminAIProviderSettingsProvider];
+
+
+export const UpdateAdminAIProviderSettingsProvider = {
+  disabled: 'disabled',
+  local: 'local',
+  external_authorized: 'external_authorized',
+} as const;
+
+export interface UpdateAdminAIProviderSettings {
+  /** @minimum 0 */
+  expectedRevision: number;
+  provider: UpdateAdminAIProviderSettingsProvider;
+  /** @maxLength 2048 */
+  baseUrl: string;
+  /** @maxLength 160 */
+  transcriptionModel: string;
+  /** @maxLength 160 */
+  minutesModel: string;
+  /** @maxLength 4096 */
+  apiKey?: string;
+  clearApiKey: boolean;
+  externalAuthorizationConfirmed: boolean;
 }
 
 export type MailSettingsInputSenderAlias = typeof MailSettingsInputSenderAlias[keyof typeof MailSettingsInputSenderAlias];
@@ -2017,3 +2080,4 @@ export const UploadDocumentAccessScope = {
   center: 'center',
   restricted: 'restricted',
 } as const;
+
