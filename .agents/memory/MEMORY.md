@@ -4,3 +4,4 @@
 - [Antivirus verification boundaries](antivirus-verification.md) — Keep real-engine regression tests independent of signature downloads; verify production feed health separately.
 - [Academic cycle policy](academic-cycle-policy.md) — History is attributed context, never current achievement; closure archives actual state without certifying PIC approval.
 - [Closed-course integrity](archive-integrity.md) — Preserve legacy closure hash serialization across JSONB; distinguish archived hashes from redacted-export checksums.
+- [Communications settings](communications-settings.md) — Configure Resend within the technical administrator's existing Configuration section.

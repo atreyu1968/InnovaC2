@@ -43,7 +43,14 @@ app.use((_, res, next) => {
   }
   next();
 });
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({
+  limit: "2mb",
+  verify(req, _res, buffer) {
+    if (req.url?.split("?")[0] === "/api/v1/webhooks/resend") {
+      (req as express.Request & { rawBody?: Buffer }).rawBody = Buffer.from(buffer);
+    }
+  },
+}));
 
 app.use("/api/v1", router);
 
@@ -73,6 +80,10 @@ app.use((err: unknown, req: express.Request, res: express.Response, _next: expre
   const databaseFailure = failure.cause ?? failure;
   if (databaseFailure.code === "23514" && databaseFailure.message?.startsWith("COURSE_")) {
     res.status(409).json({ error: "El curso está cerrado o la referencia pertenece a otro curso. Actualiza la vista; el expediente histórico no se puede modificar." });
+    return;
+  }
+  if ((failure as { status?: number }).status === 413) {
+    res.status(413).json({ error: "El archivo recibido supera el límite de tamaño." });
     return;
   }
   logger.error({ err, method: req.method, path: req.path }, "Unhandled API error");

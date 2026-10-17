@@ -12,6 +12,7 @@ import staffRouter from "./staff";
 import usersRouter from "./users";
 import schoolYearsRouter from "./school-years";
 import ciclopeRouter from "./ciclope";
+import mailRouter from "./mail";
 
 const router: IRouter = Router();
 
@@ -19,6 +20,7 @@ router.use(healthRouter);
 router.use(authRouter);
 router.use(schoolYearsRouter);
 router.use(ciclopeRouter);
+router.use(mailRouter);
 router.use(dashboardRouter);
 router.use(activitiesRouter);
 router.use(documentsRouter);

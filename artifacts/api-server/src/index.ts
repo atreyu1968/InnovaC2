@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { ensureReferenceData } from "./lib/reference-data";
 import { sessionSecret } from "./lib/auth";
 import { ensureDataDirectory } from "./lib/storage";
+import { startMailWorker } from "./lib/mail-worker";
 
 const rawPort = process.env["PORT"];
 
@@ -22,6 +23,7 @@ async function start(): Promise<void> {
   sessionSecret();
   await ensureDataDirectory();
   await ensureReferenceData();
+  startMailWorker();
   const server = app.listen(port, () => {
     logger.info({ port }, "Server listening");
   });

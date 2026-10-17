@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { once } from "node:events";
-import { randomBytes, randomUUID, createHash } from "node:crypto";
+import { randomBytes, randomUUID, createHash, createHmac } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { createServer } from "node:net";
@@ -39,13 +39,15 @@ async function cleanup() {
 for (const signal of ["SIGTERM", "SIGINT"]) process.once(signal, async () => { await cleanup(); process.exit(130); });
 try {
   const pgPort = await port(), apiPort = await port();
+  const testWebhookSecret = `whsec_${randomBytes(32).toString("base64")}`;
   command("initdb", ["-D", pgdata, "-U", "ciclope_test", "-A", "trust", "--no-locale", "--encoding=UTF8"]);
   command("pg_ctl", ["-D", pgdata, "-l", path.join(directory, "postgres.log"), "-o", `-h 127.0.0.1 -p ${pgPort} -k ${directory}`, "-w", "start"]);
   postgres = true;
   const databaseUrl = `postgresql://ciclope_test@127.0.0.1:${pgPort}/postgres`;
   const env = { ...cleanEnv, DATABASE_URL: databaseUrl, SESSION_SECRET: randomBytes(48).toString("hex"),
     PORT: String(apiPort), NODE_ENV: "test", COOKIE_SECURE: "false", DATA_DIR: path.join(directory, "files"),
-    RESEND_API_KEY: "", PASSWORD_RESET_EMAIL_ENABLED: "false", CLAMAV_HOST: "", CLAMAV_PORT: "" };
+    RESEND_API_KEY: "", RESEND_WEBHOOK_SECRET: testWebhookSecret, EMAIL_ENABLED: "false",
+    PASSWORD_RESET_EMAIL_ENABLED: "false", CLAMAV_HOST: "", CLAMAV_PORT: "" };
   if (process.argv.includes("--serve-browser")) env.WEB_DIST_DIR = path.join(root, "artifacts/innova-c2/dist/public");
   command("pnpm", ["--filter", "@workspace/db", "run", "migrate"], env);
   pool = new Pool({ connectionString: databaseUrl });
@@ -87,6 +89,75 @@ try {
   const direction = await account("direction@ciclope.example.invalid", "equipo_directivo");
   const teacher = await account("teacher@ciclope.example.invalid", "profesorado");
   const outsider = await account("other@ciclope.example.invalid", "profesorado");
+  status(await request("/admin/mail/provider-status", c2.session), 403);
+  const mailConfig = status(await request("/admin/mail/provider-status", admin), 200);
+  assert.equal(mailConfig.provider.keyConfigured, false); checks++;
+  assert.equal(mailConfig.settings.sendEnabled, false); checks++;
+  const savedMailConfig = status(await request("/admin/mail/settings", admin, "PUT", {
+    expectedRevision: mailConfig.settings.revision, sendEnabled: false,
+    senderAlias: "innovacion", replyTo: "innovacion@buzon.iesmmg.org",
+  }), 200);
+  assert.equal(savedMailConfig.settings.sendApprovalRequired, true); checks++;
+  status(await request("/admin/mail/settings", admin, "PUT", {
+    expectedRevision: savedMailConfig.settings.revision, sendEnabled: true,
+    senderAlias: "innovacion", replyTo: "innovacion@buzon.iesmmg.org",
+  }), 409);
+  const contactPayload = {
+    email: "external@empresa.example.invalid", displayName: "Contacto de empresa",
+    segment: "empresa", institution: "Empresa de prueba", authorizationNote: "Colaboración institucional aprobada",
+    optOut: false, active: true,
+  };
+  const contact = status(await request("/mail/contacts", c2.session, "POST", contactPayload), 201);
+  const optedOut = status(await request("/mail/contacts", c2.session, "POST", {
+    ...contactPayload, email: "baja@empresa.example.invalid", optOut: true,
+  }), 201);
+  const template = status(await request("/mail/templates", c2.session, "POST", {
+    name: "Aviso de prueba", subject: "Información institucional", body: "Texto autorizado.",
+    classification: "informativa",
+  }), 201);
+  const draftInput = {
+    recipientContactIds: [contact.id], templateId: template.id,
+    subject: template.subject, bodyText: template.body, classification: "informativa",
+    attachmentDocumentIds: [],
+  };
+  const draft = status(await request("/mail/drafts", c2.session, "POST", draftInput), 201).messages[0];
+  assert.equal(draft.status, "borrador"); checks++;
+  status(await request("/mail/drafts", c2.session, "POST", {
+    ...draftInput, recipientContactIds: [contact.id, optedOut.id],
+  }), 409);
+  const submitted = status(await request(`/mail/drafts/${draft.id}/submit`, c2.session, "POST", {}), 200);
+  assert.equal(submitted.status, "revision"); checks++;
+  status(await request(`/mail/drafts/${draft.id}/approve`, c2.session, "POST", {}), 403);
+  const approved = status(await request(`/mail/drafts/${draft.id}/approve`, direction.session, "POST", {}), 200);
+  assert.equal(approved.status, "aprobado"); checks++;
+  const queued = status(await request(`/mail/drafts/${draft.id}/send`, c2.session, "POST", { expectedRevision: approved.revision }), 200);
+  assert.equal(queued.queued, true); checks++;
+  assert.equal(queued.status, "en_cola"); checks++;
+  const isolatedInbox = status(await request("/mail/overview", outsider.session), 200);
+  assert.equal(isolatedInbox.threads.length, 0); checks++;
+  const webhookUrl = `${base}/webhooks/resend`;
+  async function postWebhook(eventId, payload, forceInvalid = false) {
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const raw = Buffer.from(JSON.stringify(payload));
+    const signature = createHmac("sha256", Buffer.from(testWebhookSecret.slice("whsec_".length), "base64"))
+      .update(`${eventId}.${timestamp}.`).update(raw).digest("base64");
+    return fetch(webhookUrl, { method: "POST", headers: {
+      "content-type": "application/json", "svix-id": eventId, "svix-timestamp": timestamp,
+      "svix-signature": forceInvalid ? "v1,invalid" : `v1,${signature}`,
+    }, body: raw });
+  }
+  const eventId = `msg_${randomUUID()}`;
+  const webhookPayload = { type: "email.delivered", data: { email_id: `re_test_${randomUUID()}` } };
+  assert.equal((await postWebhook(eventId, webhookPayload, true)).status, 401); checks++;
+  const acceptedWebhook = await postWebhook(eventId, webhookPayload);
+  assert.equal(acceptedWebhook.status, 200); checks++;
+  assert.equal((await postWebhook(eventId, webhookPayload)).status, 200); checks++;
+  const duplicateResult = await (await postWebhook(eventId, webhookPayload)).json();
+  assert.equal(duplicateResult.duplicate, true); checks++;
+  const webhookRows = await pool.query("SELECT count(*)::int AS count FROM mail_webhook_events WHERE provider_event_id=$1", [eventId]);
+  assert.equal(webhookRows.rows[0].count, 1); checks++;
+  const queuedRow = await pool.query("SELECT status, attempts, provider_message_id FROM mail_messages WHERE id=$1", [draft.id]);
+  assert.deepEqual(queuedRow.rows[0], { status: "en_cola", attempts: 0, provider_message_id: null }); checks++;
   if (process.argv.includes("--serve-browser")) {
     const fixture = path.join(directory, "browser-fixture.json");
     await writeFile(fixture, JSON.stringify({
@@ -204,7 +275,7 @@ try {
   status(await request("/ciclope", c2.session), 409);
   const audits = (await pool.query("SELECT count(*) FROM audit_logs WHERE action LIKE 'ciclope.%'")).rows[0].count;
   assert.ok(Number(audits) > 15);
-  console.log(`CICLOPE: ${checks} comprobaciones API correctas; permisos, refrendo, cuatro sesiones, C1, actas, tareas, avisos, DOCX/PDF, concurrencia e integridad histórica.`);
+  console.log(`CICLOPE + Comunicaciones Fase 3B: ${checks} comprobaciones API correctas; permisos, CICLOPE, cola local sin envíos, aprobación, contactos, ajustes, firma y deduplicación de webhooks.`);
 } catch (error) {
   console.error(error);
   process.exitCode = 1;

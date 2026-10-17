@@ -27,9 +27,13 @@ oficial del curso 2026–2027 se conservan en `docs/reference/paquete-original/`
   por bandeja interna autorizada, orden del día, actas manuales versionadas,
   asistencia revisada, acuerdos/tareas y avisos al responsable según su preferencia.
   Agenda C1 separada, permisos por curso y exportaciones DOCX/PDF.
-- **Fases posteriores: pendientes.** Centro de comunicaciones Resend, memoria,
-  ATECA/FABLab y asistente IA se habilitarán según la especificación, con sus
-  pruebas. No se sustituyen por envíos, respuestas o integraciones simuladas.
+- **Fase 3B — comunicaciones: implementada en modo seguro.** Bandeja y agenda
+  por curso, plantillas, borradores, aprobación humana, cola persistente, webhooks
+  Resend firmados e idempotentes y adjuntos privados con análisis y revisión.
+  El envío permanece apagado hasta aportar secretos de servidor y verificar
+  el dominio real. La prueba de esta fase no envía correo.
+- **Fases 4–6 — memoria, ATECA/FABLab y asistente IA: pendientes.** No se
+  simulan envíos, respuestas, lectura ni capacidades de IA aún no implementadas.
 
 ### Fase 3: uso, límites y comprobaciones
 
@@ -60,8 +64,33 @@ copias de seguridad existentes incluyen todo `DATA_DIR`. La consulta y descarga
 requieren sesión autorizada; no se exponen rutas de almacenamiento.
 
 La IA del acta no se simula: en esta fase la redacción es manual. Los avisos
-internos no son correos Resend ni acreditan lectura. Correo externo y automatismos
-de envío corresponden a la fase 3B, con autorización y dominio verificado.
+internos no son correos Resend ni acreditan lectura. La Fase 3B separa los
+estados aceptado, entregado y rebotado: un OK de Resend no se presenta como una
+entrega. Las respuestas automáticas por IA están desactivadas.
+
+### Fase 3B: comunicaciones y configuración
+
+La bandeja usa contactos del curso activo con una referencia de autorización,
+clasificación y control de baja. Cada mensaje se crea individualmente por
+destinatario; el C2 y la dirección pueden revisar y gestionar conversaciones.
+Los borradores se guardan sin proveedor y la cola informa que no ha enviado nada.
+La aplicación no responde automáticamente ni expone credenciales en el navegador.
+
+El administrador técnico gestiona el proveedor exclusivamente en **Configuración**.
+La clave API y el secreto Svix son variables privadas del servidor; la pantalla
+solo informa si están configuradas. La consulta a Resend no cambia registros DNS.
+Antes de habilitar envíos hay que verificar iesmmg.org y publicar sus registros;
+el MX raíz no se modifica. La recepción se limita al subdominio
+`buzon.iesmmg.org`; las firmas, duplicados y curso activo se comprueban en servidor.
+Los adjuntos entrantes se guardan en almacenamiento privado, se someten a ClamAV,
+y requieren aprobación humana antes de poder descargarse. Sin ClamAV permanecen
+en cuarentena.
+
+Para un servidor Ubuntu independiente, añade `RESEND_API_KEY`,
+`RESEND_WEBHOOK_SECRET` y `EMAIL_ENABLED=false` al almacén de secretos del servidor.
+Después de verificar DNS y realizar un envío de prueba autorizado, el administrador
+técnico podrá permitir el procesamiento de la cola. No introduzcas esos secretos
+en la aplicación web.
 
 Prueba reproducible, sin reutilizar `DATABASE_URL` ni datos del centro:
 
@@ -73,8 +102,19 @@ Requiere PostgreSQL (`initdb`, `pg_ctl`) en `PATH`. Crea un clúster temporal,
 aplica todas las migraciones, arranca una API independiente y elimina el entorno
 al finalizar. Comprueba permisos, CSRF, cuatro sesiones, refrendo, solapamientos,
 estados, C1 separado, actas, responsables/avisos, concurrencia, DOCX/PDF, revisión
-inmutable e inclusión de CICLOPE en el expediente cerrado. Resultado de la
-ejecución: **87 comprobaciones API correctas**.
+inmutable e inclusión de CICLOPE en el expediente cerrado. La última ejecución
+conjunta Fase 3/Fase 3B completó **116 comprobaciones API correctas**.
+
+Fase 3B y regresión CICLOPE (clúster PostgreSQL temporal, Resend sin clave):
+
+```bash
+pnpm run test:phase3b
+```
+
+Comprueba que el panel de configuración está restringido a administración
+técnica, que contactos y borradores se conservan, que la aprobación no puede
+ser propia, que la cola no envía sin configuración, y que los webhooks inválidos
+se rechazan y los eventos repetidos se deduplican.
 
 Una pasada de navegador sobre el entorno desechable comprobó persistencia,
 refrendo, convocatoria, asistencia, acta validada, historial, descargas DOCX/PDF,

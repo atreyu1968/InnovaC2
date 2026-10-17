@@ -8,6 +8,609 @@
 import * as zod from 'zod';
 
 
+export const GetMailOverviewResponse = zod.object({
+  "yearLabel": zod.string(),
+  "canManage": zod.boolean(),
+  "canApprove": zod.boolean(),
+  "settings": zod.object({
+  "centerId": zod.string(),
+  "sendEnabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "senderAlias": zod.enum(['innovacion', 'ciclope', 'proyectos']),
+  "replyTo": zod.string(),
+  "sendApprovalRequired": zod.boolean()
+}),
+  "provider": zod.object({
+  "keyConfigured": zod.boolean(),
+  "webhookConfigured": zod.boolean(),
+  "deploymentEnabled": zod.boolean(),
+  "domain": zod.string(),
+  "domainVerified": zod.boolean(),
+  "domainStatus": zod.string(),
+  "records": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+}))
+}),
+  "contacts": zod.array(zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "displayName": zod.string(),
+  "segment": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "institution": zod.string().nullable(),
+  "authorizationNote": zod.string(),
+  "optOut": zod.boolean(),
+  "active": zod.boolean()
+})),
+  "templates": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "subject": zod.string(),
+  "body": zod.string(),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
+  "updatedAt": zod.string()
+})),
+  "threads": zod.array(zod.object({
+  "id": zod.string(),
+  "subject": zod.string(),
+  "topic": zod.string(),
+  "priority": zod.string(),
+  "folder": zod.string(),
+  "assignedTo": zod.string().nullable(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string(),
+  "updatedAt": zod.string(),
+  "revision": zod.number().int(),
+  "lastStatus": zod.string(),
+  "preview": zod.string()
+}))
+})
+
+
+export const GetMailThreadParams = zod.object({
+  "threadId": zod.coerce.string().uuid()
+})
+
+export const GetMailThreadResponse = zod.object({
+  "thread": zod.object({
+  "id": zod.string(),
+  "subject": zod.string(),
+  "topic": zod.string(),
+  "priority": zod.string(),
+  "folder": zod.string(),
+  "assignedTo": zod.string().nullable(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string(),
+  "updatedAt": zod.string(),
+  "revision": zod.number().int(),
+  "lastStatus": zod.string(),
+  "preview": zod.string()
+}),
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "direction": zod.string(),
+  "status": zod.string(),
+  "sender": zod.string(),
+  "recipient": zod.string(),
+  "senderName": zod.string().nullish(),
+  "cc": zod.string().nullish(),
+  "replyTo": zod.string().nullish(),
+  "subject": zod.string(),
+  "bodyText": zod.string(),
+  "classification": zod.string(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "sentAt": zod.string().nullish(),
+  "deliveredAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "revision": zod.number().int(),
+  "attempts": zod.number().int().optional(),
+  "lastError": zod.string().nullish(),
+  "createdBy": zod.string().nullable(),
+  "attachments": zod.array(zod.object({
+
+}).passthrough())
+}))
+})
+
+
+export const ReplyToMailThreadParams = zod.object({
+  "threadId": zod.coerce.string().uuid()
+})
+
+export const ReplyToMailThreadHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const replyToMailThreadBodyBodyTextMax = 20000;
+
+export const replyToMailThreadBodyAttachmentDocumentIdsMax = 10;
+
+
+
+export const ReplyToMailThreadBody = zod.object({
+  "bodyText": zod.string().min(1).max(replyToMailThreadBodyBodyTextMax),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
+  "attachmentDocumentIds": zod.array(zod.string().uuid()).max(replyToMailThreadBodyAttachmentDocumentIdsMax)
+})
+
+export const ReplyToMailThreadResponse = zod.void()
+
+
+export const CreateMailContactHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const createMailContactBodyEmailMax = 254;
+
+export const createMailContactBodyDisplayNameMax = 160;
+
+export const createMailContactBodyProfessionalFamilyMax = 160;
+
+export const createMailContactBodyInstitutionMax = 200;
+
+export const createMailContactBodyAuthorizationNoteMin = 4;
+export const createMailContactBodyAuthorizationNoteMax = 1000;
+
+
+
+export const CreateMailContactBody = zod.object({
+  "email": zod.string().email().max(createMailContactBodyEmailMax),
+  "displayName": zod.string().min(1).max(createMailContactBodyDisplayNameMax),
+  "segment": zod.enum(['direccion', 'jefatura', 'profesorado', 'empresa', 'coordinacion_c1', 'centro', 'familia', 'otro']),
+  "professionalFamily": zod.string().max(createMailContactBodyProfessionalFamilyMax).nullish(),
+  "institution": zod.string().max(createMailContactBodyInstitutionMax).nullish(),
+  "authorizationNote": zod.string().min(createMailContactBodyAuthorizationNoteMin).max(createMailContactBodyAuthorizationNoteMax),
+  "optOut": zod.boolean(),
+  "active": zod.boolean()
+})
+
+export const CreateMailContactResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "displayName": zod.string(),
+  "segment": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "institution": zod.string().nullable(),
+  "authorizationNote": zod.string(),
+  "optOut": zod.boolean(),
+  "active": zod.boolean()
+})
+
+
+export const UpdateMailContactParams = zod.object({
+  "contactId": zod.coerce.string().uuid()
+})
+
+export const UpdateMailContactHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const updateMailContactBodyEmailMax = 254;
+
+export const updateMailContactBodyDisplayNameMax = 160;
+
+export const updateMailContactBodyProfessionalFamilyMax = 160;
+
+export const updateMailContactBodyInstitutionMax = 200;
+
+export const updateMailContactBodyAuthorizationNoteMin = 4;
+export const updateMailContactBodyAuthorizationNoteMax = 1000;
+
+
+
+export const UpdateMailContactBody = zod.object({
+  "email": zod.string().email().max(updateMailContactBodyEmailMax),
+  "displayName": zod.string().min(1).max(updateMailContactBodyDisplayNameMax),
+  "segment": zod.enum(['direccion', 'jefatura', 'profesorado', 'empresa', 'coordinacion_c1', 'centro', 'familia', 'otro']),
+  "professionalFamily": zod.string().max(updateMailContactBodyProfessionalFamilyMax).nullish(),
+  "institution": zod.string().max(updateMailContactBodyInstitutionMax).nullish(),
+  "authorizationNote": zod.string().min(updateMailContactBodyAuthorizationNoteMin).max(updateMailContactBodyAuthorizationNoteMax),
+  "optOut": zod.boolean(),
+  "active": zod.boolean()
+})
+
+export const UpdateMailContactResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "displayName": zod.string(),
+  "segment": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "institution": zod.string().nullable(),
+  "authorizationNote": zod.string(),
+  "optOut": zod.boolean(),
+  "active": zod.boolean()
+})
+
+
+export const CreateMailTemplateHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const createMailTemplateBodyNameMax = 120;
+
+export const createMailTemplateBodySubjectMax = 250;
+
+export const createMailTemplateBodyBodyMax = 20000;
+
+
+
+export const CreateMailTemplateBody = zod.object({
+  "name": zod.string().min(1).max(createMailTemplateBodyNameMax),
+  "subject": zod.string().min(1).max(createMailTemplateBodySubjectMax),
+  "body": zod.string().min(1).max(createMailTemplateBodyBodyMax),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion'])
+})
+
+export const CreateMailTemplateResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "subject": zod.string(),
+  "body": zod.string(),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
+  "updatedAt": zod.string()
+})
+
+
+export const UpdateMailTemplateParams = zod.object({
+  "templateId": zod.coerce.string().uuid()
+})
+
+export const UpdateMailTemplateHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const updateMailTemplateBodyNameMax = 120;
+
+export const updateMailTemplateBodySubjectMax = 250;
+
+export const updateMailTemplateBodyBodyMax = 20000;
+
+
+
+export const UpdateMailTemplateBody = zod.object({
+  "name": zod.string().min(1).max(updateMailTemplateBodyNameMax),
+  "subject": zod.string().min(1).max(updateMailTemplateBodySubjectMax),
+  "body": zod.string().min(1).max(updateMailTemplateBodyBodyMax),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion'])
+})
+
+export const UpdateMailTemplateResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "subject": zod.string(),
+  "body": zod.string(),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
+  "updatedAt": zod.string()
+})
+
+
+export const CreateMailDraftHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const createMailDraftBodyRecipientContactIdsMax = 50;
+
+export const createMailDraftBodySubjectMax = 250;
+
+export const createMailDraftBodyBodyTextMax = 20000;
+
+export const createMailDraftBodyAttachmentDocumentIdsMax = 10;
+
+
+
+export const CreateMailDraftBody = zod.object({
+  "recipientContactIds": zod.array(zod.string().uuid()).min(1).max(createMailDraftBodyRecipientContactIdsMax),
+  "templateId": zod.string().uuid().nullish(),
+  "subject": zod.string().min(1).max(createMailDraftBodySubjectMax),
+  "bodyText": zod.string().min(1).max(createMailDraftBodyBodyTextMax),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
+  "attachmentDocumentIds": zod.array(zod.string().uuid()).max(createMailDraftBodyAttachmentDocumentIdsMax)
+})
+
+export const CreateMailDraftResponse = zod.object({
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "direction": zod.string(),
+  "status": zod.string(),
+  "sender": zod.string(),
+  "recipient": zod.string(),
+  "senderName": zod.string().nullish(),
+  "cc": zod.string().nullish(),
+  "replyTo": zod.string().nullish(),
+  "subject": zod.string(),
+  "bodyText": zod.string(),
+  "classification": zod.string(),
+  "approvedBy": zod.string().nullish(),
+  "approvedAt": zod.string().nullish(),
+  "sentAt": zod.string().nullish(),
+  "deliveredAt": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "revision": zod.number().int(),
+  "attempts": zod.number().int().optional(),
+  "lastError": zod.string().nullish(),
+  "createdBy": zod.string().nullable(),
+  "attachments": zod.array(zod.object({
+
+}).passthrough())
+}))
+})
+
+
+export const SubmitMailDraftParams = zod.object({
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const SubmitMailDraftHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const SubmitMailDraftResponse = zod.unknown()
+
+
+export const UpdateMailDraftParams = zod.object({
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const UpdateMailDraftHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const updateMailDraftBodySubjectMax = 250;
+
+export const updateMailDraftBodyBodyTextMax = 20000;
+
+export const updateMailDraftBodyAttachmentDocumentIdsMax = 10;
+
+
+
+export const UpdateMailDraftBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "subject": zod.string().min(1).max(updateMailDraftBodySubjectMax),
+  "bodyText": zod.string().min(1).max(updateMailDraftBodyBodyTextMax),
+  "classification": zod.enum(['obligatoria', 'organizativa', 'informativa', 'difusion']),
+  "attachmentDocumentIds": zod.array(zod.string().uuid()).max(updateMailDraftBodyAttachmentDocumentIdsMax)
+})
+
+export const UpdateMailDraftResponse = zod.unknown()
+
+
+export const ApproveMailDraftParams = zod.object({
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const ApproveMailDraftHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const ApproveMailDraftResponse = zod.unknown()
+
+
+export const QueueMailDraftParams = zod.object({
+  "messageId": zod.coerce.string().uuid()
+})
+
+export const QueueMailDraftHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+
+
+export const QueueMailDraftBody = zod.object({
+  "expectedRevision": zod.number().int().min(1)
+})
+
+export const QueueMailDraftResponse = zod.unknown()
+
+
+export const AssignMailThreadParams = zod.object({
+  "threadId": zod.coerce.string().uuid()
+})
+
+export const AssignMailThreadHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const AssignMailThreadBody = zod.object({
+  "userId": zod.string().uuid()
+})
+
+export const AssignMailThreadResponse = zod.unknown()
+
+
+export const UpdateMailThreadActionParams = zod.object({
+  "threadId": zod.coerce.string().uuid()
+})
+
+export const UpdateMailThreadActionHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const UpdateMailThreadActionBody = zod.object({
+  "action": zod.enum(['archivar', 'recuperar', 'revisar'])
+})
+
+export const UpdateMailThreadActionResponse = zod.object({
+  "id": zod.string(),
+  "subject": zod.string(),
+  "topic": zod.string(),
+  "priority": zod.string(),
+  "folder": zod.string(),
+  "assignedTo": zod.string().nullable(),
+  "contactName": zod.string(),
+  "contactEmail": zod.string(),
+  "updatedAt": zod.string(),
+  "revision": zod.number().int(),
+  "lastStatus": zod.string(),
+  "preview": zod.string()
+})
+
+
+export const ApproveMailAttachmentParams = zod.object({
+  "attachmentId": zod.coerce.string().uuid()
+})
+
+export const ApproveMailAttachmentHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const ApproveMailAttachmentResponse = zod.unknown()
+
+
+export const DownloadMailAttachmentParams = zod.object({
+  "attachmentId": zod.coerce.string().uuid()
+})
+
+export const DownloadMailAttachmentResponse = zod.unknown()
+
+
+export const GetAdminMailSettingsResponse = zod.object({
+  "settings": zod.object({
+  "centerId": zod.string(),
+  "sendEnabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "senderAlias": zod.enum(['innovacion', 'ciclope', 'proyectos']),
+  "replyTo": zod.string(),
+  "sendApprovalRequired": zod.boolean()
+}),
+  "provider": zod.object({
+  "keyConfigured": zod.boolean(),
+  "webhookConfigured": zod.boolean(),
+  "deploymentEnabled": zod.boolean(),
+  "domain": zod.string(),
+  "domainVerified": zod.boolean(),
+  "domainStatus": zod.string(),
+  "records": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+}))
+}),
+  "lastDomainCheck": zod.string().nullish(),
+  "lastDomainStatus": zod.string().optional(),
+  "domainRecords": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+})).optional()
+})
+
+
+export const VerifyAdminMailProviderHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+export const VerifyAdminMailProviderResponse = zod.object({
+  "settings": zod.object({
+  "centerId": zod.string(),
+  "sendEnabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "senderAlias": zod.enum(['innovacion', 'ciclope', 'proyectos']),
+  "replyTo": zod.string(),
+  "sendApprovalRequired": zod.boolean()
+}),
+  "provider": zod.object({
+  "keyConfigured": zod.boolean(),
+  "webhookConfigured": zod.boolean(),
+  "deploymentEnabled": zod.boolean(),
+  "domain": zod.string(),
+  "domainVerified": zod.boolean(),
+  "domainStatus": zod.string(),
+  "records": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+}))
+}),
+  "lastDomainCheck": zod.string().nullish(),
+  "lastDomainStatus": zod.string().optional(),
+  "domainRecords": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+})).optional()
+})
+
+
+export const UpdateAdminMailSettingsHeader = zod.object({
+  "X-CSRF-Token": zod.string()
+})
+
+
+export const updateAdminMailSettingsBodyReplyToMax = 250;
+
+
+
+export const UpdateAdminMailSettingsBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "sendEnabled": zod.boolean(),
+  "senderAlias": zod.enum(['innovacion', 'ciclope', 'proyectos']),
+  "replyTo": zod.string().max(updateAdminMailSettingsBodyReplyToMax)
+})
+
+export const UpdateAdminMailSettingsResponse = zod.object({
+  "settings": zod.object({
+  "centerId": zod.string(),
+  "sendEnabled": zod.boolean(),
+  "revision": zod.number().int(),
+  "senderAlias": zod.enum(['innovacion', 'ciclope', 'proyectos']),
+  "replyTo": zod.string(),
+  "sendApprovalRequired": zod.boolean()
+}),
+  "provider": zod.object({
+  "keyConfigured": zod.boolean(),
+  "webhookConfigured": zod.boolean(),
+  "deploymentEnabled": zod.boolean(),
+  "domain": zod.string(),
+  "domainVerified": zod.boolean(),
+  "domainStatus": zod.string(),
+  "records": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+}))
+}),
+  "lastDomainCheck": zod.string().nullish(),
+  "lastDomainStatus": zod.string().optional(),
+  "domainRecords": zod.array(zod.object({
+  "type": zod.string(),
+  "name": zod.string(),
+  "value": zod.string(),
+  "status": zod.string(),
+  "priority": zod.number().int().nullish()
+})).optional()
+})
+
+
+/**
+ * Verifica firma Svix y evita reintentos y eventos duplicados
+ */
+export const ReceiveResendWebhookBody = zod.object({
+  "type": zod.string(),
+  "data": zod.object({
+
+}).passthrough()
+})
+
+export const ReceiveResendWebhookResponse = zod.unknown()
+
+
 export const getCiclopeResponseMeetingsItemDataExpectedRevisionMin = 0;
 
 export const getCiclopeResponseMeetingsItemDataTitleMin = 3;

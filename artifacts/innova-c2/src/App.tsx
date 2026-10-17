@@ -1,12 +1,14 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { BrandMark } from './components/BrandMark';
+import { CommunicationsPage } from './components/CommunicationsPage';
+import { AdminConfigurationPage } from './components/AdminConfigurationPage';
 import { hasCoordinationAccess } from './lib/role-access';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
   Activity, ArrowDownRight, ArrowLeft, ArrowRight, BookOpen, ChevronDown, ChevronRight,
   CalendarDays, CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu,
-  RefreshCw, ShieldCheck, Users, X,
+  Mail, RefreshCw, Settings, ShieldCheck, Users, X,
 } from 'lucide-react';
 import {
   UserRole, getGetCurrentUserQueryKey, getGetDashboardSummaryQueryKey,
@@ -47,8 +49,9 @@ const roleNames: Record<UserRoleValue, string> = {
 const routeLabels: Record<string, string> = {
   '/cuenta': 'Mi cuenta',
   '/cursos': 'Cursos académicos',
-  '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro', '/actuaciones': 'Actuaciones y evidencias', '/ciclope': 'CICLOPE · reuniones y actas',
+  '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/configuracion': 'Configuración técnica', '/comunicaciones': 'Comunicaciones institucionales', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro', '/actuaciones': 'Actuaciones y evidencias', '/ciclope': 'CICLOPE · reuniones y actas',
 };
+const restrictedCommunicationRoles: readonly UserRoleValue[] = [UserRole.consulta_c1, UserRole.consulta_auditora];
 
 function messageFor(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -78,6 +81,8 @@ function Routed() {
         <Route path="/forgot-password" component={ForgotPasswordPage} />
         <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/usuarios"><ProtectedPage page="users" /></Route>
+        <Route path="/configuracion"><ProtectedPage page="configuration" /></Route>
+        <Route path="/comunicaciones"><ProtectedPage page="communications" /></Route>
         <Route path="/cuenta"><ProtectedPage page="account" /></Route>
         <Route path="/cursos"><ProtectedPage page="years" /></Route>
         <Route path="/catalogo"><ProtectedPage page="catalog" /></Route>
@@ -91,7 +96,7 @@ function Routed() {
   );
 }
 
-function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' | 'activities' | 'account' | 'years' | 'ciclope' }) {
+function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration' | 'communications' | 'catalog' | 'pic' | 'activities' | 'account' | 'years' | 'ciclope' }) {
   const [, setLocation] = useLocation();
   const status = useGetSetupStatus({ query: { queryKey: getGetSetupStatusQueryKey(), retry: false } });
   const current = useGetCurrentUser({
@@ -113,6 +118,8 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
   }
   if (current.isError) return <LoadingScreen label="Redirigiendo al acceso" />;
   if (page === 'years' && !hasCoordinationAccess(current.data.user.role)) return <NotFound />;
+  if (page === 'configuration' && current.data.user.role !== UserRole.admin_tecnico) return <NotFound />;
+  if (page === 'communications' && restrictedCommunicationRoles.includes(current.data.user.role)) return <NotFound />;
   if (
     page === 'activities' &&
     ![
@@ -127,7 +134,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
   }
   return (
     <Workspace user={current.data.user}>
-      {page === 'ciclope' ? <CiclopePage user={current.data.user} /> : page === 'years' ? <SchoolYearsPage /> : page === 'account' ? <AccountPage user={current.data.user} /> : page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
+      {page === 'communications' ? <CommunicationsPage userId={current.data.user.id} /> : page === 'configuration' ? <AdminConfigurationPage /> : page === 'ciclope' ? <CiclopePage user={current.data.user} /> : page === 'years' ? <SchoolYearsPage /> : page === 'account' ? <AccountPage user={current.data.user} /> : page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
         page === 'users' ? <UsersPage /> : page === 'catalog' ? <CatalogPage user={current.data.user} /> : page === 'pic' ? <PicPlanPage user={current.data.user} /> : <ActivitiesPhaseTwo user={current.data.user} />}
     </Workspace>
   );
@@ -172,6 +179,8 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
           <nav id="primary-navigation" className="workspace-nav" aria-label="Navegación principal">
             <NavItem href="/" active={location === '/'} icon={<LayoutDashboard size={18} />} label="Panel principal" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             {user.role === UserRole.admin_tecnico && <NavItem href="/usuarios" active={location === '/usuarios'} icon={<Users size={18} />} label="Usuarios y permisos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {user.role === UserRole.admin_tecnico && <NavItem href="/configuracion" active={location === '/configuracion'} icon={<Settings size={18} />} label="Configuración" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {!restrictedCommunicationRoles.includes(user.role) && <NavItem href="/comunicaciones" active={location === '/comunicaciones'} icon={<Mail size={18} />} label="Comunicaciones" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {hasCoordinationAccess(user.role) && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {hasCoordinationAccess(user.role) && <NavItem href="/cursos" active={location === '/cursos'} icon={<CalendarDays size={18} />} label="Cursos académicos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {[UserRole.admin_tecnico, UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}

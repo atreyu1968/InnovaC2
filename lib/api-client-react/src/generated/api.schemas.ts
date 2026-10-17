@@ -220,6 +220,335 @@ export interface CiclopeVersion {
   createdBy: string;
 }
 
+export type MailSettingsSenderAlias = typeof MailSettingsSenderAlias[keyof typeof MailSettingsSenderAlias];
+
+
+export const MailSettingsSenderAlias = {
+  innovacion: 'innovacion',
+  ciclope: 'ciclope',
+  proyectos: 'proyectos',
+} as const;
+
+export interface MailSettings {
+  centerId: string;
+  sendEnabled: boolean;
+  revision: number;
+  senderAlias: MailSettingsSenderAlias;
+  replyTo: string;
+  sendApprovalRequired: boolean;
+}
+
+export interface MailDomainRecord {
+  type: string;
+  name: string;
+  value: string;
+  status: string;
+  priority?: number | null;
+}
+
+export interface MailProviderStatus {
+  keyConfigured: boolean;
+  webhookConfigured: boolean;
+  deploymentEnabled: boolean;
+  domain: string;
+  domainVerified: boolean;
+  domainStatus: string;
+  records: MailDomainRecord[];
+}
+
+export interface MailAdminSettings {
+  settings: MailSettings;
+  provider: MailProviderStatus;
+  lastDomainCheck?: string | null;
+  lastDomainStatus?: string;
+  domainRecords?: MailDomainRecord[];
+}
+
+export type MailSettingsInputSenderAlias = typeof MailSettingsInputSenderAlias[keyof typeof MailSettingsInputSenderAlias];
+
+
+export const MailSettingsInputSenderAlias = {
+  innovacion: 'innovacion',
+  ciclope: 'ciclope',
+  proyectos: 'proyectos',
+} as const;
+
+export interface MailSettingsInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  sendEnabled: boolean;
+  senderAlias: MailSettingsInputSenderAlias;
+  /** @maxLength 250 */
+  replyTo: string;
+}
+
+export interface MailRevisionInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+}
+
+export interface MailAssignInput {
+  userId: string;
+}
+
+export type ResendWebhookBodyData = { [key: string]: unknown };
+
+export interface ResendWebhookBody {
+  type: string;
+  data: ResendWebhookBodyData;
+}
+
+export interface MailContact {
+  id: string;
+  email: string;
+  displayName: string;
+  segment: string;
+  professionalFamily: string | null;
+  institution: string | null;
+  authorizationNote: string;
+  optOut: boolean;
+  active: boolean;
+}
+
+export type MailContactInputSegment = typeof MailContactInputSegment[keyof typeof MailContactInputSegment];
+
+
+export const MailContactInputSegment = {
+  direccion: 'direccion',
+  jefatura: 'jefatura',
+  profesorado: 'profesorado',
+  empresa: 'empresa',
+  coordinacion_c1: 'coordinacion_c1',
+  centro: 'centro',
+  familia: 'familia',
+  otro: 'otro',
+} as const;
+
+export interface MailContactInput {
+  /** @maxLength 254 */
+  email: string;
+  /**
+     * @minLength 1
+     * @maxLength 160
+     */
+  displayName: string;
+  segment: MailContactInputSegment;
+  /** @maxLength 160 */
+  professionalFamily?: string | null;
+  /** @maxLength 200 */
+  institution?: string | null;
+  /**
+     * @minLength 4
+     * @maxLength 1000
+     */
+  authorizationNote: string;
+  optOut: boolean;
+  active: boolean;
+}
+
+export type MailTemplateClassification = typeof MailTemplateClassification[keyof typeof MailTemplateClassification];
+
+
+export const MailTemplateClassification = {
+  obligatoria: 'obligatoria',
+  organizativa: 'organizativa',
+  informativa: 'informativa',
+  difusion: 'difusion',
+} as const;
+
+export interface MailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  classification: MailTemplateClassification;
+  updatedAt: string;
+}
+
+export type MailTemplateInputClassification = typeof MailTemplateInputClassification[keyof typeof MailTemplateInputClassification];
+
+
+export const MailTemplateInputClassification = {
+  obligatoria: 'obligatoria',
+  organizativa: 'organizativa',
+  informativa: 'informativa',
+  difusion: 'difusion',
+} as const;
+
+export interface MailTemplateInput {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  name: string;
+  /**
+     * @minLength 1
+     * @maxLength 250
+     */
+  subject: string;
+  /**
+     * @minLength 1
+     * @maxLength 20000
+     */
+  body: string;
+  classification: MailTemplateInputClassification;
+}
+
+export interface MailThreadSummary {
+  id: string;
+  subject: string;
+  topic: string;
+  priority: string;
+  folder: string;
+  assignedTo: string | null;
+  contactName: string;
+  contactEmail: string;
+  updatedAt: string;
+  revision: number;
+  lastStatus: string;
+  preview: string;
+}
+
+export type MailMessageAttachmentsItem = { [key: string]: unknown };
+
+export interface MailMessage {
+  id: string;
+  direction: string;
+  status: string;
+  sender: string;
+  recipient: string;
+  senderName?: string | null;
+  cc?: string | null;
+  replyTo?: string | null;
+  subject: string;
+  bodyText: string;
+  classification: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  sentAt?: string | null;
+  deliveredAt?: string | null;
+  createdAt: string;
+  revision: number;
+  attempts?: number;
+  lastError?: string | null;
+  createdBy: string | null;
+  attachments: MailMessageAttachmentsItem[];
+}
+
+export interface MailThreadDetail {
+  thread: MailThreadSummary;
+  messages: MailMessage[];
+}
+
+export interface MailOverview {
+  yearLabel: string;
+  canManage: boolean;
+  canApprove: boolean;
+  settings: MailSettings;
+  provider: MailProviderStatus;
+  contacts: MailContact[];
+  templates: MailTemplate[];
+  threads: MailThreadSummary[];
+}
+
+export type MailDraftInputClassification = typeof MailDraftInputClassification[keyof typeof MailDraftInputClassification];
+
+
+export const MailDraftInputClassification = {
+  obligatoria: 'obligatoria',
+  organizativa: 'organizativa',
+  informativa: 'informativa',
+  difusion: 'difusion',
+} as const;
+
+export interface MailDraftInput {
+  /**
+     * @minItems 1
+     * @maxItems 50
+     */
+  recipientContactIds: string[];
+  templateId?: string | null;
+  /**
+     * @minLength 1
+     * @maxLength 250
+     */
+  subject: string;
+  /**
+     * @minLength 1
+     * @maxLength 20000
+     */
+  bodyText: string;
+  classification: MailDraftInputClassification;
+  /** @maxItems 10 */
+  attachmentDocumentIds: string[];
+}
+
+export type MailDraftUpdateInputClassification = typeof MailDraftUpdateInputClassification[keyof typeof MailDraftUpdateInputClassification];
+
+
+export const MailDraftUpdateInputClassification = {
+  obligatoria: 'obligatoria',
+  organizativa: 'organizativa',
+  informativa: 'informativa',
+  difusion: 'difusion',
+} as const;
+
+export interface MailDraftUpdateInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  /**
+     * @minLength 1
+     * @maxLength 250
+     */
+  subject: string;
+  /**
+     * @minLength 1
+     * @maxLength 20000
+     */
+  bodyText: string;
+  classification: MailDraftUpdateInputClassification;
+  /** @maxItems 10 */
+  attachmentDocumentIds: string[];
+}
+
+export type MailThreadActionInputAction = typeof MailThreadActionInputAction[keyof typeof MailThreadActionInputAction];
+
+
+export const MailThreadActionInputAction = {
+  archivar: 'archivar',
+  recuperar: 'recuperar',
+  revisar: 'revisar',
+} as const;
+
+export interface MailThreadActionInput {
+  action: MailThreadActionInputAction;
+}
+
+export type MailReplyInputClassification = typeof MailReplyInputClassification[keyof typeof MailReplyInputClassification];
+
+
+export const MailReplyInputClassification = {
+  obligatoria: 'obligatoria',
+  organizativa: 'organizativa',
+  informativa: 'informativa',
+  difusion: 'difusion',
+} as const;
+
+export interface MailReplyInput {
+  /**
+     * @minLength 1
+     * @maxLength 20000
+     */
+  bodyText: string;
+  classification: MailReplyInputClassification;
+  /** @maxItems 10 */
+  attachmentDocumentIds: string[];
+}
+
+export interface MailDraftResult {
+  messages: MailMessage[];
+}
+
 export type CiclopeActionInputAction = typeof CiclopeActionInputAction[keyof typeof CiclopeActionInputAction];
 
 
@@ -1356,6 +1685,8 @@ export interface CreateIndicatorObservationInput {
   denominator?: number | null;
   evidenceIds?: string[];
 }
+
+export type CsrfTokenParameter = string;
 
 export type UploadDocumentParams = {
 /**

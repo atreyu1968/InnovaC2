@@ -21,3 +21,4 @@ export * from "./innova";
 export * from "./capture";
 export * from "./school-cycle";
 export * from "./ciclope";
+export * from "./mail";

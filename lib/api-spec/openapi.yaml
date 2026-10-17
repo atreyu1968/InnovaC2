@@ -29,6 +29,307 @@ tags:
   - name: indicators
     description: Observaciones y cálculos trazables de indicadores
 paths:
+  /mail/overview:
+    get:
+      operationId: getMailOverview
+      responses:
+        "200":
+          description: Bandeja y estado local del proveedor (sin contenido de mensajes)
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailOverview"}
+  /mail/threads/{threadId}:
+    parameters:
+      - in: path
+        name: threadId
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      operationId: getMailThread
+      responses:
+        "200":
+          description: Hilo visible para el usuario
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailThreadDetail"}
+  /mail/threads/{threadId}/reply:
+    parameters:
+      - in: path
+        name: threadId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: replyToMailThread
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailReplyInput"}
+      responses:
+        "201": {description: Respuesta guardada como borrador en el hilo existente}
+  /mail/contacts:
+    post:
+      operationId: createMailContact
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailContactInput"}
+      responses:
+        "201":
+          description: Contacto institucional autorizado para el curso activo
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailContact"}
+  /mail/contacts/{contactId}:
+    parameters:
+      - in: path
+        name: contactId
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      operationId: updateMailContact
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailContactInput"}
+      responses:
+        "200":
+          description: Contacto actualizado
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailContact"}
+  /mail/templates:
+    post:
+      operationId: createMailTemplate
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailTemplateInput"}
+      responses:
+        "201":
+          description: Plantilla versionada del curso activo
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailTemplate"}
+  /mail/templates/{templateId}:
+    parameters:
+      - in: path
+        name: templateId
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      operationId: updateMailTemplate
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailTemplateInput"}
+      responses:
+        "200":
+          description: Plantilla actualizada
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailTemplate"}
+  /mail/drafts:
+    post:
+      operationId: createMailDraft
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailDraftInput"}
+      responses:
+        "201":
+          description: Un mensaje privado individual por destinatario
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailDraftResult"}
+  /mail/drafts/{messageId}/submit:
+    parameters:
+      - in: path
+        name: messageId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: submitMailDraft
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      responses:
+        "200": {description: El borrador pasa a revisión humana}
+  /mail/drafts/{messageId}:
+    parameters:
+      - in: path
+        name: messageId
+        required: true
+        schema: {type: string, format: uuid}
+    patch:
+      operationId: updateMailDraft
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailDraftUpdateInput"}
+      responses:
+        "200": {description: Borrador del autor actualizado con control de revisión}
+  /mail/drafts/{messageId}/approve:
+    parameters:
+      - in: path
+        name: messageId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: approveMailDraft
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      responses:
+        "200": {description: Aprobación humana registrada}
+  /mail/drafts/{messageId}/send:
+    parameters:
+      - in: path
+        name: messageId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: queueMailDraft
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailRevisionInput"}
+      responses:
+        "200": {description: Incorporado a la cola persistente; el estado no implica entrega}
+  /mail/threads/{threadId}/assign:
+    parameters:
+      - in: path
+        name: threadId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: assignMailThread
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailAssignInput"}
+      responses:
+        "200": {description: Hilo asignado a una cuenta activa del mismo centro y curso}
+  /mail/threads/{threadId}/action:
+    parameters:
+      - in: path
+        name: threadId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: updateMailThreadAction
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailThreadActionInput"}
+      responses:
+        "200":
+          description: Cambio de carpeta trazable y autorizado
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailThreadSummary"}
+  /mail/attachments/{attachmentId}/approve:
+    parameters:
+      - in: path
+        name: attachmentId
+        required: true
+        schema: {type: string, format: uuid}
+    post:
+      operationId: approveMailAttachment
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      responses:
+        "200": {description: Adjunto limpio revisado explícitamente por personal autorizado}
+  /mail/attachments/{attachmentId}/download:
+    parameters:
+      - in: path
+        name: attachmentId
+        required: true
+        schema: {type: string, format: uuid}
+    get:
+      operationId: downloadMailAttachment
+      responses:
+        "200":
+          description: Archivo disponible solo tras análisis limpio y aprobación humana
+          content:
+            application/octet-stream:
+              schema: {type: string, format: binary}
+  /admin/mail/provider-status:
+    get:
+      operationId: getAdminMailSettings
+      responses:
+        "200":
+          description: Configuración técnica sin credenciales
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailAdminSettings"}
+  /admin/mail/provider-status/verify:
+    post:
+      operationId: verifyAdminMailProvider
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      responses:
+        "200":
+          description: Estado real del dominio consultado en Resend; nunca modifica DNS
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailAdminSettings"}
+  /admin/mail/settings:
+    put:
+      operationId: updateAdminMailSettings
+      parameters:
+        - {$ref: "#/components/parameters/CsrfToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/MailSettingsInput"}
+      responses:
+        "200":
+          description: Configuración persistente actualizada
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MailAdminSettings"}
+  /webhooks/resend:
+    post:
+      operationId: receiveResendWebhook
+      description: Verifica firma Svix y evita reintentos y eventos duplicados
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ResendWebhookBody"}
+      responses:
+        "200": {description: Evento autenticado registrado idempotentemente}
+        "401": {description: "Firma ausente, incorrecta o caducada"}
+        "413": {description: "Payload demasiado grande"}
   /ciclope:
     get:
       operationId: getCiclope
@@ -1696,6 +1997,12 @@ paths:
         "429":
           description: Ya se está preparando un paquete
 components:
+  parameters:
+    CsrfToken:
+      in: header
+      name: X-CSRF-Token
+      required: true
+      schema: {type: string}
   schemas:
     CiclopePerson:
       type: object
@@ -1860,6 +2167,233 @@ components:
         content: {$ref: "#/components/schemas/CiclopeMeeting"}
         createdAt: {type: string}
         createdBy: {type: string}
+    MailSettings:
+      type: object
+      required: [centerId, sendEnabled, revision, senderAlias, replyTo, sendApprovalRequired]
+      properties:
+        centerId: {type: string}
+        sendEnabled: {type: boolean}
+        revision: {type: integer}
+        senderAlias: {type: string, enum: [innovacion, ciclope, proyectos]}
+        replyTo: {type: string}
+        sendApprovalRequired: {type: boolean}
+    MailDomainRecord:
+      type: object
+      required: [type, name, value, status]
+      properties:
+        type: {type: string}
+        name: {type: string}
+        value: {type: string}
+        status: {type: string}
+        priority: {type: integer, nullable: true}
+    MailProviderStatus:
+      type: object
+      required: [keyConfigured, webhookConfigured, deploymentEnabled, domain, domainVerified, domainStatus, records]
+      properties:
+        keyConfigured: {type: boolean}
+        webhookConfigured: {type: boolean}
+        deploymentEnabled: {type: boolean}
+        domain: {type: string}
+        domainVerified: {type: boolean}
+        domainStatus: {type: string}
+        records:
+          type: array
+          items: {$ref: "#/components/schemas/MailDomainRecord"}
+    MailAdminSettings:
+      type: object
+      required: [settings, provider]
+      properties:
+        settings: {$ref: "#/components/schemas/MailSettings"}
+        provider: {$ref: "#/components/schemas/MailProviderStatus"}
+        lastDomainCheck: {type: string, nullable: true}
+        lastDomainStatus: {type: string}
+        domainRecords:
+          type: array
+          items: {$ref: "#/components/schemas/MailDomainRecord"}
+    MailSettingsInput:
+      type: object
+      required: [expectedRevision, sendEnabled, senderAlias, replyTo]
+      properties:
+        expectedRevision: {type: integer, minimum: 1}
+        sendEnabled: {type: boolean}
+        senderAlias: {type: string, enum: [innovacion, ciclope, proyectos]}
+        replyTo: {type: string, maxLength: 250}
+    MailRevisionInput:
+      type: object
+      required: [expectedRevision]
+      properties: {expectedRevision: {type: integer, minimum: 1}}
+    MailAssignInput:
+      type: object
+      required: [userId]
+      properties: {userId: {type: string, format: uuid}}
+    ResendWebhookBody:
+      type: object
+      required: [type, data]
+      properties:
+        type: {type: string}
+        data: {type: object}
+    MailContact:
+      type: object
+      required: [id, email, displayName, segment, professionalFamily, institution, authorizationNote, optOut, active]
+      properties:
+        id: {type: string}
+        email: {type: string}
+        displayName: {type: string}
+        segment: {type: string}
+        professionalFamily: {type: string, nullable: true}
+        institution: {type: string, nullable: true}
+        authorizationNote: {type: string}
+        optOut: {type: boolean}
+        active: {type: boolean}
+    MailContactInput:
+      type: object
+      required: [email, displayName, segment, authorizationNote, optOut, active]
+      properties:
+        email: {type: string, format: email, maxLength: 254}
+        displayName: {type: string, minLength: 1, maxLength: 160}
+        segment: {type: string, enum: [direccion, jefatura, profesorado, empresa, coordinacion_c1, centro, familia, otro]}
+        professionalFamily: {type: string, maxLength: 160, nullable: true}
+        institution: {type: string, maxLength: 200, nullable: true}
+        authorizationNote: {type: string, minLength: 4, maxLength: 1000}
+        optOut: {type: boolean}
+        active: {type: boolean}
+    MailTemplate:
+      type: object
+      required: [id, name, subject, body, classification, updatedAt]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        subject: {type: string}
+        body: {type: string}
+        classification: {type: string, enum: [obligatoria, organizativa, informativa, difusion]}
+        updatedAt: {type: string}
+    MailTemplateInput:
+      type: object
+      required: [name, subject, body, classification]
+      properties:
+        name: {type: string, minLength: 1, maxLength: 120}
+        subject: {type: string, minLength: 1, maxLength: 250}
+        body: {type: string, minLength: 1, maxLength: 20000}
+        classification: {type: string, enum: [obligatoria, organizativa, informativa, difusion]}
+    MailThreadSummary:
+      type: object
+      required: [id, subject, topic, priority, folder, assignedTo, contactName, contactEmail, updatedAt, revision, lastStatus, preview]
+      properties:
+        id: {type: string}
+        subject: {type: string}
+        topic: {type: string}
+        priority: {type: string}
+        folder: {type: string}
+        assignedTo: {type: string, nullable: true}
+        contactName: {type: string}
+        contactEmail: {type: string}
+        updatedAt: {type: string}
+        revision: {type: integer}
+        lastStatus: {type: string}
+        preview: {type: string}
+    MailMessage:
+      type: object
+      required: [id, direction, status, sender, recipient, subject, bodyText, classification, createdAt, revision, attachments, createdBy]
+      properties:
+        id: {type: string}
+        direction: {type: string}
+        status: {type: string}
+        sender: {type: string}
+        recipient: {type: string}
+        senderName: {type: string, nullable: true}
+        cc: {type: string, nullable: true}
+        replyTo: {type: string, nullable: true}
+        subject: {type: string}
+        bodyText: {type: string}
+        classification: {type: string}
+        approvedBy: {type: string, nullable: true}
+        approvedAt: {type: string, nullable: true}
+        sentAt: {type: string, nullable: true}
+        deliveredAt: {type: string, nullable: true}
+        createdAt: {type: string}
+        revision: {type: integer}
+        attempts: {type: integer}
+        lastError: {type: string, nullable: true}
+        createdBy: {type: string, nullable: true}
+        attachments:
+          type: array
+          items: {type: object}
+    MailThreadDetail:
+      type: object
+      required: [thread, messages]
+      properties:
+        thread: {$ref: "#/components/schemas/MailThreadSummary"}
+        messages:
+          type: array
+          items: {$ref: "#/components/schemas/MailMessage"}
+    MailOverview:
+      type: object
+      required: [yearLabel, canManage, canApprove, settings, provider, contacts, templates, threads]
+      properties:
+        yearLabel: {type: string}
+        canManage: {type: boolean}
+        canApprove: {type: boolean}
+        settings: {$ref: "#/components/schemas/MailSettings"}
+        provider: {$ref: "#/components/schemas/MailProviderStatus"}
+        contacts:
+          type: array
+          items: {$ref: "#/components/schemas/MailContact"}
+        templates:
+          type: array
+          items: {$ref: "#/components/schemas/MailTemplate"}
+        threads:
+          type: array
+          items: {$ref: "#/components/schemas/MailThreadSummary"}
+    MailDraftInput:
+      type: object
+      required: [recipientContactIds, subject, bodyText, classification, attachmentDocumentIds]
+      properties:
+        recipientContactIds:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items: {type: string, format: uuid}
+        templateId: {type: string, format: uuid, nullable: true}
+        subject: {type: string, minLength: 1, maxLength: 250}
+        bodyText: {type: string, minLength: 1, maxLength: 20000}
+        classification: {type: string, enum: [obligatoria, organizativa, informativa, difusion]}
+        attachmentDocumentIds:
+          type: array
+          maxItems: 10
+          items: {type: string, format: uuid}
+    MailDraftUpdateInput:
+      type: object
+      required: [expectedRevision, subject, bodyText, classification, attachmentDocumentIds]
+      properties:
+        expectedRevision: {type: integer, minimum: 1}
+        subject: {type: string, minLength: 1, maxLength: 250}
+        bodyText: {type: string, minLength: 1, maxLength: 20000}
+        classification: {type: string, enum: [obligatoria, organizativa, informativa, difusion]}
+        attachmentDocumentIds:
+          type: array
+          maxItems: 10
+          items: {type: string, format: uuid}
+    MailThreadActionInput:
+      type: object
+      required: [action]
+      properties: {action: {type: string, enum: [archivar, recuperar, revisar]}}
+    MailReplyInput:
+      type: object
+      required: [bodyText, classification, attachmentDocumentIds]
+      properties:
+        bodyText: {type: string, minLength: 1, maxLength: 20000}
+        classification: {type: string, enum: [obligatoria, organizativa, informativa, difusion]}
+        attachmentDocumentIds:
+          type: array
+          maxItems: 10
+          items: {type: string, format: uuid}
+    MailDraftResult:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          items: {$ref: "#/components/schemas/MailMessage"}
     CiclopeActionInput:
       type: object
       required: [expectedRevision, action]

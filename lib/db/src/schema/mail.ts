@@ -1,0 +1,147 @@
+import {
+  boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid,
+} from "drizzle-orm/pg-core";
+import { centersTable, schoolYearsTable, usersTable } from "./innova";
+
+export const mailSettingsTable = pgTable("mail_settings", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  centerId: uuid("center_id").notNull().unique().references(() => centersTable.id, { onDelete: "cascade" }),
+  sendEnabled: boolean("send_enabled").notNull().default(false),
+  revision: integer("revision").notNull().default(1),
+  senderAlias: text("sender_alias").notNull().default("innovacion"),
+  replyTo: text("reply_to").notNull().default("innovacion@buzon.iesmmg.org"),
+  sendApprovalRequired: boolean("send_approval_required").notNull().default(true),
+  lastDomainStatus: text("last_domain_status").notNull().default("sin_comprobar"),
+  lastDomainCheck: timestamp("last_domain_check", { withTimezone: true }),
+  domainRecords: jsonb("domain_records").notNull().default([]),
+  updatedBy: uuid("updated_by").references(() => usersTable.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const mailContactsTable = pgTable("mail_contacts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  centerId: uuid("center_id").notNull().references(() => centersTable.id, { onDelete: "cascade" }),
+  schoolYearId: uuid("school_year_id").notNull().references(() => schoolYearsTable.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  emailKey: text("email_key").notNull(),
+  displayName: text("display_name").notNull(),
+  segment: text("segment").notNull(),
+  professionalFamily: text("professional_family"),
+  institution: text("institution"),
+  authorizationNote: text("authorization_note").notNull(),
+  optOut: boolean("opt_out").notNull().default(false),
+  active: boolean("active").notNull().default(true),
+  createdBy: uuid("created_by").notNull().references(() => usersTable.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex("mail_contacts_year_email_uq").on(t.schoolYearId, t.emailKey),
+  index("mail_contacts_center_segment_idx").on(t.centerId, t.schoolYearId, t.segment),
+]);
+
+export const mailTemplatesTable = pgTable("mail_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  centerId: uuid("center_id").notNull().references(() => centersTable.id, { onDelete: "cascade" }),
+  schoolYearId: uuid("school_year_id").notNull().references(() => schoolYearsTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  classification: text("classification").notNull().default("organizativa"),
+  createdBy: uuid("created_by").notNull().references(() => usersTable.id),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("mail_templates_year_idx").on(t.schoolYearId)]);
+
+export const mailThreadsTable = pgTable("mail_threads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  centerId: uuid("center_id").notNull().references(() => centersTable.id, { onDelete: "cascade" }),
+  schoolYearId: uuid("school_year_id").notNull().references(() => schoolYearsTable.id, { onDelete: "cascade" }),
+  contactId: uuid("contact_id").references(() => mailContactsTable.id),
+  conversationKey: text("conversation_key").notNull(),
+  replyToken: text("reply_token").notNull(),
+  subject: text("subject").notNull(),
+  topic: text("topic").notNull().default("general"),
+  priority: text("priority").notNull().default("normal"),
+  folder: text("folder").notNull().default("entrada"),
+  revision: integer("revision").notNull().default(1),
+  assignedTo: uuid("assigned_to").references(() => usersTable.id),
+  createdBy: uuid("created_by").references(() => usersTable.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex("mail_threads_year_conversation_uq").on(t.schoolYearId, t.conversationKey),
+  uniqueIndex("mail_threads_reply_token_uq").on(t.replyToken),
+  index("mail_threads_assigned_idx").on(t.schoolYearId, t.assignedTo, t.updatedAt),
+]);
+
+export const mailMessagesTable = pgTable("mail_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  centerId: uuid("center_id").notNull().references(() => centersTable.id, { onDelete: "cascade" }),
+  schoolYearId: uuid("school_year_id").notNull().references(() => schoolYearsTable.id, { onDelete: "cascade" }),
+  threadId: uuid("thread_id").notNull().references(() => mailThreadsTable.id, { onDelete: "cascade" }),
+  contactId: uuid("contact_id").references(() => mailContactsTable.id),
+  direction: text("direction").notNull(),
+  status: text("status").notNull(),
+  revision: integer("revision").notNull().default(1),
+  sender: text("sender").notNull(),
+  recipient: text("recipient").notNull(),
+  senderName: text("sender_name"),
+  cc: text("cc"),
+  replyTo: text("reply_to"),
+  subject: text("subject").notNull(),
+  bodyText: text("body_text").notNull(),
+  classification: text("classification").notNull(),
+  inReplyTo: text("in_reply_to"),
+  referencesHeader: text("references_header"),
+  messageId: text("message_id"),
+  providerMessageId: text("provider_message_id"),
+  idempotencyKey: text("idempotency_key"),
+  attachmentSnapshot: jsonb("attachment_snapshot").notNull().default([]),
+  eventMetadata: jsonb("event_metadata").notNull().default({}),
+  createdBy: uuid("created_by").references(() => usersTable.id),
+  approvedBy: uuid("approved_by").references(() => usersTable.id),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+  retryAt: timestamp("retry_at", { withTimezone: true }),
+  attempts: integer("attempts").notNull().default(0),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("mail_messages_thread_idx").on(t.threadId, t.createdAt),
+  index("mail_messages_outbox_idx").on(t.status, t.retryAt),
+  uniqueIndex("mail_messages_provider_id_uq").on(t.providerMessageId),
+  uniqueIndex("mail_messages_message_id_uq").on(t.messageId),
+  uniqueIndex("mail_messages_idempotency_uq").on(t.idempotencyKey),
+]);
+
+export const mailWebhookEventsTable = pgTable("mail_webhook_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  providerEventId: text("provider_event_id").notNull().unique(),
+  eventType: text("event_type").notNull(),
+  providerMessageId: text("provider_message_id"),
+  payloadHash: text("payload_hash").notNull(),
+  status: text("status").notNull().default("pendiente"),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+  processedAt: timestamp("processed_at", { withTimezone: true }),
+  attempts: integer("attempts").notNull().default(0),
+  retryAt: timestamp("retry_at", { withTimezone: true }),
+  lastError: text("last_error"),
+}, (t) => [index("mail_webhook_pending_idx").on(t.status, t.retryAt)]);
+
+export const mailAttachmentsTable = pgTable("mail_attachments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  centerId: uuid("center_id").notNull().references(() => centersTable.id, { onDelete: "cascade" }),
+  schoolYearId: uuid("school_year_id").notNull().references(() => schoolYearsTable.id, { onDelete: "cascade" }),
+  messageId: uuid("message_id").notNull().references(() => mailMessagesTable.id, { onDelete: "cascade" }),
+  filename: text("filename").notNull(),
+  mediaType: text("media_type").notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  sha256: text("sha256").notNull(),
+  storageKey: text("storage_key").notNull().unique(),
+  scanStatus: text("scan_status").notNull(),
+  reviewedBy: uuid("reviewed_by").references(() => usersTable.id),
+  reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("mail_attachments_message_idx").on(t.messageId, t.createdAt)]);
+
