@@ -26,3 +26,9 @@ Active-course query aliases must discard old-course data on a course identity ch
 **Why:** React Query retains successful cached data after a subsequent 404. An empty new course can otherwise appear to contain the previous course's PIC even though the database is correctly empty.
 
 **How to apply:** Treat opening/closing as an identity boundary for current-course caches. Preserve immutable historical caches separately, and keep unavailable current-course data out of editable forms.
+
+Laycos exports are prepared for manual transcription only. The software never sends them or marks them submitted. A delivery receipt is a person's immutable attestation tied to a report snapshot and an approved document version; it is not proof of acceptance by Laycos. Attendance, certification and payment remain human-verified.
+
+**Why:** External submission, attendance and certification are official acts that cannot be inferred from a generated report, agenda, or internally recorded receipt.
+
+**How to apply:** Keep exports offline, require an explicit human confirmation for an internal receipt, and label its evidence and limits wherever the report is displayed or archived.

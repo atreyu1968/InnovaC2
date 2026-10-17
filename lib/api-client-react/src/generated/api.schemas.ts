@@ -1210,6 +1210,299 @@ export type PicSnapshotDetail = PicSnapshotSummary & {
   validation: PicPlanValidation;
 };
 
+export type PicFollowupType = typeof PicFollowupType[keyof typeof PicFollowupType];
+
+
+export const PicFollowupType = {
+  primer_trimestre: 'primer_trimestre',
+  segundo_trimestre: 'segundo_trimestre',
+  tercer_trimestre: 'tercer_trimestre',
+  memoria_final: 'memoria_final',
+  justificacion: 'justificacion',
+} as const;
+
+export type PicFollowupActionStatus = typeof PicFollowupActionStatus[keyof typeof PicFollowupActionStatus];
+
+
+export const PicFollowupActionStatus = {
+  no_iniciada: 'no_iniciada',
+  en_curso: 'en_curso',
+  completada: 'completada',
+  descartada: 'descartada',
+} as const;
+
+export interface PicFollowupAction {
+  /**
+     * @minLength 1
+     * @maxLength 32
+     */
+  actionCode: string;
+  actionTitle?: string;
+  objectiveCode?: string;
+  status: PicFollowupActionStatus;
+  /** @maxLength 4000 */
+  note: string;
+}
+
+export type PicFollowupSourceReferenceType = typeof PicFollowupSourceReferenceType[keyof typeof PicFollowupSourceReferenceType];
+
+
+export const PicFollowupSourceReferenceType = {
+  actuacion: 'actuacion',
+  evidencia: 'evidencia',
+  acta_ciclope: 'acta_ciclope',
+  agenda_c1: 'agenda_c1',
+  acuerdo: 'acuerdo',
+  indicador: 'indicador',
+} as const;
+
+export interface PicFollowupSourceReference {
+  type: PicFollowupSourceReferenceType;
+  id: string;
+  /** @maxLength 1000 */
+  note: string;
+  label?: string;
+  status?: string;
+  /** @nullable */
+  sourceDate?: string | null;
+}
+
+export interface PicFollowupAnnex {
+  documentId: string;
+  /**
+     * @minLength 1
+     * @maxLength 240
+     */
+  title: string;
+  /** @maxLength 1000 */
+  description: string;
+  versionId?: string;
+  fileName?: string;
+  sha256?: string;
+}
+
+export type PicCertificationCheckStatus = typeof PicCertificationCheckStatus[keyof typeof PicCertificationCheckStatus];
+
+
+export const PicCertificationCheckStatus = {
+  sin_verificar: 'sin_verificar',
+  confirmado_por_persona: 'confirmado_por_persona',
+  no_acreditado: 'no_acreditado',
+} as const;
+
+export interface PicCertificationCheck {
+  status: PicCertificationCheckStatus;
+  /** @maxLength 3000 */
+  observation: string;
+  sourceIds: string[];
+}
+
+export interface PicCertificationChecklist {
+  c1Attendance85: PicCertificationCheck;
+  planPresented: PicCertificationCheck;
+  quarterlyReportsOnTime: PicCertificationCheck;
+  finalMemoryOnTime: PicCertificationCheck;
+  certificationRequested: PicCertificationCheck;
+  /** @maxLength 2000 */
+  personConfirmedAttendanceSummary: string;
+}
+
+export interface PicFollowupContent {
+  actions: PicFollowupAction[];
+  /** @maxLength 16000 */
+  activitiesNarrative: string;
+  /** @maxLength 12000 */
+  incidents: string;
+  /** @maxLength 12000 */
+  adjustments: string;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  transferredDate: string | null;
+  /** @maxLength 16000 */
+  positiveAspects: string;
+  /** @maxLength 16000 */
+  difficulties: string;
+  /** @maxLength 16000 */
+  unmetObjectivesExplanation: string;
+  /** @maxLength 16000 */
+  improvements: string;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  centerMemoryDate: string | null;
+  sources: PicFollowupSourceReference[];
+  annexes: PicFollowupAnnex[];
+  certification: PicCertificationChecklist;
+}
+
+export interface PicFollowupWriteInput {
+  /** @minimum 0 */
+  expectedRevision: number;
+  content: PicFollowupContent;
+}
+
+export interface PicFollowupActionLabel {
+  code: string;
+  title: string;
+  objectiveCode: string;
+}
+
+export type PicFollowupReportStatus = typeof PicFollowupReportStatus[keyof typeof PicFollowupReportStatus];
+
+
+export const PicFollowupReportStatus = {
+  borrador: 'borrador',
+} as const;
+
+export interface PicFollowupReport {
+  id: string;
+  reportType: PicFollowupType;
+  revision: number;
+  status: PicFollowupReportStatus;
+  content: PicFollowupContent;
+  updatedAt: string;
+}
+
+export type PicFollowupSourceType = typeof PicFollowupSourceType[keyof typeof PicFollowupSourceType];
+
+
+export const PicFollowupSourceType = {
+  actuacion: 'actuacion',
+  evidencia: 'evidencia',
+  acta_ciclope: 'acta_ciclope',
+  agenda_c1: 'agenda_c1',
+  acuerdo: 'acuerdo',
+  indicador: 'indicador',
+} as const;
+
+export interface PicFollowupSource {
+  id: string;
+  type: PicFollowupSourceType;
+  label: string;
+  status: string;
+  /** @nullable */
+  sourceDate: string | null;
+  notice: string;
+}
+
+export interface PicFollowupDocument {
+  id: string;
+  title: string;
+  fileName: string;
+  sha256: string;
+}
+
+export interface PicFollowupWorkspace {
+  planId: string;
+  centerName: string;
+  schoolYear: string;
+  selectedActions: PicFollowupActionLabel[];
+  reports: PicFollowupReport[];
+  sources: PicFollowupSource[];
+  annexDocuments: PicFollowupDocument[];
+}
+
+export interface PicFollowupSnapshotInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  /**
+     * @minLength 4
+     * @maxLength 400
+     */
+  reason: string;
+}
+
+export type PicFollowupSnapshotValidation = {
+  complete: boolean;
+  warnings: string[];
+};
+
+export interface PicFollowupSnapshot {
+  id: string;
+  reportId: string;
+  reportType: PicFollowupType;
+  version: number;
+  reportRevision: number;
+  reason: string;
+  sourceHash: string;
+  content: PicFollowupContent;
+  validation: PicFollowupSnapshotValidation;
+  createdAt: string;
+}
+
+export interface PicFollowupDelivery {
+  id: string;
+  snapshotId: string;
+  reportType: PicFollowupType;
+  deliveryDate: string;
+  /** @nullable */
+  externalIdentifier: string | null;
+  proofDocumentTitle: string;
+  proofVersionId: string;
+  proofFileName: string;
+  proofSha256: string;
+  personConfirmed: boolean;
+  confirmation: string;
+  recordedByName: string;
+  createdAt: string;
+}
+
+export interface PicFollowupDetail {
+  report: PicFollowupReport;
+  snapshots: PicFollowupSnapshot[];
+  deliveries: PicFollowupDelivery[];
+}
+
+export interface PicFollowupDeliveryInput {
+  snapshotId: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  deliveryDate: string;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  externalIdentifier?: string | null;
+  proofDocumentId: string;
+  /**
+     * @minLength 15
+     * @maxLength 500
+     */
+  confirmation: string;
+  personConfirmed: true;
+}
+
+export type PicFollowupDeliveryList = PicFollowupDelivery[];
+
+export type LaycosFieldCertainty = typeof LaycosFieldCertainty[keyof typeof LaycosFieldCertainty];
+
+
+export const LaycosFieldCertainty = {
+  confirmado: 'confirmado',
+  sin_informacion: 'sin_informacion',
+  pendiente_validacion: 'pendiente_validacion',
+} as const;
+
+export interface LaycosField {
+  section: number;
+  label: string;
+  value: string;
+  certainty: LaycosFieldCertainty;
+  source: string;
+}
+
+export interface PicFollowupLaycosExport {
+  reportType: PicFollowupType;
+  snapshotId: string;
+  snapshotVersion: number;
+  schoolYear: string;
+  generatedAt: string;
+  fields: LaycosField[];
+  notice: string;
+}
+
 export type PicSubmissionInputEvidenceMimeType = typeof PicSubmissionInputEvidenceMimeType[keyof typeof PicSubmissionInputEvidenceMimeType];
 
 
@@ -1248,23 +1541,6 @@ export interface PicSubmissionEvidence {
   filename: string;
   mediaType: string;
   contentBase64: string;
-}
-
-export type LaycosFieldCertainty = typeof LaycosFieldCertainty[keyof typeof LaycosFieldCertainty];
-
-
-export const LaycosFieldCertainty = {
-  confirmado: 'confirmado',
-  sin_informacion: 'sin_informacion',
-  pendiente_validacion: 'pendiente_validacion',
-} as const;
-
-export interface LaycosField {
-  section: number;
-  label: string;
-  value: string;
-  certainty: LaycosFieldCertainty;
-  source: string;
 }
 
 export interface LaycosExport {

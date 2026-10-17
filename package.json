@@ -15,6 +15,7 @@
     "test:clamav": "node scripts/test-clamav.mjs",
     "test:password-reset": "node scripts/run-password-reset-test.mjs",
     "test:school-cycle": "pnpm --filter @workspace/api-server run build && node scripts/test-course-cache.mjs && node scripts/test-school-cycle.mjs",
+    "test:pic-followups": "pnpm --filter @workspace/api-server run build && node scripts/test-pic-followups.mjs",
     "test:school-cycle-backup": "pnpm --filter @workspace/api-server run build && node scripts/test-school-cycle.mjs --backup-restore",
     "test:password-change": "pnpm --filter @workspace/api-server run build && node scripts/test-password-change.mjs",
     "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"

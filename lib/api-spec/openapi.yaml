@@ -1219,6 +1219,211 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExportFile"
+  /plans/{planId}/followups:
+    get:
+      operationId: listPicFollowups
+      tags: [pic]
+      summary: List course follow-ups, source material and approved annex candidates
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        "200":
+          description: Current-course follow-ups and reusable source material
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PicFollowupWorkspace"
+  /plans/{planId}/followups/{reportType}:
+    put:
+      operationId: savePicFollowup
+      tags: [pic]
+      summary: Save a draft of a quarterly report, final memory or justification file
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PicFollowupWriteInput"
+      responses:
+        "200":
+          description: Draft saved
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupReport"}
+        "409":
+          description: Course closed or draft changed
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorResponse"}
+    get:
+      operationId: getPicFollowup
+      tags: [pic]
+      summary: Retrieve a course follow-up draft and its immutable snapshots
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+      responses:
+        "200":
+          description: Draft, snapshots and manual Laycos records
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupDetail"}
+        "404":
+          description: Follow-up not found
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorResponse"}
+  /plans/{planId}/followups/{reportType}/snapshots:
+    post:
+      operationId: createPicFollowupSnapshot
+      tags: [pic]
+      summary: Freeze a version of a follow-up without changing earlier snapshots
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupSnapshotInput"}
+      responses:
+        "201":
+          description: Immutable report snapshot created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupSnapshot"}
+        "409":
+          description: Draft changed while the snapshot was being created
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorResponse"}
+  /plans/{planId}/followups/{reportType}/deliveries:
+    get:
+      operationId: listPicFollowupDeliveries
+      tags: [pic]
+      summary: List person-confirmed manual Laycos deliveries
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+      responses:
+        "200":
+          description: Delivery receipts (empty until confirmed by a person)
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupDeliveryList"}
+    post:
+      operationId: recordPicFollowupDelivery
+      tags: [pic]
+      summary: Record an explicitly person-confirmed manual Laycos delivery
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PicFollowupDeliveryInput"}
+      responses:
+        "201":
+          description: Manual delivery record
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupDelivery"}
+        "400":
+          description: Confirmation or proof document is invalid
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorResponse"}
+  /plans/{planId}/followups/{reportType}/snapshots/{snapshotId}/exports/laycos:
+    get:
+      operationId: exportPicFollowupLaycos
+      tags: [pic]
+      summary: Prepare ordered section 11-14 fields for manual Laycos transcription
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+        - name: snapshotId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        "200":
+          description: Ordered manual Laycos fields from the selected immutable snapshot
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/PicFollowupLaycosExport"}
+  /plans/{planId}/followups/{reportType}/snapshots/{snapshotId}/exports/{format}:
+    get:
+      operationId: exportPicFollowupDocument
+      tags: [pic]
+      summary: Generate DOCX, PDF or structured JSON from an immutable follow-up snapshot
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+        - name: reportType
+          in: path
+          required: true
+          schema: {$ref: "#/components/schemas/PicFollowupType"}
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [docx, pdf, json]
+        - name: snapshotId
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        "200":
+          description: Export generated from the requested immutable snapshot
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ExportFile"}
   /activities:
     get:
       operationId: listActivities
@@ -3271,6 +3476,252 @@ components:
             validation:
               $ref: "#/components/schemas/PicPlanValidation"
           required: [content, validation]
+    PicFollowupType:
+      type: string
+      enum: [primer_trimestre, segundo_trimestre, tercer_trimestre, memoria_final, justificacion]
+    PicFollowupAction:
+      type: object
+      properties:
+        actionCode: {type: string, minLength: 1, maxLength: 32}
+        actionTitle: {type: string}
+        objectiveCode: {type: string}
+        status:
+          type: string
+          enum: [no_iniciada, en_curso, completada, descartada]
+        note: {type: string, maxLength: 4000}
+      required: [actionCode, status, note]
+    PicFollowupSourceReference:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [actuacion, evidencia, acta_ciclope, agenda_c1, acuerdo, indicador]
+        id: {type: string, format: uuid}
+        note: {type: string, maxLength: 1000}
+        label: {type: string}
+        status: {type: string}
+        sourceDate: {type: [string, "null"], format: date-time}
+      required: [type, id, note]
+    PicFollowupAnnex:
+      type: object
+      properties:
+        documentId: {type: string, format: uuid}
+        title: {type: string, minLength: 1, maxLength: 240}
+        description: {type: string, maxLength: 1000}
+        versionId: {type: string, format: uuid}
+        fileName: {type: string}
+        sha256: {type: string}
+      required: [documentId, title, description]
+    PicCertificationCheck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [sin_verificar, confirmado_por_persona, no_acreditado]
+        observation: {type: string, maxLength: 3000}
+        sourceIds:
+          type: array
+          items: {type: string, format: uuid}
+      required: [status, observation, sourceIds]
+    PicCertificationChecklist:
+      type: object
+      properties:
+        c1Attendance85: {$ref: "#/components/schemas/PicCertificationCheck"}
+        planPresented: {$ref: "#/components/schemas/PicCertificationCheck"}
+        quarterlyReportsOnTime: {$ref: "#/components/schemas/PicCertificationCheck"}
+        finalMemoryOnTime: {$ref: "#/components/schemas/PicCertificationCheck"}
+        certificationRequested: {$ref: "#/components/schemas/PicCertificationCheck"}
+        personConfirmedAttendanceSummary: {type: string, maxLength: 2000}
+      required:
+        - c1Attendance85
+        - planPresented
+        - quarterlyReportsOnTime
+        - finalMemoryOnTime
+        - certificationRequested
+        - personConfirmedAttendanceSummary
+    PicFollowupContent:
+      type: object
+      properties:
+        actions:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupAction"}
+        activitiesNarrative: {type: string, maxLength: 16000}
+        incidents: {type: string, maxLength: 12000}
+        adjustments: {type: string, maxLength: 12000}
+        transferredDate:
+          type: [string, "null"]
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        positiveAspects: {type: string, maxLength: 16000}
+        difficulties: {type: string, maxLength: 16000}
+        unmetObjectivesExplanation: {type: string, maxLength: 16000}
+        improvements: {type: string, maxLength: 16000}
+        centerMemoryDate:
+          type: [string, "null"]
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        sources:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupSourceReference"}
+        annexes:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupAnnex"}
+        certification: {$ref: "#/components/schemas/PicCertificationChecklist"}
+      required:
+        - actions
+        - activitiesNarrative
+        - incidents
+        - adjustments
+        - transferredDate
+        - positiveAspects
+        - difficulties
+        - unmetObjectivesExplanation
+        - improvements
+        - centerMemoryDate
+        - sources
+        - annexes
+        - certification
+    PicFollowupWriteInput:
+      type: object
+      properties:
+        expectedRevision: {type: integer, minimum: 0}
+        content: {$ref: "#/components/schemas/PicFollowupContent"}
+      required: [expectedRevision, content]
+    PicFollowupActionLabel:
+      type: object
+      properties:
+        code: {type: string}
+        title: {type: string}
+        objectiveCode: {type: string}
+      required: [code, title, objectiveCode]
+    PicFollowupReport:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        reportType: {$ref: "#/components/schemas/PicFollowupType"}
+        revision: {type: integer}
+        status: {type: string, enum: [borrador]}
+        content: {$ref: "#/components/schemas/PicFollowupContent"}
+        updatedAt: {type: string, format: date-time}
+      required: [id, reportType, revision, status, content, updatedAt]
+    PicFollowupSource:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        type: {type: string, enum: [actuacion, evidencia, acta_ciclope, agenda_c1, acuerdo, indicador]}
+        label: {type: string}
+        status: {type: string}
+        sourceDate: {type: [string, "null"], format: date-time}
+        notice: {type: string}
+      required: [id, type, label, status, sourceDate, notice]
+    PicFollowupDocument:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        title: {type: string}
+        fileName: {type: string}
+        sha256: {type: string}
+      required: [id, title, fileName, sha256]
+    PicFollowupWorkspace:
+      type: object
+      properties:
+        planId: {type: string, format: uuid}
+        centerName: {type: string}
+        schoolYear: {type: string}
+        selectedActions:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupActionLabel"}
+        reports:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupReport"}
+        sources:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupSource"}
+        annexDocuments:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupDocument"}
+      required: [planId, centerName, schoolYear, selectedActions, reports, sources, annexDocuments]
+    PicFollowupSnapshotInput:
+      type: object
+      properties:
+        expectedRevision: {type: integer, minimum: 1}
+        reason: {type: string, minLength: 4, maxLength: 400}
+      required: [expectedRevision, reason]
+    PicFollowupSnapshot:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        reportId: {type: string, format: uuid}
+        reportType: {$ref: "#/components/schemas/PicFollowupType"}
+        version: {type: integer}
+        reportRevision: {type: integer}
+        reason: {type: string}
+        sourceHash: {type: string}
+        content: {$ref: "#/components/schemas/PicFollowupContent"}
+        validation:
+          type: object
+          properties:
+            complete: {type: boolean}
+            warnings:
+              type: array
+              items: {type: string}
+          required: [complete, warnings]
+        createdAt: {type: string, format: date-time}
+      required: [id, reportId, reportType, version, reportRevision, reason, sourceHash, content, validation, createdAt]
+    PicFollowupDetail:
+      type: object
+      properties:
+        report: {$ref: "#/components/schemas/PicFollowupReport"}
+        snapshots:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupSnapshot"}
+        deliveries:
+          type: array
+          items: {$ref: "#/components/schemas/PicFollowupDelivery"}
+      required: [report, snapshots, deliveries]
+    PicFollowupDeliveryInput:
+      type: object
+      properties:
+        snapshotId: {type: string, format: uuid}
+        deliveryDate:
+          type: string
+          pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+        externalIdentifier: {type: [string, "null"], maxLength: 200}
+        proofDocumentId: {type: string, format: uuid}
+        confirmation: {type: string, minLength: 15, maxLength: 500}
+        personConfirmed: {type: boolean, enum: [true]}
+      required: [snapshotId, deliveryDate, proofDocumentId, confirmation, personConfirmed]
+    PicFollowupDelivery:
+      type: object
+      properties:
+        id: {type: string, format: uuid}
+        snapshotId: {type: string, format: uuid}
+        reportType: {$ref: "#/components/schemas/PicFollowupType"}
+        deliveryDate: {type: string}
+        externalIdentifier: {type: [string, "null"]}
+        proofDocumentTitle: {type: string}
+        proofVersionId: {type: string, format: uuid}
+        proofFileName: {type: string}
+        proofSha256: {type: string}
+        personConfirmed: {type: boolean}
+        confirmation: {type: string}
+        recordedByName: {type: string}
+        createdAt: {type: string, format: date-time}
+      required: [id, snapshotId, reportType, deliveryDate, externalIdentifier, proofDocumentTitle, proofVersionId, proofFileName, proofSha256, personConfirmed, confirmation, recordedByName, createdAt]
+    PicFollowupDeliveryList:
+      type: array
+      items: {$ref: "#/components/schemas/PicFollowupDelivery"}
+    PicFollowupLaycosExport:
+      type: object
+      properties:
+        reportType: {$ref: "#/components/schemas/PicFollowupType"}
+        snapshotId: {type: string, format: uuid}
+        snapshotVersion: {type: integer}
+        schoolYear: {type: string}
+        generatedAt: {type: string, format: date-time}
+        fields:
+          type: array
+          items: {$ref: "#/components/schemas/LaycosField"}
+        notice: {type: string}
+      required: [reportType, snapshotId, snapshotVersion, schoolYear, generatedAt, fields, notice]
     PicSubmissionInput:
       type: object
       properties:

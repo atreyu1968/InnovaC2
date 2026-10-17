@@ -8,7 +8,7 @@ import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter
 import {
   Activity, ArrowDownRight, ArrowLeft, ArrowRight, BookOpen, ChevronDown, ChevronRight,
   CalendarDays, CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu,
-  Mail, RefreshCw, Settings, ShieldCheck, Users, X,
+  FileCheck2, Mail, RefreshCw, Settings, ShieldCheck, Users, X,
 } from 'lucide-react';
 import {
   UserRole, getGetCurrentUserQueryKey, getGetDashboardSummaryQueryKey,
@@ -28,6 +28,7 @@ import { UserFamilyAssignment } from '@/components/UserFamilyAssignment';
 import { AccountPage } from '@/components/AccountPage';
 import { SchoolYearsPage } from '@/components/SchoolYearsPage';
 import { CiclopePage } from '@/components/CiclopePage';
+import { PicFollowupPage } from '@/components/PicFollowupPage';
 
 const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
 
@@ -49,7 +50,15 @@ const roleNames: Record<UserRoleValue, string> = {
 const routeLabels: Record<string, string> = {
   '/cuenta': 'Mi cuenta',
   '/cursos': 'Cursos académicos',
-  '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/configuracion': 'Configuración técnica', '/comunicaciones': 'Comunicaciones institucionales', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro', '/actuaciones': 'Actuaciones y evidencias', '/ciclope': 'CICLOPE · reuniones y actas',
+  '/': 'Panel de coordinación',
+  '/usuarios': 'Gestión de usuarios',
+  '/configuracion': 'Configuración técnica',
+  '/comunicaciones': 'Comunicaciones institucionales',
+  '/catalogo': 'Catálogo oficial',
+  '/plan-pic': 'Plan de Innovación del Centro',
+  '/seguimientos': 'Seguimientos PIC',
+  '/actuaciones': 'Actuaciones y evidencias',
+  '/ciclope': 'CICLOPE · reuniones y actas',
 };
 const restrictedCommunicationRoles: readonly UserRoleValue[] = [UserRole.consulta_c1, UserRole.consulta_auditora];
 
@@ -87,6 +96,7 @@ function Routed() {
         <Route path="/cursos"><ProtectedPage page="years" /></Route>
         <Route path="/catalogo"><ProtectedPage page="catalog" /></Route>
         <Route path="/plan-pic"><ProtectedPage page="pic" /></Route>
+        <Route path="/seguimientos"><ProtectedPage page="followups" /></Route>
         <Route path="/ciclope"><ProtectedPage page="ciclope" /></Route>
         <Route path="/actuaciones"><ProtectedPage page="activities" /></Route>
         <Route path="/"><ProtectedPage page="dashboard" /></Route>
@@ -96,7 +106,7 @@ function Routed() {
   );
 }
 
-function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration' | 'communications' | 'catalog' | 'pic' | 'activities' | 'account' | 'years' | 'ciclope' }) {
+function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration' | 'communications' | 'catalog' | 'pic' | 'followups' | 'activities' | 'account' | 'years' | 'ciclope' }) {
   const [, setLocation] = useLocation();
   const status = useGetSetupStatus({ query: { queryKey: getGetSetupStatusQueryKey(), retry: false } });
   const current = useGetCurrentUser({
@@ -120,6 +130,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration'
   if (page === 'years' && !hasCoordinationAccess(current.data.user.role)) return <NotFound />;
   if (page === 'configuration' && current.data.user.role !== UserRole.admin_tecnico) return <NotFound />;
   if (page === 'communications' && restrictedCommunicationRoles.includes(current.data.user.role)) return <NotFound />;
+  if (page === 'followups' && !hasCoordinationAccess(current.data.user.role)) return <NotFound />;
   if (
     page === 'activities' &&
     ![
@@ -134,8 +145,17 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'configuration'
   }
   return (
     <Workspace user={current.data.user}>
-      {page === 'communications' ? <CommunicationsPage userId={current.data.user.id} /> : page === 'configuration' ? <AdminConfigurationPage /> : page === 'ciclope' ? <CiclopePage user={current.data.user} /> : page === 'years' ? <SchoolYearsPage /> : page === 'account' ? <AccountPage user={current.data.user} /> : page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
-        page === 'users' ? <UsersPage /> : page === 'catalog' ? <CatalogPage user={current.data.user} /> : page === 'pic' ? <PicPlanPage user={current.data.user} /> : <ActivitiesPhaseTwo user={current.data.user} />}
+      {page === 'communications' ? <CommunicationsPage userId={current.data.user.id} /> :
+        page === 'configuration' ? <AdminConfigurationPage /> :
+          page === 'followups' ? <PicFollowupPage user={current.data.user} /> :
+            page === 'ciclope' ? <CiclopePage user={current.data.user} /> :
+              page === 'years' ? <SchoolYearsPage /> :
+                page === 'account' ? <AccountPage user={current.data.user} /> :
+                  page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
+                    page === 'users' ? <UsersPage /> :
+                      page === 'catalog' ? <CatalogPage user={current.data.user} /> :
+                        page === 'pic' ? <PicPlanPage user={current.data.user} /> :
+                          <ActivitiesPhaseTwo user={current.data.user} />}
     </Workspace>
   );
 }
@@ -182,6 +202,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
             {user.role === UserRole.admin_tecnico && <NavItem href="/configuracion" active={location === '/configuracion'} icon={<Settings size={18} />} label="Configuración" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {!restrictedCommunicationRoles.includes(user.role) && <NavItem href="/comunicaciones" active={location === '/comunicaciones'} icon={<Mail size={18} />} label="Comunicaciones" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {hasCoordinationAccess(user.role) && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {hasCoordinationAccess(user.role) && <NavItem href="/seguimientos" active={location === '/seguimientos'} icon={<FileCheck2 size={18} />} label="Seguimientos PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {hasCoordinationAccess(user.role) && <NavItem href="/cursos" active={location === '/cursos'} icon={<CalendarDays size={18} />} label="Cursos académicos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {[UserRole.admin_tecnico, UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             <NavItem href="/ciclope" active={location === '/ciclope'} icon={<Users size={18} />} label="CICLOPE" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />

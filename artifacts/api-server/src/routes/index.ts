@@ -13,6 +13,7 @@ import usersRouter from "./users";
 import schoolYearsRouter from "./school-years";
 import ciclopeRouter from "./ciclope";
 import mailRouter from "./mail";
+import followupsRouter from "./followups";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(staffRouter);
 router.use(usersRouter);
 router.use(catalogRouter);
 router.use(plansRouter);
+router.use(followupsRouter);
 
 export default router;

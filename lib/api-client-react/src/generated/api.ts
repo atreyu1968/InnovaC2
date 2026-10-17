@@ -72,6 +72,17 @@ import type {
   PasswordResetRequestInput,
   PasswordResetRequestResponse,
   PicCatalog,
+  PicFollowupDelivery,
+  PicFollowupDeliveryInput,
+  PicFollowupDeliveryList,
+  PicFollowupDetail,
+  PicFollowupLaycosExport,
+  PicFollowupReport,
+  PicFollowupSnapshot,
+  PicFollowupSnapshotInput,
+  PicFollowupType,
+  PicFollowupWorkspace,
+  PicFollowupWriteInput,
   PicPlan,
   PicPlanValidation,
   PicPlanWriteInput,
@@ -4671,6 +4682,699 @@ export function useExportPicPdf<TData = Awaited<ReturnType<typeof exportPicPdf>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getExportPicPdfQueryOptions(planId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListPicFollowupsUrl = (planId: string,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups`
+}
+
+/**
+ * @summary List course follow-ups, source material and approved annex candidates
+ */
+export const listPicFollowups = async (planId: string, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupWorkspace> => {
+
+  return customFetch<PicFollowupWorkspace>(getListPicFollowupsUrl(planId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPicFollowupsQueryKey = (planId: string,) => {
+    return [
+    `/api/v1/plans/${planId}/followups`
+    ] as const;
+    }
+
+
+export const getListPicFollowupsQueryOptions = <TData = Awaited<ReturnType<typeof listPicFollowups>>, TError = ErrorType<unknown>>(planId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPicFollowups>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPicFollowupsQueryKey(planId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPicFollowups>>> = ({ signal }) => listPicFollowups(planId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPicFollowups>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPicFollowupsQueryResult = NonNullable<Awaited<ReturnType<typeof listPicFollowups>>>
+export type ListPicFollowupsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List course follow-ups, source material and approved annex candidates
+ */
+
+export function useListPicFollowups<TData = Awaited<ReturnType<typeof listPicFollowups>>, TError = ErrorType<unknown>>(
+ planId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPicFollowups>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPicFollowupsQueryOptions(planId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSavePicFollowupUrl = (planId: string,
+    reportType: PicFollowupType,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}`
+}
+
+/**
+ * @summary Save a draft of a quarterly report, final memory or justification file
+ */
+export const savePicFollowup = async (planId: string,
+    reportType: PicFollowupType,
+    picFollowupWriteInput: PicFollowupWriteInput, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupReport> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PicFollowupReport>(getSavePicFollowupUrl(planId,reportType),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(picFollowupWriteInput)
+  }
+);}
+
+
+
+
+
+export const getSavePicFollowupMutationKey = () => ['savePicFollowup'] as const;
+
+export const getSavePicFollowupMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof savePicFollowup>>, TError,SavePicFollowupMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof savePicFollowup>>, TError,SavePicFollowupMutationVariables, TContext> => {
+
+const mutationKey = getSavePicFollowupMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof savePicFollowup>>, SavePicFollowupMutationVariables> = (props) => {
+          const {planId,reportType,data} = props ?? {};
+
+          return  savePicFollowup(planId,reportType,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SavePicFollowupMutationResult = NonNullable<Awaited<ReturnType<typeof savePicFollowup>>>
+    export type SavePicFollowupMutationBody = BodyType<PicFollowupWriteInput>
+    export type SavePicFollowupMutationError = ErrorType<ErrorResponse>
+    export type SavePicFollowupMutationVariables = {planId: string;reportType: PicFollowupType;data: BodyType<PicFollowupWriteInput>}
+
+    /**
+ * @summary Save a draft of a quarterly report, final memory or justification file
+ */
+export const useSavePicFollowup = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof savePicFollowup>>, TError,SavePicFollowupMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof savePicFollowup>>,
+        TError,
+        SavePicFollowupMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSavePicFollowupMutationOptions(options));
+    }
+
+export const getGetPicFollowupUrl = (planId: string,
+    reportType: PicFollowupType,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}`
+}
+
+/**
+ * @summary Retrieve a course follow-up draft and its immutable snapshots
+ */
+export const getPicFollowup = async (planId: string,
+    reportType: PicFollowupType, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupDetail> => {
+
+  return customFetch<PicFollowupDetail>(getGetPicFollowupUrl(planId,reportType),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPicFollowupQueryKey = (planId: string,
+    reportType: PicFollowupType,) => {
+    return [
+    `/api/v1/plans/${planId}/followups/${reportType}`
+    ] as const;
+    }
+
+
+export const getGetPicFollowupQueryOptions = <TData = Awaited<ReturnType<typeof getPicFollowup>>, TError = ErrorType<ErrorResponse>>(planId: string,
+    reportType: PicFollowupType, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPicFollowup>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPicFollowupQueryKey(planId,reportType);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPicFollowup>>> = ({ signal }) => getPicFollowup(planId,reportType, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPicFollowup>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPicFollowupQueryResult = NonNullable<Awaited<ReturnType<typeof getPicFollowup>>>
+export type GetPicFollowupQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary Retrieve a course follow-up draft and its immutable snapshots
+ */
+
+export function useGetPicFollowup<TData = Awaited<ReturnType<typeof getPicFollowup>>, TError = ErrorType<ErrorResponse>>(
+ planId: string,
+    reportType: PicFollowupType, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPicFollowup>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPicFollowupQueryOptions(planId,reportType,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePicFollowupSnapshotUrl = (planId: string,
+    reportType: PicFollowupType,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}/snapshots`
+}
+
+/**
+ * @summary Freeze a version of a follow-up without changing earlier snapshots
+ */
+export const createPicFollowupSnapshot = async (planId: string,
+    reportType: PicFollowupType,
+    picFollowupSnapshotInput: PicFollowupSnapshotInput, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupSnapshot> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PicFollowupSnapshot>(getCreatePicFollowupSnapshotUrl(planId,reportType),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(picFollowupSnapshotInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePicFollowupSnapshotMutationKey = () => ['createPicFollowupSnapshot'] as const;
+
+export const getCreatePicFollowupSnapshotMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPicFollowupSnapshot>>, TError,CreatePicFollowupSnapshotMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPicFollowupSnapshot>>, TError,CreatePicFollowupSnapshotMutationVariables, TContext> => {
+
+const mutationKey = getCreatePicFollowupSnapshotMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPicFollowupSnapshot>>, CreatePicFollowupSnapshotMutationVariables> = (props) => {
+          const {planId,reportType,data} = props ?? {};
+
+          return  createPicFollowupSnapshot(planId,reportType,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePicFollowupSnapshotMutationResult = NonNullable<Awaited<ReturnType<typeof createPicFollowupSnapshot>>>
+    export type CreatePicFollowupSnapshotMutationBody = BodyType<PicFollowupSnapshotInput>
+    export type CreatePicFollowupSnapshotMutationError = ErrorType<ErrorResponse>
+    export type CreatePicFollowupSnapshotMutationVariables = {planId: string;reportType: PicFollowupType;data: BodyType<PicFollowupSnapshotInput>}
+
+    /**
+ * @summary Freeze a version of a follow-up without changing earlier snapshots
+ */
+export const useCreatePicFollowupSnapshot = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPicFollowupSnapshot>>, TError,CreatePicFollowupSnapshotMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPicFollowupSnapshot>>,
+        TError,
+        CreatePicFollowupSnapshotMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreatePicFollowupSnapshotMutationOptions(options));
+    }
+
+export const getListPicFollowupDeliveriesUrl = (planId: string,
+    reportType: PicFollowupType,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}/deliveries`
+}
+
+/**
+ * @summary List person-confirmed manual Laycos deliveries
+ */
+export const listPicFollowupDeliveries = async (planId: string,
+    reportType: PicFollowupType, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupDeliveryList> => {
+
+  return customFetch<PicFollowupDeliveryList>(getListPicFollowupDeliveriesUrl(planId,reportType),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPicFollowupDeliveriesQueryKey = (planId: string,
+    reportType: PicFollowupType,) => {
+    return [
+    `/api/v1/plans/${planId}/followups/${reportType}/deliveries`
+    ] as const;
+    }
+
+
+export const getListPicFollowupDeliveriesQueryOptions = <TData = Awaited<ReturnType<typeof listPicFollowupDeliveries>>, TError = ErrorType<unknown>>(planId: string,
+    reportType: PicFollowupType, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPicFollowupDeliveries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPicFollowupDeliveriesQueryKey(planId,reportType);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPicFollowupDeliveries>>> = ({ signal }) => listPicFollowupDeliveries(planId,reportType, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPicFollowupDeliveries>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPicFollowupDeliveriesQueryResult = NonNullable<Awaited<ReturnType<typeof listPicFollowupDeliveries>>>
+export type ListPicFollowupDeliveriesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List person-confirmed manual Laycos deliveries
+ */
+
+export function useListPicFollowupDeliveries<TData = Awaited<ReturnType<typeof listPicFollowupDeliveries>>, TError = ErrorType<unknown>>(
+ planId: string,
+    reportType: PicFollowupType, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPicFollowupDeliveries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPicFollowupDeliveriesQueryOptions(planId,reportType,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRecordPicFollowupDeliveryUrl = (planId: string,
+    reportType: PicFollowupType,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}/deliveries`
+}
+
+/**
+ * @summary Record an explicitly person-confirmed manual Laycos delivery
+ */
+export const recordPicFollowupDelivery = async (planId: string,
+    reportType: PicFollowupType,
+    picFollowupDeliveryInput: PicFollowupDeliveryInput, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupDelivery> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PicFollowupDelivery>(getRecordPicFollowupDeliveryUrl(planId,reportType),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(picFollowupDeliveryInput)
+  }
+);}
+
+
+
+
+
+export const getRecordPicFollowupDeliveryMutationKey = () => ['recordPicFollowupDelivery'] as const;
+
+export const getRecordPicFollowupDeliveryMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPicFollowupDelivery>>, TError,RecordPicFollowupDeliveryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordPicFollowupDelivery>>, TError,RecordPicFollowupDeliveryMutationVariables, TContext> => {
+
+const mutationKey = getRecordPicFollowupDeliveryMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordPicFollowupDelivery>>, RecordPicFollowupDeliveryMutationVariables> = (props) => {
+          const {planId,reportType,data} = props ?? {};
+
+          return  recordPicFollowupDelivery(planId,reportType,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordPicFollowupDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof recordPicFollowupDelivery>>>
+    export type RecordPicFollowupDeliveryMutationBody = BodyType<PicFollowupDeliveryInput>
+    export type RecordPicFollowupDeliveryMutationError = ErrorType<ErrorResponse>
+    export type RecordPicFollowupDeliveryMutationVariables = {planId: string;reportType: PicFollowupType;data: BodyType<PicFollowupDeliveryInput>}
+
+    /**
+ * @summary Record an explicitly person-confirmed manual Laycos delivery
+ */
+export const useRecordPicFollowupDelivery = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPicFollowupDelivery>>, TError,RecordPicFollowupDeliveryMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof recordPicFollowupDelivery>>,
+        TError,
+        RecordPicFollowupDeliveryMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRecordPicFollowupDeliveryMutationOptions(options));
+    }
+
+export const getExportPicFollowupLaycosUrl = (planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}/snapshots/${snapshotId}/exports/laycos`
+}
+
+/**
+ * @summary Prepare ordered section 11-14 fields for manual Laycos transcription
+ */
+export const exportPicFollowupLaycos = async (planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string, options?: Parameters<typeof customFetch>[1]): Promise<PicFollowupLaycosExport> => {
+
+  return customFetch<PicFollowupLaycosExport>(getExportPicFollowupLaycosUrl(planId,reportType,snapshotId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportPicFollowupLaycosQueryKey = (planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,) => {
+    return [
+    `/api/v1/plans/${planId}/followups/${reportType}/snapshots/${snapshotId}/exports/laycos`
+    ] as const;
+    }
+
+
+export const getExportPicFollowupLaycosQueryOptions = <TData = Awaited<ReturnType<typeof exportPicFollowupLaycos>>, TError = ErrorType<unknown>>(planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupLaycos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportPicFollowupLaycosQueryKey(planId,reportType,snapshotId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicFollowupLaycos>>> = ({ signal }) => exportPicFollowupLaycos(planId,reportType,snapshotId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined && snapshotId !== null && snapshotId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupLaycos>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportPicFollowupLaycosQueryResult = NonNullable<Awaited<ReturnType<typeof exportPicFollowupLaycos>>>
+export type ExportPicFollowupLaycosQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Prepare ordered section 11-14 fields for manual Laycos transcription
+ */
+
+export function useExportPicFollowupLaycos<TData = Awaited<ReturnType<typeof exportPicFollowupLaycos>>, TError = ErrorType<unknown>>(
+ planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupLaycos>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportPicFollowupLaycosQueryOptions(planId,reportType,snapshotId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getExportPicFollowupDocumentUrl = (planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,
+    format: 'docx' | 'pdf' | 'json',) => {
+
+
+
+
+  return `/api/v1/plans/${planId}/followups/${reportType}/snapshots/${snapshotId}/exports/${format}`
+}
+
+/**
+ * @summary Generate DOCX, PDF or structured JSON from an immutable follow-up snapshot
+ */
+export const exportPicFollowupDocument = async (planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,
+    format: 'docx' | 'pdf' | 'json', options?: Parameters<typeof customFetch>[1]): Promise<ExportFile> => {
+
+  return customFetch<ExportFile>(getExportPicFollowupDocumentUrl(planId,reportType,snapshotId,format),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getExportPicFollowupDocumentQueryKey = (planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,
+    format: 'docx' | 'pdf' | 'json',) => {
+    return [
+    `/api/v1/plans/${planId}/followups/${reportType}/snapshots/${snapshotId}/exports/${format}`
+    ] as const;
+    }
+
+
+export const getExportPicFollowupDocumentQueryOptions = <TData = Awaited<ReturnType<typeof exportPicFollowupDocument>>, TError = ErrorType<unknown>>(planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,
+    format: 'docx' | 'pdf' | 'json', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupDocument>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getExportPicFollowupDocumentQueryKey(planId,reportType,snapshotId,format);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof exportPicFollowupDocument>>> = ({ signal }) => exportPicFollowupDocument(planId,reportType,snapshotId,format, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: planId !== null && planId !== undefined && reportType !== null && reportType !== undefined && snapshotId !== null && snapshotId !== undefined && format !== null && format !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupDocument>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ExportPicFollowupDocumentQueryResult = NonNullable<Awaited<ReturnType<typeof exportPicFollowupDocument>>>
+export type ExportPicFollowupDocumentQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Generate DOCX, PDF or structured JSON from an immutable follow-up snapshot
+ */
+
+export function useExportPicFollowupDocument<TData = Awaited<ReturnType<typeof exportPicFollowupDocument>>, TError = ErrorType<unknown>>(
+ planId: string,
+    reportType: PicFollowupType,
+    snapshotId: string,
+    format: 'docx' | 'pdf' | 'json', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof exportPicFollowupDocument>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getExportPicFollowupDocumentQueryOptions(planId,reportType,snapshotId,format,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

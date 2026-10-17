@@ -10,6 +10,7 @@ export const courseTables = [
   "activity_sources", "activity_people", "activity_indicator_links", "documents",
   "document_versions", "document_access_grants", "evidences", "evidence_links",
   "information_requests", "information_responses", "indicator_observations", "school_year_assignments",
+  "pic_followup_reports", "pic_followup_snapshots", "pic_followup_deliveries",
   "ciclope_policies", "ciclope_meetings", "ciclope_versions", "ciclope_tasks", "ciclope_notices",
   "mail_contacts", "mail_templates", "mail_threads", "mail_messages", "mail_attachments",
 ] as const;
@@ -64,6 +65,7 @@ export async function validateClosure(tx: CycleTx, yearId: string): Promise<Scho
   const result = await tx.execute<{
     pending_activities: string; pending_requests: string; pending_documents: string; plans: string; draft_plans: string;
     ciclope_sessions: string; pending_minutes: string; pending_agreements: string;
+    followup_reports: string; followup_snapshots: string;
   }>(sql`SELECT
     (SELECT count(*) FROM activities WHERE school_year_id=${yearId}::uuid AND status NOT IN ('validada','descartada')) AS pending_activities,
     (SELECT count(*) FROM information_requests WHERE school_year_id=${yearId}::uuid AND status IN ('solicitada','respondida')) AS pending_requests,
@@ -72,7 +74,9 @@ export async function validateClosure(tx: CycleTx, yearId: string): Promise<Scho
     (SELECT count(*) FROM pic_plans WHERE school_year_id=${yearId}::uuid AND status='draft') AS draft_plans,
     (SELECT count(*) FROM ciclope_meetings WHERE school_year_id=${yearId}::uuid AND kind='ciclope' AND state<>'cancelada') AS ciclope_sessions,
     (SELECT count(*) FROM ciclope_meetings WHERE school_year_id=${yearId}::uuid AND state IN ('celebrada','acta_borrador')) AS pending_minutes,
-    (SELECT count(*) FROM ciclope_tasks WHERE school_year_id=${yearId}::uuid AND completed_at IS NULL) AS pending_agreements`);
+    (SELECT count(*) FROM ciclope_tasks WHERE school_year_id=${yearId}::uuid AND completed_at IS NULL) AS pending_agreements,
+    (SELECT count(*) FROM pic_followup_reports WHERE school_year_id=${yearId}::uuid) AS followup_reports,
+    (SELECT count(*) FROM pic_followup_snapshots WHERE school_year_id=${yearId}::uuid) AS followup_snapshots`);
   const counts = result.rows[0]!;
   const blockers: string[] = [];
   const warnings: string[] = [];
@@ -85,6 +89,10 @@ export async function validateClosure(tx: CycleTx, yearId: string): Promise<Scho
   if (Number(counts.ciclope_sessions) < 4) warnings.push("CICLOPE no alcanza las cuatro sesiones programadas: se archivará su estado real, sin certificar cumplimiento.");
   if (Number(counts.pending_minutes)) warnings.push(`${counts.pending_minutes} reuniones conservan actas pendientes de validar.`);
   if (Number(counts.pending_agreements)) warnings.push(`${counts.pending_agreements} acuerdos conservan tareas abiertas en el expediente histórico.`);
+  if (Number(counts.followup_reports) < 5) warnings.push("Quedan seguimientos, memoria final o justificación sin borrador; el cierre conservará el estado real del PIC.");
+  if (Number(counts.followup_snapshots) < 5) warnings.push("No todos los informes del PIC tienen una instantánea inmutable.");
+  if (Number(counts.followup_reports) < 4) warnings.push("Quedan seguimientos o memoria final sin borrador; el cierre conservará el estado real del PIC.");
+  if (Number(counts.followup_snapshots) < 4) warnings.push("No todos los informes del PIC tienen una instantánea inmutable.");
   warnings.push("El cierre es irreversible. No se copiarán logros, indicadores ni documentos al curso siguiente.");
   return { canClose: !blockers.length, revision: year.revision, blockers, warnings };
 }

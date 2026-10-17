@@ -2478,6 +2478,874 @@ export const ExportPicPdfResponse = zod.object({
 
 
 /**
+ * @summary List course follow-ups, source material and approved annex candidates
+ */
+export const ListPicFollowupsParams = zod.object({
+  "planId": zod.coerce.string().uuid()
+})
+
+export const listPicFollowupsResponseReportsItemContentActionsItemActionCodeMax = 32;
+
+export const listPicFollowupsResponseReportsItemContentActionsItemNoteMax = 4000;
+
+export const listPicFollowupsResponseReportsItemContentActivitiesNarrativeMax = 16000;
+
+export const listPicFollowupsResponseReportsItemContentIncidentsMax = 12000;
+
+export const listPicFollowupsResponseReportsItemContentAdjustmentsMax = 12000;
+
+export const listPicFollowupsResponseReportsItemContentTransferredDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const listPicFollowupsResponseReportsItemContentPositiveAspectsMax = 16000;
+
+export const listPicFollowupsResponseReportsItemContentDifficultiesMax = 16000;
+
+export const listPicFollowupsResponseReportsItemContentUnmetObjectivesExplanationMax = 16000;
+
+export const listPicFollowupsResponseReportsItemContentImprovementsMax = 16000;
+
+export const listPicFollowupsResponseReportsItemContentCenterMemoryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const listPicFollowupsResponseReportsItemContentSourcesItemNoteMax = 1000;
+
+export const listPicFollowupsResponseReportsItemContentAnnexesItemTitleMax = 240;
+
+export const listPicFollowupsResponseReportsItemContentAnnexesItemDescriptionMax = 1000;
+
+export const listPicFollowupsResponseReportsItemContentCertificationC1Attendance85ObservationMax = 3000;
+
+export const listPicFollowupsResponseReportsItemContentCertificationPlanPresentedObservationMax = 3000;
+
+export const listPicFollowupsResponseReportsItemContentCertificationQuarterlyReportsOnTimeObservationMax = 3000;
+
+export const listPicFollowupsResponseReportsItemContentCertificationFinalMemoryOnTimeObservationMax = 3000;
+
+export const listPicFollowupsResponseReportsItemContentCertificationCertificationRequestedObservationMax = 3000;
+
+export const listPicFollowupsResponseReportsItemContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
+
+
+export const ListPicFollowupsResponse = zod.object({
+  "planId": zod.string().uuid(),
+  "centerName": zod.string(),
+  "schoolYear": zod.string(),
+  "selectedActions": zod.array(zod.object({
+  "code": zod.string(),
+  "title": zod.string(),
+  "objectiveCode": zod.string()
+})),
+  "reports": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "revision": zod.number().int(),
+  "status": zod.enum(['borrador']),
+  "content": zod.object({
+  "actions": zod.array(zod.object({
+  "actionCode": zod.string().min(1).max(listPicFollowupsResponseReportsItemContentActionsItemActionCodeMax),
+  "actionTitle": zod.string().optional(),
+  "objectiveCode": zod.string().optional(),
+  "status": zod.enum(['no_iniciada', 'en_curso', 'completada', 'descartada']),
+  "note": zod.string().max(listPicFollowupsResponseReportsItemContentActionsItemNoteMax)
+})),
+  "activitiesNarrative": zod.string().max(listPicFollowupsResponseReportsItemContentActivitiesNarrativeMax),
+  "incidents": zod.string().max(listPicFollowupsResponseReportsItemContentIncidentsMax),
+  "adjustments": zod.string().max(listPicFollowupsResponseReportsItemContentAdjustmentsMax),
+  "transferredDate": zod.string().regex(listPicFollowupsResponseReportsItemContentTransferredDateRegExp).nullable(),
+  "positiveAspects": zod.string().max(listPicFollowupsResponseReportsItemContentPositiveAspectsMax),
+  "difficulties": zod.string().max(listPicFollowupsResponseReportsItemContentDifficultiesMax),
+  "unmetObjectivesExplanation": zod.string().max(listPicFollowupsResponseReportsItemContentUnmetObjectivesExplanationMax),
+  "improvements": zod.string().max(listPicFollowupsResponseReportsItemContentImprovementsMax),
+  "centerMemoryDate": zod.string().regex(listPicFollowupsResponseReportsItemContentCenterMemoryDateRegExp).nullable(),
+  "sources": zod.array(zod.object({
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "id": zod.string().uuid(),
+  "note": zod.string().max(listPicFollowupsResponseReportsItemContentSourcesItemNoteMax),
+  "label": zod.string().optional(),
+  "status": zod.string().optional(),
+  "sourceDate": zod.coerce.date().nullish()
+})),
+  "annexes": zod.array(zod.object({
+  "documentId": zod.string().uuid(),
+  "title": zod.string().min(1).max(listPicFollowupsResponseReportsItemContentAnnexesItemTitleMax),
+  "description": zod.string().max(listPicFollowupsResponseReportsItemContentAnnexesItemDescriptionMax),
+  "versionId": zod.string().uuid().optional(),
+  "fileName": zod.string().optional(),
+  "sha256": zod.string().optional()
+})),
+  "certification": zod.object({
+  "c1Attendance85": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(listPicFollowupsResponseReportsItemContentCertificationC1Attendance85ObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "planPresented": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(listPicFollowupsResponseReportsItemContentCertificationPlanPresentedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "quarterlyReportsOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(listPicFollowupsResponseReportsItemContentCertificationQuarterlyReportsOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "finalMemoryOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(listPicFollowupsResponseReportsItemContentCertificationFinalMemoryOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "certificationRequested": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(listPicFollowupsResponseReportsItemContentCertificationCertificationRequestedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "personConfirmedAttendanceSummary": zod.string().max(listPicFollowupsResponseReportsItemContentCertificationPersonConfirmedAttendanceSummaryMax)
+})
+}),
+  "updatedAt": zod.coerce.date()
+})),
+  "sources": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "label": zod.string(),
+  "status": zod.string(),
+  "sourceDate": zod.coerce.date().nullable(),
+  "notice": zod.string()
+})),
+  "annexDocuments": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "fileName": zod.string(),
+  "sha256": zod.string()
+}))
+})
+
+
+/**
+ * @summary Save a draft of a quarterly report, final memory or justification file
+ */
+export const SavePicFollowupParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion'])
+})
+
+export const savePicFollowupBodyExpectedRevisionMin = 0;
+
+export const savePicFollowupBodyContentActionsItemActionCodeMax = 32;
+
+export const savePicFollowupBodyContentActionsItemNoteMax = 4000;
+
+export const savePicFollowupBodyContentActivitiesNarrativeMax = 16000;
+
+export const savePicFollowupBodyContentIncidentsMax = 12000;
+
+export const savePicFollowupBodyContentAdjustmentsMax = 12000;
+
+export const savePicFollowupBodyContentTransferredDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const savePicFollowupBodyContentPositiveAspectsMax = 16000;
+
+export const savePicFollowupBodyContentDifficultiesMax = 16000;
+
+export const savePicFollowupBodyContentUnmetObjectivesExplanationMax = 16000;
+
+export const savePicFollowupBodyContentImprovementsMax = 16000;
+
+export const savePicFollowupBodyContentCenterMemoryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const savePicFollowupBodyContentSourcesItemNoteMax = 1000;
+
+export const savePicFollowupBodyContentAnnexesItemTitleMax = 240;
+
+export const savePicFollowupBodyContentAnnexesItemDescriptionMax = 1000;
+
+export const savePicFollowupBodyContentCertificationC1Attendance85ObservationMax = 3000;
+
+export const savePicFollowupBodyContentCertificationPlanPresentedObservationMax = 3000;
+
+export const savePicFollowupBodyContentCertificationQuarterlyReportsOnTimeObservationMax = 3000;
+
+export const savePicFollowupBodyContentCertificationFinalMemoryOnTimeObservationMax = 3000;
+
+export const savePicFollowupBodyContentCertificationCertificationRequestedObservationMax = 3000;
+
+export const savePicFollowupBodyContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
+
+
+export const SavePicFollowupBody = zod.object({
+  "expectedRevision": zod.number().int().min(savePicFollowupBodyExpectedRevisionMin),
+  "content": zod.object({
+  "actions": zod.array(zod.object({
+  "actionCode": zod.string().min(1).max(savePicFollowupBodyContentActionsItemActionCodeMax),
+  "actionTitle": zod.string().optional(),
+  "objectiveCode": zod.string().optional(),
+  "status": zod.enum(['no_iniciada', 'en_curso', 'completada', 'descartada']),
+  "note": zod.string().max(savePicFollowupBodyContentActionsItemNoteMax)
+})),
+  "activitiesNarrative": zod.string().max(savePicFollowupBodyContentActivitiesNarrativeMax),
+  "incidents": zod.string().max(savePicFollowupBodyContentIncidentsMax),
+  "adjustments": zod.string().max(savePicFollowupBodyContentAdjustmentsMax),
+  "transferredDate": zod.string().regex(savePicFollowupBodyContentTransferredDateRegExp).nullable(),
+  "positiveAspects": zod.string().max(savePicFollowupBodyContentPositiveAspectsMax),
+  "difficulties": zod.string().max(savePicFollowupBodyContentDifficultiesMax),
+  "unmetObjectivesExplanation": zod.string().max(savePicFollowupBodyContentUnmetObjectivesExplanationMax),
+  "improvements": zod.string().max(savePicFollowupBodyContentImprovementsMax),
+  "centerMemoryDate": zod.string().regex(savePicFollowupBodyContentCenterMemoryDateRegExp).nullable(),
+  "sources": zod.array(zod.object({
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "id": zod.string().uuid(),
+  "note": zod.string().max(savePicFollowupBodyContentSourcesItemNoteMax),
+  "label": zod.string().optional(),
+  "status": zod.string().optional(),
+  "sourceDate": zod.coerce.date().nullish()
+})),
+  "annexes": zod.array(zod.object({
+  "documentId": zod.string().uuid(),
+  "title": zod.string().min(1).max(savePicFollowupBodyContentAnnexesItemTitleMax),
+  "description": zod.string().max(savePicFollowupBodyContentAnnexesItemDescriptionMax),
+  "versionId": zod.string().uuid().optional(),
+  "fileName": zod.string().optional(),
+  "sha256": zod.string().optional()
+})),
+  "certification": zod.object({
+  "c1Attendance85": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupBodyContentCertificationC1Attendance85ObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "planPresented": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupBodyContentCertificationPlanPresentedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "quarterlyReportsOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupBodyContentCertificationQuarterlyReportsOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "finalMemoryOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupBodyContentCertificationFinalMemoryOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "certificationRequested": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupBodyContentCertificationCertificationRequestedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "personConfirmedAttendanceSummary": zod.string().max(savePicFollowupBodyContentCertificationPersonConfirmedAttendanceSummaryMax)
+})
+})
+})
+
+export const savePicFollowupResponseContentActionsItemActionCodeMax = 32;
+
+export const savePicFollowupResponseContentActionsItemNoteMax = 4000;
+
+export const savePicFollowupResponseContentActivitiesNarrativeMax = 16000;
+
+export const savePicFollowupResponseContentIncidentsMax = 12000;
+
+export const savePicFollowupResponseContentAdjustmentsMax = 12000;
+
+export const savePicFollowupResponseContentTransferredDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const savePicFollowupResponseContentPositiveAspectsMax = 16000;
+
+export const savePicFollowupResponseContentDifficultiesMax = 16000;
+
+export const savePicFollowupResponseContentUnmetObjectivesExplanationMax = 16000;
+
+export const savePicFollowupResponseContentImprovementsMax = 16000;
+
+export const savePicFollowupResponseContentCenterMemoryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const savePicFollowupResponseContentSourcesItemNoteMax = 1000;
+
+export const savePicFollowupResponseContentAnnexesItemTitleMax = 240;
+
+export const savePicFollowupResponseContentAnnexesItemDescriptionMax = 1000;
+
+export const savePicFollowupResponseContentCertificationC1Attendance85ObservationMax = 3000;
+
+export const savePicFollowupResponseContentCertificationPlanPresentedObservationMax = 3000;
+
+export const savePicFollowupResponseContentCertificationQuarterlyReportsOnTimeObservationMax = 3000;
+
+export const savePicFollowupResponseContentCertificationFinalMemoryOnTimeObservationMax = 3000;
+
+export const savePicFollowupResponseContentCertificationCertificationRequestedObservationMax = 3000;
+
+export const savePicFollowupResponseContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
+
+
+export const SavePicFollowupResponse = zod.object({
+  "id": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "revision": zod.number().int(),
+  "status": zod.enum(['borrador']),
+  "content": zod.object({
+  "actions": zod.array(zod.object({
+  "actionCode": zod.string().min(1).max(savePicFollowupResponseContentActionsItemActionCodeMax),
+  "actionTitle": zod.string().optional(),
+  "objectiveCode": zod.string().optional(),
+  "status": zod.enum(['no_iniciada', 'en_curso', 'completada', 'descartada']),
+  "note": zod.string().max(savePicFollowupResponseContentActionsItemNoteMax)
+})),
+  "activitiesNarrative": zod.string().max(savePicFollowupResponseContentActivitiesNarrativeMax),
+  "incidents": zod.string().max(savePicFollowupResponseContentIncidentsMax),
+  "adjustments": zod.string().max(savePicFollowupResponseContentAdjustmentsMax),
+  "transferredDate": zod.string().regex(savePicFollowupResponseContentTransferredDateRegExp).nullable(),
+  "positiveAspects": zod.string().max(savePicFollowupResponseContentPositiveAspectsMax),
+  "difficulties": zod.string().max(savePicFollowupResponseContentDifficultiesMax),
+  "unmetObjectivesExplanation": zod.string().max(savePicFollowupResponseContentUnmetObjectivesExplanationMax),
+  "improvements": zod.string().max(savePicFollowupResponseContentImprovementsMax),
+  "centerMemoryDate": zod.string().regex(savePicFollowupResponseContentCenterMemoryDateRegExp).nullable(),
+  "sources": zod.array(zod.object({
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "id": zod.string().uuid(),
+  "note": zod.string().max(savePicFollowupResponseContentSourcesItemNoteMax),
+  "label": zod.string().optional(),
+  "status": zod.string().optional(),
+  "sourceDate": zod.coerce.date().nullish()
+})),
+  "annexes": zod.array(zod.object({
+  "documentId": zod.string().uuid(),
+  "title": zod.string().min(1).max(savePicFollowupResponseContentAnnexesItemTitleMax),
+  "description": zod.string().max(savePicFollowupResponseContentAnnexesItemDescriptionMax),
+  "versionId": zod.string().uuid().optional(),
+  "fileName": zod.string().optional(),
+  "sha256": zod.string().optional()
+})),
+  "certification": zod.object({
+  "c1Attendance85": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupResponseContentCertificationC1Attendance85ObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "planPresented": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupResponseContentCertificationPlanPresentedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "quarterlyReportsOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupResponseContentCertificationQuarterlyReportsOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "finalMemoryOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupResponseContentCertificationFinalMemoryOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "certificationRequested": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(savePicFollowupResponseContentCertificationCertificationRequestedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "personConfirmedAttendanceSummary": zod.string().max(savePicFollowupResponseContentCertificationPersonConfirmedAttendanceSummaryMax)
+})
+}),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Retrieve a course follow-up draft and its immutable snapshots
+ */
+export const GetPicFollowupParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion'])
+})
+
+export const getPicFollowupResponseReportContentActionsItemActionCodeMax = 32;
+
+export const getPicFollowupResponseReportContentActionsItemNoteMax = 4000;
+
+export const getPicFollowupResponseReportContentActivitiesNarrativeMax = 16000;
+
+export const getPicFollowupResponseReportContentIncidentsMax = 12000;
+
+export const getPicFollowupResponseReportContentAdjustmentsMax = 12000;
+
+export const getPicFollowupResponseReportContentTransferredDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getPicFollowupResponseReportContentPositiveAspectsMax = 16000;
+
+export const getPicFollowupResponseReportContentDifficultiesMax = 16000;
+
+export const getPicFollowupResponseReportContentUnmetObjectivesExplanationMax = 16000;
+
+export const getPicFollowupResponseReportContentImprovementsMax = 16000;
+
+export const getPicFollowupResponseReportContentCenterMemoryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getPicFollowupResponseReportContentSourcesItemNoteMax = 1000;
+
+export const getPicFollowupResponseReportContentAnnexesItemTitleMax = 240;
+
+export const getPicFollowupResponseReportContentAnnexesItemDescriptionMax = 1000;
+
+export const getPicFollowupResponseReportContentCertificationC1Attendance85ObservationMax = 3000;
+
+export const getPicFollowupResponseReportContentCertificationPlanPresentedObservationMax = 3000;
+
+export const getPicFollowupResponseReportContentCertificationQuarterlyReportsOnTimeObservationMax = 3000;
+
+export const getPicFollowupResponseReportContentCertificationFinalMemoryOnTimeObservationMax = 3000;
+
+export const getPicFollowupResponseReportContentCertificationCertificationRequestedObservationMax = 3000;
+
+export const getPicFollowupResponseReportContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
+export const getPicFollowupResponseSnapshotsItemContentActionsItemActionCodeMax = 32;
+
+export const getPicFollowupResponseSnapshotsItemContentActionsItemNoteMax = 4000;
+
+export const getPicFollowupResponseSnapshotsItemContentActivitiesNarrativeMax = 16000;
+
+export const getPicFollowupResponseSnapshotsItemContentIncidentsMax = 12000;
+
+export const getPicFollowupResponseSnapshotsItemContentAdjustmentsMax = 12000;
+
+export const getPicFollowupResponseSnapshotsItemContentTransferredDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getPicFollowupResponseSnapshotsItemContentPositiveAspectsMax = 16000;
+
+export const getPicFollowupResponseSnapshotsItemContentDifficultiesMax = 16000;
+
+export const getPicFollowupResponseSnapshotsItemContentUnmetObjectivesExplanationMax = 16000;
+
+export const getPicFollowupResponseSnapshotsItemContentImprovementsMax = 16000;
+
+export const getPicFollowupResponseSnapshotsItemContentCenterMemoryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getPicFollowupResponseSnapshotsItemContentSourcesItemNoteMax = 1000;
+
+export const getPicFollowupResponseSnapshotsItemContentAnnexesItemTitleMax = 240;
+
+export const getPicFollowupResponseSnapshotsItemContentAnnexesItemDescriptionMax = 1000;
+
+export const getPicFollowupResponseSnapshotsItemContentCertificationC1Attendance85ObservationMax = 3000;
+
+export const getPicFollowupResponseSnapshotsItemContentCertificationPlanPresentedObservationMax = 3000;
+
+export const getPicFollowupResponseSnapshotsItemContentCertificationQuarterlyReportsOnTimeObservationMax = 3000;
+
+export const getPicFollowupResponseSnapshotsItemContentCertificationFinalMemoryOnTimeObservationMax = 3000;
+
+export const getPicFollowupResponseSnapshotsItemContentCertificationCertificationRequestedObservationMax = 3000;
+
+export const getPicFollowupResponseSnapshotsItemContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
+
+
+export const GetPicFollowupResponse = zod.object({
+  "report": zod.object({
+  "id": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "revision": zod.number().int(),
+  "status": zod.enum(['borrador']),
+  "content": zod.object({
+  "actions": zod.array(zod.object({
+  "actionCode": zod.string().min(1).max(getPicFollowupResponseReportContentActionsItemActionCodeMax),
+  "actionTitle": zod.string().optional(),
+  "objectiveCode": zod.string().optional(),
+  "status": zod.enum(['no_iniciada', 'en_curso', 'completada', 'descartada']),
+  "note": zod.string().max(getPicFollowupResponseReportContentActionsItemNoteMax)
+})),
+  "activitiesNarrative": zod.string().max(getPicFollowupResponseReportContentActivitiesNarrativeMax),
+  "incidents": zod.string().max(getPicFollowupResponseReportContentIncidentsMax),
+  "adjustments": zod.string().max(getPicFollowupResponseReportContentAdjustmentsMax),
+  "transferredDate": zod.string().regex(getPicFollowupResponseReportContentTransferredDateRegExp).nullable(),
+  "positiveAspects": zod.string().max(getPicFollowupResponseReportContentPositiveAspectsMax),
+  "difficulties": zod.string().max(getPicFollowupResponseReportContentDifficultiesMax),
+  "unmetObjectivesExplanation": zod.string().max(getPicFollowupResponseReportContentUnmetObjectivesExplanationMax),
+  "improvements": zod.string().max(getPicFollowupResponseReportContentImprovementsMax),
+  "centerMemoryDate": zod.string().regex(getPicFollowupResponseReportContentCenterMemoryDateRegExp).nullable(),
+  "sources": zod.array(zod.object({
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "id": zod.string().uuid(),
+  "note": zod.string().max(getPicFollowupResponseReportContentSourcesItemNoteMax),
+  "label": zod.string().optional(),
+  "status": zod.string().optional(),
+  "sourceDate": zod.coerce.date().nullish()
+})),
+  "annexes": zod.array(zod.object({
+  "documentId": zod.string().uuid(),
+  "title": zod.string().min(1).max(getPicFollowupResponseReportContentAnnexesItemTitleMax),
+  "description": zod.string().max(getPicFollowupResponseReportContentAnnexesItemDescriptionMax),
+  "versionId": zod.string().uuid().optional(),
+  "fileName": zod.string().optional(),
+  "sha256": zod.string().optional()
+})),
+  "certification": zod.object({
+  "c1Attendance85": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseReportContentCertificationC1Attendance85ObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "planPresented": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseReportContentCertificationPlanPresentedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "quarterlyReportsOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseReportContentCertificationQuarterlyReportsOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "finalMemoryOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseReportContentCertificationFinalMemoryOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "certificationRequested": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseReportContentCertificationCertificationRequestedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "personConfirmedAttendanceSummary": zod.string().max(getPicFollowupResponseReportContentCertificationPersonConfirmedAttendanceSummaryMax)
+})
+}),
+  "updatedAt": zod.coerce.date()
+}),
+  "snapshots": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "reportId": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "version": zod.number().int(),
+  "reportRevision": zod.number().int(),
+  "reason": zod.string(),
+  "sourceHash": zod.string(),
+  "content": zod.object({
+  "actions": zod.array(zod.object({
+  "actionCode": zod.string().min(1).max(getPicFollowupResponseSnapshotsItemContentActionsItemActionCodeMax),
+  "actionTitle": zod.string().optional(),
+  "objectiveCode": zod.string().optional(),
+  "status": zod.enum(['no_iniciada', 'en_curso', 'completada', 'descartada']),
+  "note": zod.string().max(getPicFollowupResponseSnapshotsItemContentActionsItemNoteMax)
+})),
+  "activitiesNarrative": zod.string().max(getPicFollowupResponseSnapshotsItemContentActivitiesNarrativeMax),
+  "incidents": zod.string().max(getPicFollowupResponseSnapshotsItemContentIncidentsMax),
+  "adjustments": zod.string().max(getPicFollowupResponseSnapshotsItemContentAdjustmentsMax),
+  "transferredDate": zod.string().regex(getPicFollowupResponseSnapshotsItemContentTransferredDateRegExp).nullable(),
+  "positiveAspects": zod.string().max(getPicFollowupResponseSnapshotsItemContentPositiveAspectsMax),
+  "difficulties": zod.string().max(getPicFollowupResponseSnapshotsItemContentDifficultiesMax),
+  "unmetObjectivesExplanation": zod.string().max(getPicFollowupResponseSnapshotsItemContentUnmetObjectivesExplanationMax),
+  "improvements": zod.string().max(getPicFollowupResponseSnapshotsItemContentImprovementsMax),
+  "centerMemoryDate": zod.string().regex(getPicFollowupResponseSnapshotsItemContentCenterMemoryDateRegExp).nullable(),
+  "sources": zod.array(zod.object({
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "id": zod.string().uuid(),
+  "note": zod.string().max(getPicFollowupResponseSnapshotsItemContentSourcesItemNoteMax),
+  "label": zod.string().optional(),
+  "status": zod.string().optional(),
+  "sourceDate": zod.coerce.date().nullish()
+})),
+  "annexes": zod.array(zod.object({
+  "documentId": zod.string().uuid(),
+  "title": zod.string().min(1).max(getPicFollowupResponseSnapshotsItemContentAnnexesItemTitleMax),
+  "description": zod.string().max(getPicFollowupResponseSnapshotsItemContentAnnexesItemDescriptionMax),
+  "versionId": zod.string().uuid().optional(),
+  "fileName": zod.string().optional(),
+  "sha256": zod.string().optional()
+})),
+  "certification": zod.object({
+  "c1Attendance85": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseSnapshotsItemContentCertificationC1Attendance85ObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "planPresented": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseSnapshotsItemContentCertificationPlanPresentedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "quarterlyReportsOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseSnapshotsItemContentCertificationQuarterlyReportsOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "finalMemoryOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseSnapshotsItemContentCertificationFinalMemoryOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "certificationRequested": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(getPicFollowupResponseSnapshotsItemContentCertificationCertificationRequestedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "personConfirmedAttendanceSummary": zod.string().max(getPicFollowupResponseSnapshotsItemContentCertificationPersonConfirmedAttendanceSummaryMax)
+})
+}),
+  "validation": zod.object({
+  "complete": zod.boolean(),
+  "warnings": zod.array(zod.string())
+}),
+  "createdAt": zod.coerce.date()
+})),
+  "deliveries": zod.array(zod.object({
+  "id": zod.string().uuid(),
+  "snapshotId": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "deliveryDate": zod.string(),
+  "externalIdentifier": zod.string().nullable(),
+  "proofDocumentTitle": zod.string(),
+  "proofVersionId": zod.string().uuid(),
+  "proofFileName": zod.string(),
+  "proofSha256": zod.string(),
+  "personConfirmed": zod.boolean(),
+  "confirmation": zod.string(),
+  "recordedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Freeze a version of a follow-up without changing earlier snapshots
+ */
+export const CreatePicFollowupSnapshotParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion'])
+})
+
+
+export const createPicFollowupSnapshotBodyReasonMin = 4;
+export const createPicFollowupSnapshotBodyReasonMax = 400;
+
+
+
+export const CreatePicFollowupSnapshotBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "reason": zod.string().min(createPicFollowupSnapshotBodyReasonMin).max(createPicFollowupSnapshotBodyReasonMax)
+})
+
+export const createPicFollowupSnapshotResponseContentActionsItemActionCodeMax = 32;
+
+export const createPicFollowupSnapshotResponseContentActionsItemNoteMax = 4000;
+
+export const createPicFollowupSnapshotResponseContentActivitiesNarrativeMax = 16000;
+
+export const createPicFollowupSnapshotResponseContentIncidentsMax = 12000;
+
+export const createPicFollowupSnapshotResponseContentAdjustmentsMax = 12000;
+
+export const createPicFollowupSnapshotResponseContentTransferredDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createPicFollowupSnapshotResponseContentPositiveAspectsMax = 16000;
+
+export const createPicFollowupSnapshotResponseContentDifficultiesMax = 16000;
+
+export const createPicFollowupSnapshotResponseContentUnmetObjectivesExplanationMax = 16000;
+
+export const createPicFollowupSnapshotResponseContentImprovementsMax = 16000;
+
+export const createPicFollowupSnapshotResponseContentCenterMemoryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createPicFollowupSnapshotResponseContentSourcesItemNoteMax = 1000;
+
+export const createPicFollowupSnapshotResponseContentAnnexesItemTitleMax = 240;
+
+export const createPicFollowupSnapshotResponseContentAnnexesItemDescriptionMax = 1000;
+
+export const createPicFollowupSnapshotResponseContentCertificationC1Attendance85ObservationMax = 3000;
+
+export const createPicFollowupSnapshotResponseContentCertificationPlanPresentedObservationMax = 3000;
+
+export const createPicFollowupSnapshotResponseContentCertificationQuarterlyReportsOnTimeObservationMax = 3000;
+
+export const createPicFollowupSnapshotResponseContentCertificationFinalMemoryOnTimeObservationMax = 3000;
+
+export const createPicFollowupSnapshotResponseContentCertificationCertificationRequestedObservationMax = 3000;
+
+export const createPicFollowupSnapshotResponseContentCertificationPersonConfirmedAttendanceSummaryMax = 2000;
+
+
+
+export const CreatePicFollowupSnapshotResponse = zod.object({
+  "id": zod.string().uuid(),
+  "reportId": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "version": zod.number().int(),
+  "reportRevision": zod.number().int(),
+  "reason": zod.string(),
+  "sourceHash": zod.string(),
+  "content": zod.object({
+  "actions": zod.array(zod.object({
+  "actionCode": zod.string().min(1).max(createPicFollowupSnapshotResponseContentActionsItemActionCodeMax),
+  "actionTitle": zod.string().optional(),
+  "objectiveCode": zod.string().optional(),
+  "status": zod.enum(['no_iniciada', 'en_curso', 'completada', 'descartada']),
+  "note": zod.string().max(createPicFollowupSnapshotResponseContentActionsItemNoteMax)
+})),
+  "activitiesNarrative": zod.string().max(createPicFollowupSnapshotResponseContentActivitiesNarrativeMax),
+  "incidents": zod.string().max(createPicFollowupSnapshotResponseContentIncidentsMax),
+  "adjustments": zod.string().max(createPicFollowupSnapshotResponseContentAdjustmentsMax),
+  "transferredDate": zod.string().regex(createPicFollowupSnapshotResponseContentTransferredDateRegExp).nullable(),
+  "positiveAspects": zod.string().max(createPicFollowupSnapshotResponseContentPositiveAspectsMax),
+  "difficulties": zod.string().max(createPicFollowupSnapshotResponseContentDifficultiesMax),
+  "unmetObjectivesExplanation": zod.string().max(createPicFollowupSnapshotResponseContentUnmetObjectivesExplanationMax),
+  "improvements": zod.string().max(createPicFollowupSnapshotResponseContentImprovementsMax),
+  "centerMemoryDate": zod.string().regex(createPicFollowupSnapshotResponseContentCenterMemoryDateRegExp).nullable(),
+  "sources": zod.array(zod.object({
+  "type": zod.enum(['actuacion', 'evidencia', 'acta_ciclope', 'agenda_c1', 'acuerdo', 'indicador']),
+  "id": zod.string().uuid(),
+  "note": zod.string().max(createPicFollowupSnapshotResponseContentSourcesItemNoteMax),
+  "label": zod.string().optional(),
+  "status": zod.string().optional(),
+  "sourceDate": zod.coerce.date().nullish()
+})),
+  "annexes": zod.array(zod.object({
+  "documentId": zod.string().uuid(),
+  "title": zod.string().min(1).max(createPicFollowupSnapshotResponseContentAnnexesItemTitleMax),
+  "description": zod.string().max(createPicFollowupSnapshotResponseContentAnnexesItemDescriptionMax),
+  "versionId": zod.string().uuid().optional(),
+  "fileName": zod.string().optional(),
+  "sha256": zod.string().optional()
+})),
+  "certification": zod.object({
+  "c1Attendance85": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(createPicFollowupSnapshotResponseContentCertificationC1Attendance85ObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "planPresented": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(createPicFollowupSnapshotResponseContentCertificationPlanPresentedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "quarterlyReportsOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(createPicFollowupSnapshotResponseContentCertificationQuarterlyReportsOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "finalMemoryOnTime": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(createPicFollowupSnapshotResponseContentCertificationFinalMemoryOnTimeObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "certificationRequested": zod.object({
+  "status": zod.enum(['sin_verificar', 'confirmado_por_persona', 'no_acreditado']),
+  "observation": zod.string().max(createPicFollowupSnapshotResponseContentCertificationCertificationRequestedObservationMax),
+  "sourceIds": zod.array(zod.string().uuid())
+}),
+  "personConfirmedAttendanceSummary": zod.string().max(createPicFollowupSnapshotResponseContentCertificationPersonConfirmedAttendanceSummaryMax)
+})
+}),
+  "validation": zod.object({
+  "complete": zod.boolean(),
+  "warnings": zod.array(zod.string())
+}),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List person-confirmed manual Laycos deliveries
+ */
+export const ListPicFollowupDeliveriesParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion'])
+})
+
+export const ListPicFollowupDeliveriesResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "snapshotId": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "deliveryDate": zod.string(),
+  "externalIdentifier": zod.string().nullable(),
+  "proofDocumentTitle": zod.string(),
+  "proofVersionId": zod.string().uuid(),
+  "proofFileName": zod.string(),
+  "proofSha256": zod.string(),
+  "personConfirmed": zod.boolean(),
+  "confirmation": zod.string(),
+  "recordedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListPicFollowupDeliveriesResponse = zod.array(ListPicFollowupDeliveriesResponseItem)
+
+
+/**
+ * @summary Record an explicitly person-confirmed manual Laycos delivery
+ */
+export const RecordPicFollowupDeliveryParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion'])
+})
+
+export const recordPicFollowupDeliveryBodyDeliveryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const recordPicFollowupDeliveryBodyExternalIdentifierMax = 200;
+
+export const recordPicFollowupDeliveryBodyConfirmationMin = 15;
+export const recordPicFollowupDeliveryBodyConfirmationMax = 500;
+
+
+
+export const RecordPicFollowupDeliveryBody = zod.object({
+  "snapshotId": zod.string().uuid(),
+  "deliveryDate": zod.string().regex(recordPicFollowupDeliveryBodyDeliveryDateRegExp),
+  "externalIdentifier": zod.string().max(recordPicFollowupDeliveryBodyExternalIdentifierMax).nullish(),
+  "proofDocumentId": zod.string().uuid(),
+  "confirmation": zod.string().min(recordPicFollowupDeliveryBodyConfirmationMin).max(recordPicFollowupDeliveryBodyConfirmationMax),
+  "personConfirmed": zod.literal(true)
+})
+
+export const RecordPicFollowupDeliveryResponse = zod.object({
+  "id": zod.string().uuid(),
+  "snapshotId": zod.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "deliveryDate": zod.string(),
+  "externalIdentifier": zod.string().nullable(),
+  "proofDocumentTitle": zod.string(),
+  "proofVersionId": zod.string().uuid(),
+  "proofFileName": zod.string(),
+  "proofSha256": zod.string(),
+  "personConfirmed": zod.boolean(),
+  "confirmation": zod.string(),
+  "recordedByName": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Prepare ordered section 11-14 fields for manual Laycos transcription
+ */
+export const ExportPicFollowupLaycosParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "snapshotId": zod.coerce.string().uuid()
+})
+
+export const ExportPicFollowupLaycosResponse = zod.object({
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "snapshotId": zod.string().uuid(),
+  "snapshotVersion": zod.number().int(),
+  "schoolYear": zod.string(),
+  "generatedAt": zod.coerce.date(),
+  "fields": zod.array(zod.object({
+  "section": zod.number().int(),
+  "label": zod.string(),
+  "value": zod.string(),
+  "certainty": zod.enum(['confirmado', 'sin_informacion', 'pendiente_validacion']),
+  "source": zod.string()
+})),
+  "notice": zod.string()
+})
+
+
+/**
+ * @summary Generate DOCX, PDF or structured JSON from an immutable follow-up snapshot
+ */
+export const ExportPicFollowupDocumentParams = zod.object({
+  "planId": zod.coerce.string().uuid(),
+  "reportType": zod.enum(['primer_trimestre', 'segundo_trimestre', 'tercer_trimestre', 'memoria_final', 'justificacion']),
+  "format": zod.enum(['docx', 'pdf', 'json']),
+  "snapshotId": zod.coerce.string().uuid()
+})
+
+export const ExportPicFollowupDocumentResponse = zod.object({
+  "filename": zod.string(),
+  "mediaType": zod.string(),
+  "contentBase64": zod.string(),
+  "generatedAt": zod.coerce.date()
+})
+
+
+/**
  * @summary List activities within the user's permitted scope
  */
 export const listActivitiesResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
