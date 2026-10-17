@@ -90,6 +90,18 @@ export interface PasswordResetCompleteInput {
   password: string;
 }
 
+export interface PasswordChangeInput {
+  /**
+     * @minLength 1
+     * @maxLength 1024
+     */
+  currentPassword: string;
+  /**
+     * @minLength 12
+     * @maxLength 1024
+     */
+  password: string;
+}
 export interface SetupInitializeInput {
   email: string;
   /**
@@ -992,3 +1004,8 @@ export const UploadDocumentAccessScope = {
   restricted: 'restricted',
 } as const;
 
+
+export interface PasswordChangeResponse {
+  success: boolean;
+  noticeSent: boolean;
+}

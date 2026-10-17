@@ -162,6 +162,60 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /auth/password/change:
+    post:
+      operationId: changePassword
+      tags: [auth]
+      summary: Change own password and revoke other sessions
+      parameters:
+        - in: header
+          name: X-CSRF-Token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordChangeInput"
+      responses:
+        "200":
+          description: Password changed; current session retained
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordChangeResponse"
+        "400":
+          description: Invalid input or incorrect current password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Password or session changed concurrently
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Too many incorrect password attempts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /auth/logout:
     post:
       operationId: logout
@@ -1456,6 +1510,26 @@ components:
           minLength: 12
           maxLength: 1024
       required: [token, password]
+    PasswordChangeInput:
+      type: object
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        password:
+          type: string
+          minLength: 12
+          maxLength: 1024
+      required: [currentPassword, password]
+    PasswordChangeResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        noticeSent:
+          type: boolean
+      required: [success, noticeSent]
     SetupInitializeInput:
       type: object
       properties:
@@ -2588,4 +2662,3 @@ components:
           format: date-time
       required:
         [id, planId, indicatorCode, period, revision, value, method, formula, evidenceIds, sourceActivityCount, assessment, createdAt]
-

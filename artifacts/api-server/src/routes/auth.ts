@@ -1,6 +1,6 @@
 import argon2 from "argon2";
 import { Router, type Request } from "express";
-import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, isNull, ne, sql } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import {
   auditLogsTable,
@@ -13,6 +13,8 @@ import {
   usersTable,
 } from "@workspace/db";
 import {
+  ChangePasswordBody,
+  ChangePasswordResponse,
   CompletePasswordResetBody,
   CompletePasswordResetResponse,
   InitializeSetupBody,
@@ -467,6 +469,77 @@ router.post("/auth/password-reset/complete", async (req, res): Promise<void> => 
   clearSessionCookie(res);
   res.setHeader("Cache-Control", "no-store");
   res.json(CompletePasswordResetResponse.parse({ success: true }));
+});
+
+router.post("/auth/password/change", requireAuth, requireCsrf, async (req, res): Promise<void> => {
+  res.setHeader("Cache-Control", "no-store");
+  const context = res.locals.auth as AuthContext;
+  const parsed = ChangePasswordBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "La contraseña nueva debe tener entre 12 y 1024 caracteres." });
+    return;
+  }
+  const keys = [keyedHash(`password-change-user:${context.user.id}`)];
+  if (await hasActiveBlock(keys)) {
+    res.status(429).json({ error: "Demasiados intentos. Espera 15 minutos antes de volver a intentarlo." });
+    return;
+  }
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, context.user.id));
+  if (!user?.active) {
+    res.status(401).json({ error: "La sesión ha caducado o no es válida." });
+    return;
+  }
+  const matches = await argon2.verify(user.passwordHash, parsed.data.currentPassword).catch(() => false);
+  if (!matches) {
+    await recordFailedLogin(keys);
+    res.status(400).json({ error: "La contraseña actual no es correcta." });
+    return;
+  }
+  if (parsed.data.currentPassword === parsed.data.password) {
+    res.status(400).json({ error: "La contraseña nueva debe ser diferente de la actual." });
+    return;
+  }
+  const passwordHash = await argon2.hash(parsed.data.password, ARGON2_OPTIONS);
+  const changed = await db.transaction(async (tx) => {
+    // Compare-and-swap prevents two requests verified against the same old hash
+    // from both succeeding. Recheck the session in case it was revoked in flight.
+    const [updated] = await tx.update(usersTable)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(and(
+        eq(usersTable.id, user.id),
+        eq(usersTable.passwordHash, user.passwordHash),
+        eq(usersTable.active, true),
+        sql`EXISTS (SELECT 1 FROM ${authSessionsTable} WHERE ${authSessionsTable.id} = ${context.sessionId} AND ${authSessionsTable.userId} = ${user.id} AND ${authSessionsTable.expiresAt} > NOW())`,
+      ))
+      .returning({ email: usersTable.email });
+    if (!updated) return null;
+    await tx.delete(authSessionsTable).where(and(
+      eq(authSessionsTable.userId, user.id),
+      ne(authSessionsTable.id, context.sessionId),
+    ));
+    await tx.delete(passwordResetTokensTable).where(eq(passwordResetTokensTable.userId, user.id));
+    await tx.insert(auditLogsTable).values({
+      userId: user.id,
+      action: "auth.password.changed",
+      entityType: "user",
+      entityId: user.id,
+      ipHash: keyedHash(getClientIp(req)),
+    });
+    return updated;
+  });
+  if (!changed) {
+    res.status(409).json({ error: "La contraseña o la sesión ha cambiado. Recarga la página antes de volver a intentarlo." });
+    return;
+  }
+  await clearFailedLogins(keys);
+  let noticeSent = false;
+  try {
+    await sendPasswordChangeNoticeEmail(changed.email);
+    noticeSent = true;
+  } catch {
+    req.log.error({ errorCategory: "email_delivery_error" }, "Password change notification could not be sent");
+  }
+  res.json(ChangePasswordResponse.parse({ success: true, noticeSent }));
 });
 
 router.get("/auth/me", requireAuth, async (_req, res) => {

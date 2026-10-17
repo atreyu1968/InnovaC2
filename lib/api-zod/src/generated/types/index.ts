@@ -46,6 +46,8 @@ export * from './laycosExport';
 export * from './laycosField';
 export * from './laycosFieldCertainty';
 export * from './loginInput';
+export * from './passwordChangeInput';
+export * from './passwordChangeResponse';
 export * from './passwordResetCompleteInput';
 export * from './passwordResetRequestInput';
 export * from './passwordResetRequestResponse';

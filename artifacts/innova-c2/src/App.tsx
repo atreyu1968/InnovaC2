@@ -22,6 +22,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { PicPlanPage } from '@/components/PicPlanPage';
 import { ActivitiesPhaseTwo } from '@/components/ActivitiesPhaseTwo';
 import { UserFamilyAssignment } from '@/components/UserFamilyAssignment';
+import { AccountPage } from '@/components/AccountPage';
 
 const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
 
@@ -41,6 +42,7 @@ const roleNames: Record<UserRoleValue, string> = {
 };
 
 const routeLabels: Record<string, string> = {
+  '/cuenta': 'Mi cuenta',
   '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro', '/actuaciones': 'Actuaciones y evidencias',
 };
 
@@ -72,6 +74,7 @@ function Routed() {
         <Route path="/forgot-password" component={ForgotPasswordPage} />
         <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/usuarios"><ProtectedPage page="users" /></Route>
+        <Route path="/cuenta"><ProtectedPage page="account" /></Route>
         <Route path="/catalogo"><ProtectedPage page="catalog" /></Route>
         <Route path="/plan-pic"><ProtectedPage page="pic" /></Route>
         <Route path="/actuaciones"><ProtectedPage page="activities" /></Route>
@@ -82,7 +85,7 @@ function Routed() {
   );
 }
 
-function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' | 'activities' }) {
+function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' | 'activities' | 'account' }) {
   const [, setLocation] = useLocation();
   const status = useGetSetupStatus({ query: { queryKey: getGetSetupStatusQueryKey(), retry: false } });
   const current = useGetCurrentUser({
@@ -117,7 +120,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
   }
   return (
     <Workspace user={current.data.user}>
-      {page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
+      {page === 'account' ? <AccountPage user={current.data.user} /> : page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
         page === 'users' ? <UsersPage /> : page === 'catalog' ? <CatalogPage user={current.data.user} /> : page === 'pic' ? <PicPlanPage user={current.data.user} /> : <ActivitiesPhaseTwo user={current.data.user} />}
     </Workspace>
   );
@@ -165,6 +168,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
             {hasCoordinationAccess(user.role) && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {[UserRole.admin_tecnico, UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={18} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
+            <NavItem href="/cuenta" active={location === '/cuenta'} icon={<ShieldCheck size={18} />} label="Mi cuenta" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
           </nav>
           <div className="workspace-sidebar-bottom">
             {!collapsed && <div className="workspace-role-note"><div className="flex items-center gap-2 text-[11px] font-bold"><ShieldCheck size={15} />{user.role === UserRole.admin_tecnico ? 'Acceso completo del centro' : 'Acceso por roles'}</div><p className="mt-1.5 text-[10px] leading-relaxed">{user.role === UserRole.admin_tecnico ? 'Incluye las funciones de todos los roles. Las intervenciones se registran con tu identidad.' : 'Cada cuenta dispone únicamente de los permisos asignados.'}</p></div>}
