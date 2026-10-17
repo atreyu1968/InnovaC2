@@ -1,0 +1,1 @@
+- [Workspace visual direction](workspace-visual-direction.md) — Keep the aquamarine shell and desktop-floating/mobile-drawer navigation behavior.

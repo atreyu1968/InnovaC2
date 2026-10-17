@@ -105,7 +105,7 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
 function Workspace({ user, children }: { user: User; children: ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [, setLocation] = useLocation();
   const logout = useLogout();
   const client = useQueryClient();
@@ -118,48 +118,50 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
     },
   });
   return (
-    <div className="app-shell flex">
-      {mobileOpen && <button aria-label="Cerrar navegación" className="fixed inset-0 z-30 bg-slate-950/40 md:hidden" onClick={() => setMobileOpen(false)} data-testid="button-close-navigation" />}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col bg-[#1e3037] px-4 py-5 text-slate-100 transition-transform md:static md:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'} ${collapsed ? 'md:w-[76px]' : ''}`}>
-        <div className="flex items-center gap-3 px-2 pb-8">
-          <div className="brand-mark shrink-0">IC</div>
-          {!collapsed && <div><p className="font-[var(--app-font-serif)] text-[15px] font-extrabold tracking-tight">INNOVA-C2</p><p className="mt-0.5 text-[10px] tracking-[.12em] text-slate-400">IES MANUEL MARTÍN GONZÁLEZ</p></div>}
-          <button className="ml-auto rounded-md p-1 text-slate-400 hover:bg-white/10 md:hidden" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú" data-testid="button-close-menu"><X size={17} /></button>
+    <div className="app-shell">
+      <header className="workspace-header">
+        <button className="workspace-menu-button" onClick={() => setMobileOpen(true)} aria-label="Abrir navegación" aria-controls="primary-navigation" aria-expanded={mobileOpen} data-testid="button-open-navigation"><Menu size={20} /></button>
+        <div className="workspace-brand">
+          <div className="brand-mark shrink-0" aria-hidden="true">IC</div>
+          <div className="min-w-0"><p className="workspace-brand-name">INNOVA-C2</p><p className="workspace-brand-school">IES Manuel Martín González</p></div>
         </div>
-        {!collapsed && <p className="eyebrow px-3 pb-2 text-slate-500">Coordinación</p>}
-        <nav className="space-y-1" aria-label="Navegación principal">
-          <NavItem href="/" active={location === '/'} icon={<LayoutDashboard size={17} />} label="Panel" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
-          {user.role === UserRole.admin_tecnico && <NavItem href="/usuarios" active={location === '/usuarios'} icon={<Users size={17} />} label="Usuarios" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
-          {user.role === UserRole.c2_innovacion && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={17} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
-          <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={17} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
-        </nav>
-        <div className="mt-auto">
-          {!collapsed && <div className="mb-4 rounded-lg border border-white/10 bg-white/[.04] p-3">
-            <div className="flex items-center gap-2 text-[11px] font-semibold text-slate-300"><ShieldCheck size={15} className="text-[#81c2a7]" /> Acceso por roles</div>
-            <p className="mt-1.5 text-[10px] leading-relaxed text-slate-400">Cada cuenta dispone únicamente de los permisos asignados.</p>
-          </div>}
-          <div className="flex items-center gap-2 border-t border-white/10 px-2 pt-4">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#3e5a5c] text-xs font-bold text-white" aria-hidden="true">{user.name.split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase()}</div>
-            {!collapsed && <div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold text-white" data-testid="text-current-user">{user.name}</p><p className="truncate text-[10px] text-slate-400">{roleNames[user.role]}</p></div>}
-            <button onClick={signOut} disabled={logout.isPending} title="Cerrar sesión" aria-label="Cerrar sesión" className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-white" data-testid="button-logout"><LogOut size={16} /></button>
+        <div className="workspace-account">
+          <div className="workspace-avatar" aria-hidden="true">{user.name.split(/\s+/).slice(0, 2).map(n => n[0]).join('').toUpperCase()}</div>
+          <div className="workspace-account-copy"><p className="truncate text-xs font-bold" data-testid="text-current-user">{user.name}</p><p className="truncate text-[10px]">{roleNames[user.role]}</p></div>
+          <button onClick={signOut} disabled={logout.isPending} title="Cerrar sesión" aria-label="Cerrar sesión" className="workspace-logout" data-testid="button-logout"><LogOut size={16} /><span className="hidden sm:inline">{logout.isPending ? 'Cerrando…' : 'Cerrar sesión'}</span></button>
+        </div>
+      </header>
+      <div className="workspace-body">
+        {mobileOpen && <button aria-label="Cerrar navegación" className="workspace-scrim" onClick={() => setMobileOpen(false)} data-testid="button-close-navigation" />}
+        <aside className={`workspace-sidebar ${mobileOpen ? 'is-mobile-open' : ''} ${collapsed ? 'is-collapsed' : 'is-expanded'}`} aria-label="Navegación del espacio">
+          <div className="workspace-sidebar-mobile-head">
+            <span className="eyebrow">Coordinación</span>
+            <button className="workspace-close-menu" onClick={() => setMobileOpen(false)} aria-label="Cerrar menú" data-testid="button-close-menu"><X size={18} /></button>
           </div>
-        </div>
-        <button className="mt-4 hidden items-center justify-center rounded-md p-2 text-slate-500 hover:bg-white/10 md:flex" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Expandir navegación' : 'Contraer navegación'} data-testid="button-collapse-navigation"><ChevronRight size={16} className={collapsed ? '' : 'rotate-180'} /></button>
-      </aside>
-      <main className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 flex h-[68px] items-center gap-3 border-b border-[#e5dfd2] bg-[#f8f6ef]/95 px-4 backdrop-blur md:px-8">
-          <button className="rounded-md p-2 text-[#43545a] hover:bg-[#ebe8df] md:hidden" onClick={() => setMobileOpen(true)} aria-label="Abrir navegación" data-testid="button-open-navigation"><Menu size={20} /></button>
-          <div className="min-w-0"><p className="eyebrow hidden sm:block">IES Manuel Martín González</p><h1 className="truncate font-[var(--app-font-serif)] text-[16px] font-bold text-[#24343a] md:text-[18px]" data-testid="text-page-title">{label}</h1></div>
-          <div className="ml-auto flex items-center gap-2 text-[11px] text-[#65736f]"><span className="h-2 w-2 rounded-full bg-[#58a47e]" /> Entorno operativo</div>
-        </header>
-        <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-8 md:py-8">{children}</div>
-      </main>
+          <nav id="primary-navigation" className="workspace-nav" aria-label="Navegación principal">
+            <NavItem href="/" active={location === '/'} icon={<LayoutDashboard size={18} />} label="Panel principal" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
+            {user.role === UserRole.admin_tecnico && <NavItem href="/usuarios" active={location === '/usuarios'} icon={<Users size={18} />} label="Usuarios y permisos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {user.role === UserRole.c2_innovacion && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={18} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
+          </nav>
+          <div className="workspace-sidebar-bottom">
+            {!collapsed && <div className="workspace-role-note"><div className="flex items-center gap-2 text-[11px] font-bold"><ShieldCheck size={15} /> Acceso por roles</div><p className="mt-1.5 text-[10px] leading-relaxed">Cada cuenta dispone únicamente de los permisos asignados.</p></div>}
+          </div>
+        </aside>
+        <button className="workspace-collapse-button" type="button" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Expandir navegación' : 'Contraer navegación'} aria-controls="primary-navigation" aria-expanded={!collapsed} title={collapsed ? 'Expandir navegación' : 'Contraer navegación'} data-testid="button-collapse-navigation"><ChevronRight size={18} className={collapsed ? '' : 'rotate-180'} /><span className="sr-only">{collapsed ? 'Expandir navegación' : 'Contraer navegación'}</span></button>
+        <main className="workspace-main">
+          <div className="workspace-content" data-page={location}>
+            {location !== '/' && <div className="workspace-page-heading"><h1 data-testid="text-page-title">{label}</h1><p>IES Manuel Martín González · Espacio de coordinación</p></div>}
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
 
 function NavItem({ href, active, icon, label, collapsed, onSelect }: { href: string; active: boolean; icon: ReactNode; label: string; collapsed: boolean; onSelect: () => void }) {
-  return <Link href={href} className={`sidebar-link ${active ? 'active' : ''} ${collapsed ? 'md:justify-center md:px-0' : ''}`} title={collapsed ? label : undefined} onClick={onSelect} data-testid={`link-nav-${href === '/' ? 'panel' : href.slice(1)}`}>{icon}{!collapsed && <span>{label}</span>}</Link>;
+  return <Link href={href} className={`sidebar-link ${active ? 'active' : ''}`} title={collapsed ? label : undefined} aria-label={label} onClick={onSelect} data-testid={`link-nav-${href === '/' ? 'panel' : href.slice(1)}`}>{icon}<span className="sidebar-link-label">{label}</span></Link>;
 }
 
 function DashboardPage({ user }: { user: User }) {
@@ -167,20 +169,22 @@ function DashboardPage({ user }: { user: User }) {
   const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), retry: false, refetchInterval: 60_000 } });
   const summaryData = summary.data;
   return (
-    <div className="fade-up space-y-6">
-      <section className="flex flex-col justify-between gap-4 rounded-xl bg-[#263c42] px-5 py-6 text-white md:flex-row md:items-end md:px-8 md:py-7">
-        <div><p className="eyebrow text-[#9bc7b5]">Espacio de coordinación · {summaryData?.schoolYear ?? 'Curso escolar'}</p><h2 className="mt-2 max-w-2xl font-[var(--app-font-serif)] text-2xl font-bold tracking-tight md:text-[30px]">Buen día, {user.name.split(' ')[0]}.</h2><p className="mt-2 max-w-xl text-sm leading-relaxed text-[#c5d2d0]">Este es el estado actual del espacio de innovación y mejora del centro.</p></div>
-        <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[.06] px-3 py-2 text-xs text-[#d6e0db]" data-testid="status-api-health"><Activity size={15} className={health.data?.status ? 'text-[#8fd0ad]' : 'text-[#d6bb83'} />{health.isLoading ? 'Comprobando servicio' : health.isError ? 'Servicio no disponible' : `Servicio ${health.data?.status ?? 'sin estado'}`}</div>
+    <div className="dashboard-page fade-up">
+      <section className="dashboard-heading">
+        <div><h1 data-testid="text-page-title">Panel Principal</h1><p>Bienvenido/a, {user.name}. Ámbito del centro educativo.</p></div>
+        <div className={`dashboard-health ${health.isError ? 'is-error' : ''}`} data-testid="status-api-health"><span className="health-dot" />{health.isLoading ? 'Comprobando servicio' : health.isError ? 'Servicio no disponible' : `Servicio ${health.data?.status ?? 'sin estado'}`}</div>
       </section>
       {summary.isLoading ? <SummarySkeleton /> : summary.isError ? <ErrorNotice text={messageFor(summary.error)} onRetry={() => summary.refetch()} /> : summaryData ? <>
-        <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <section className="dashboard-metrics" aria-label="Resumen del centro">
           <MetricTile label="Cuentas de usuario" value={summaryData.userCount} detail="Cuentas registradas" icon={<Users size={17} />} testId="metric-users" />
-          <MetricTile label="Objetivos oficiales" value={summaryData.objectiveCount} detail={`Catálogo ${summaryData.catalogVersion}`} icon={<GraduationCap size={17} />} testId="metric-objectives" />
+          <MetricTile label="Objetivos oficiales" value={summaryData.objectiveCount} detail="Catálogo oficial" icon={<GraduationCap size={17} />} testId="metric-objectives" />
           <MetricTile label="Acciones oficiales" value={summaryData.actionCount} detail="Acciones del catálogo" icon={<ClipboardList size={17} />} testId="metric-actions" />
           <MetricTile label="Indicadores" value={summaryData.indicatorCount} detail="Indicadores asociados" icon={<Activity size={17} />} testId="metric-indicators" />
+          <MetricTile label="Curso escolar" value={summaryData.schoolYear} detail="Curso activo del centro" icon={<GraduationCap size={17} />} testId="metric-school-year" />
+          <MetricTile label="Versión del catálogo" value={summaryData.catalogVersion} detail="Referencia oficial PIC" icon={<BookOpen size={17} />} testId="metric-catalog-version" />
         </section>
-        <section className="grid gap-5 lg:grid-cols-[1.4fr_.8fr]">
-          <div className="panel p-5 md:p-6">
+        <section className="dashboard-panels">
+          <div className="panel institution-panel p-5 md:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="eyebrow">Datos del centro</p><h3 className="mt-1 font-[var(--app-font-serif)] text-lg font-bold">Configuración institucional</h3></div><span className="rounded-full bg-[#e7f1eb] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-[#31745e]">Activa</span></div>
             <div className="mt-5 grid gap-x-8 gap-y-4 border-t border-[#eee9df] pt-5 sm:grid-cols-2">
               <Definition label="Centro educativo" value={summaryData.centerName} testId="value-center-name" />
@@ -204,8 +208,8 @@ function DashboardPage({ user }: { user: User }) {
   );
 }
 
-function MetricTile({ label, value, detail, icon, testId }: { label: string; value: number; detail: string; icon: ReactNode; testId: string }) {
-  return <article className="panel min-h-[132px] p-4 md:p-5"><div className="flex items-center justify-between text-[#687772]"><span className="eyebrow !tracking-[.08em]">{label}</span><span className="grid h-8 w-8 place-items-center rounded-lg bg-[#eaf1eb] text-[#347b69]">{icon}</span></div><p className="mt-3 font-[var(--app-font-serif)] text-[30px] font-extrabold leading-none text-[#26383d]" data-testid={testId}>{value}</p><p className="mt-2 truncate text-[11px] text-[#7d8580]">{detail}</p></article>;
+function MetricTile({ label, value, detail, icon, testId }: { label: string; value: number | string; detail: string; icon: ReactNode; testId: string }) {
+  return <article className="panel metric-tile"><div className="metric-tile-top"><span className="eyebrow !tracking-[.08em]">{label}</span><span className="metric-icon">{icon}</span></div><p className="metric-value" data-testid={testId}>{value}</p><p className="metric-detail">{detail}</p></article>;
 }
 function Definition({ label, value, testId }: { label: string; value: string; testId: string }) {
   return <div><p className="text-[11px] text-[#7c8580]">{label}</p><p className="mt-1 break-words text-sm font-semibold text-[#34444a]" data-testid={testId}>{value}</p></div>;
@@ -431,7 +435,7 @@ function EmptyNotice({ title, text }: { title: string; text: string }) {
   return <div className="grid min-h-[180px] place-items-center p-7 text-center" data-testid="state-empty"><div><span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-[#edf1eb] text-[#678276]"><CircleHelp size={19} /></span><h3 className="mt-3 text-sm font-bold text-[#43534f]">{title}</h3><p className="mt-1 max-w-sm text-xs leading-relaxed text-[#79837d]">{text}</p></div></div>;
 }
 function SummarySkeleton() {
-  return <div className="space-y-5" aria-label="Cargando resumen"><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[1,2,3,4].map(i => <div key={i} className="panel p-4"><div className="skeleton h-3 w-24" /><div className="skeleton mt-4 h-8 w-12" /><div className="skeleton mt-3 h-3 w-28" /></div>)}</div><div className="panel skeleton h-56" /></div>;
+  return <div className="space-y-5" aria-label="Cargando resumen"><div className="dashboard-metrics">{[1,2,3,4,5,6].map(i => <div key={i} className="panel metric-tile"><div className="skeleton h-3 w-24" /><div className="skeleton mt-4 h-8 w-12" /><div className="skeleton mt-3 h-3 w-28" /></div>)}</div><div className="dashboard-panels"><div className="panel skeleton h-48" /><div className="panel skeleton h-48" /></div></div>;
 }
 function CatalogSkeleton() {
   return <div className="space-y-4" aria-label="Cargando catálogo"><div className="skeleton h-40 rounded-xl" /><div className="panel space-y-3 p-5">{[1,2,3,4].map(i => <div className="skeleton h-12" key={i} />)}</div></div>;
