@@ -54,12 +54,11 @@ export function AdminConfigurationPage() {
   }
 
   if (status.isLoading) return <main className="fade-up space-y-5"><section className="panel p-8">Cargando configuración de correo…</section><AdminAIProviderConfiguration /></main>;
-  if (!status.data || status.isError) return <main className="fade-up space-y-5"><section className="panel p-8"><h1 className="text-xl font-bold">Configuración técnica</h1><p className="mt-2 text-sm">No se pudo obtener la configuración de correo. {describeError(status.error)}</p><button className="quiet-action mt-4" onClick={() => status.refetch()}>Reintentar</button></section><AdminAIProviderConfiguration /></main>;
+  if (!status.data || status.isError) return <main className="fade-up space-y-5"><section className="panel p-8"><h2 className="text-xl font-bold">Estado de correo no disponible</h2><p className="mt-2 text-sm">No se pudo obtener la configuración de correo. {describeError(status.error)}</p><button className="quiet-action mt-4" onClick={() => status.refetch()}>Reintentar</button></section><AdminAIProviderConfiguration /></main>;
   const provider = status.data.provider;
   const records = status.data.domainRecords ?? [];
   const dns = status.data.dns;
   return <main className="fade-up space-y-5" data-testid="technical-configuration-page">
-    <header><p className="eyebrow">Administración técnica</p><h1 className="text-2xl font-bold text-[#20393b]">Configuración del centro</h1><p className="mt-1 text-sm text-[#637475]">Resend se gestiona aquí, dentro de la configuración existente. Las claves privadas permanecen exclusivamente en el servidor.</p></header>
     {error && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div>}
     {notice && <div role="status" className="rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm text-teal-900">{notice}</div>}
     <section className="panel p-5 md:p-7">

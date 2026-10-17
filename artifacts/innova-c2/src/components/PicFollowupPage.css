@@ -263,3 +263,21 @@
   .rail-safe-card,.rail-count-card { padding: 11px; }
   .export-actions button { flex: 1 1 auto; justify-content: center; }
 }
+
+/* Shared SectionHeader (extracted from followup hero) */
+.section-header h1 { margin-top: 15px; color: #fbf8ec; font: 700 clamp(28px, 4vw, 42px)/1.04 var(--app-font-serif); letter-spacing: -.045em; overflow-wrap: anywhere; }
+.section-header { margin-bottom: 4px; }
+.followup-course-stamp strong.is-empty { color: #d4e2d8; font-size: 15px; }
+.section-header-skeleton { display: block; width: 118px; height: 24px; border-radius: 5px; background: rgba(246, 212, 157, .22); animation: pulse 1.6s ease-in-out infinite; }
+.section-header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.section-header-actions .followup-refresh.is-primary { background: #f6d49d; border-color: #f6d49d; color: #174f49; }
+.section-header-actions .followup-refresh.is-primary:hover { background: #f0c57f; }
+.section-header-actions .followup-refresh:disabled { opacity: .55; cursor: not-allowed; }
+.section-header .health-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #8fd3ad; }
+.section-header .health-dot.is-error { background: #e9937f; }
+@media (max-width: 767px) {
+  .section-header .followup-hero-foot { flex-direction: column; }
+  .section-header-actions { justify-content: flex-start; }
+}
+.section-header, .section-header .followup-hero-top > div { min-width: 0; }
+.section-header .followup-subtitle, .followup-course-stamp > span:last-child { overflow-wrap: anywhere; }

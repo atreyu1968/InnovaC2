@@ -29,6 +29,7 @@ import { AccountPage } from '@/components/AccountPage';
 import { SchoolYearsPage } from '@/components/SchoolYearsPage';
 import { CiclopePage } from '@/components/CiclopePage';
 import { PicFollowupPage } from '@/components/PicFollowupPage';
+import { SectionHeader } from '@/components/SectionHeader';
 
 const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
 
@@ -216,7 +217,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
         <button className="workspace-collapse-button" type="button" onClick={() => setCollapsed(!collapsed)} aria-label={collapsed ? 'Expandir navegación' : 'Contraer navegación'} aria-controls="primary-navigation" aria-expanded={!collapsed} title={collapsed ? 'Expandir navegación' : 'Contraer navegación'} data-testid="button-collapse-navigation"><ChevronRight size={18} className={collapsed ? '' : 'rotate-180'} /><span className="sr-only">{collapsed ? 'Expandir navegación' : 'Contraer navegación'}</span></button>
         <main className="workspace-main">
           <div className="workspace-content" data-page={location}>
-            {location !== '/' && <div className="workspace-page-heading"><h1 data-testid="text-page-title">{label}</h1><p>IES Manuel Martín González · Espacio de coordinación</p></div>}
+            {location !== '/seguimientos' && <WorkspaceSectionHeader location={location} label={label} user={user} />}
             {children}
           </div>
         </main>
@@ -225,20 +226,38 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
   );
 }
 
+const sectionCopy: Record<string, { kicker: string; title: string; subtitle: string; status: string }> = {
+  '/usuarios': { kicker: 'Administración de acceso', title: 'Usuarios y permisos', subtitle: 'Crea cuentas para el equipo y revisa el rol asignado a cada persona.', status: 'Cada cuenta dispone únicamente de los permisos de su rol' },
+  '/configuracion': { kicker: 'Administración técnica', title: 'Configuración del centro', subtitle: 'Correo institucional y proveedores. Las claves privadas permanecen exclusivamente en el servidor.', status: 'Cambios registrados con tu identidad' },
+  '/comunicaciones': { kicker: 'Comunicaciones', title: 'Comunicaciones institucionales', subtitle: 'Contactos y conversaciones autorizadas. Cada destinatario recibe un mensaje individual y los envíos necesitan revisión humana.', status: 'Envíos con aprobación humana' },
+  '/cuenta': { kicker: 'Cuenta personal', title: 'Mi cuenta', subtitle: 'Tus datos de acceso y la seguridad de tu sesión en el espacio de coordinación.', status: 'Solo tú puedes cambiar tu contraseña' },
+  '/cursos': { kicker: 'Calendario institucional', title: 'Cursos académicos', subtitle: 'Abre, activa y cierra cursos para que todas las secciones compartan el mismo contexto.', status: 'El curso activo se aplica a todo el espacio' },
+  '/catalogo': { kicker: 'Referencia institucional', title: 'Catálogo oficial', subtitle: 'Consulta la estructura vigente de objetivos, acciones e indicadores del programa.', status: 'Versión oficial persistida del centro' },
+  '/plan-pic': { kicker: 'Planificación', title: 'Plan de Innovación del Centro', subtitle: 'Diagnóstico, objetivos y acciones del curso, enlazados al catálogo oficial.', status: 'Borradores revisables · versiones trazables' },
+  '/ciclope': { kicker: 'Comisión CICLOPE', title: 'Reuniones, actas y acuerdos', subtitle: 'Convocatorias, actas y tareas de la comisión, con refrendo de dirección.', status: 'Actas validadas por personas autorizadas' },
+  '/actuaciones': { kicker: 'Fase 2 · seguimiento del PIC', title: 'Actuaciones y evidencias', subtitle: 'Registra lo realizado, conserva su trazabilidad y reúne la documentación que permite revisar cada indicador.', status: 'Registro del centro · revisión por roles' },
+};
+
+function WorkspaceSectionHeader({ location, label, user }: { location: string; label: string; user: User }) {
+  const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), retry: false, refetchInterval: 60_000, enabled: location === '/' } });
+  if (location === '/') {
+    return <SectionHeader kicker="Panel de coordinación" title="Panel principal" subtitle={`Bienvenido/a, ${user.name}. Ámbito del centro educativo.`}
+      status={<><ShieldCheck size={13} /> {roleNames[user.role]}</>}
+      action={<span className="followup-refresh" data-testid="status-api-health"><span className={`health-dot ${health.isError ? 'is-error' : ''}`} />{health.isLoading ? 'Comprobando servicio' : health.isError ? 'Servicio no disponible' : `Servicio ${health.data?.status ?? 'sin estado'}`}</span>} />;
+  }
+  const copy = sectionCopy[location] ?? { kicker: 'Espacio de coordinación', title: label, subtitle: 'IES Manuel Martín González · Espacio de coordinación', status: 'Acceso por roles' };
+  return <SectionHeader kicker={copy.kicker} title={copy.title} subtitle={copy.subtitle} status={<><ShieldCheck size={13} /> {copy.status}</>} />;
+}
+
 function NavItem({ href, active, icon, label, collapsed, onSelect }: { href: string; active: boolean; icon: ReactNode; label: string; collapsed: boolean; onSelect: () => void }) {
   return <Link href={href} className={`sidebar-link ${active ? 'active' : ''}`} title={collapsed ? label : undefined} aria-label={label} onClick={onSelect} data-testid={`link-nav-${href === '/' ? 'panel' : href.slice(1)}`}>{icon}<span className="sidebar-link-label">{label}</span></Link>;
 }
 
 function DashboardPage({ user }: { user: User }) {
   const summary = useGetDashboardSummary({ query: { queryKey: getGetDashboardSummaryQueryKey(), refetchOnMount: 'always' } });
-  const health = useHealthCheck({ query: { queryKey: getHealthCheckQueryKey(), retry: false, refetchInterval: 60_000 } });
   const summaryData = summary.data;
   return (
     <div className="dashboard-page fade-up">
-      <section className="dashboard-heading">
-        <div><h1 data-testid="text-page-title">Panel Principal</h1><p>Bienvenido/a, {user.name}. Ámbito del centro educativo.</p></div>
-        <div className={`dashboard-health ${health.isError ? 'is-error' : ''}`} data-testid="status-api-health"><span className="health-dot" />{health.isLoading ? 'Comprobando servicio' : health.isError ? 'Servicio no disponible' : `Servicio ${health.data?.status ?? 'sin estado'}`}</div>
-      </section>
       {summary.isLoading ? <SummarySkeleton /> : summary.isError ? <ErrorNotice text={messageFor(summary.error)} onRetry={() => summary.refetch()} /> : summaryData ? <>
         <section className="dashboard-metrics" aria-label="Resumen del centro">
           <MetricTile label="Cuentas de usuario" value={summaryData.userCount} detail="Cuentas registradas" icon={<Users size={17} />} testId="metric-users" />
@@ -310,7 +329,6 @@ function UsersPage() {
     });
   };
   return <div className="fade-up space-y-6">
-    <PageIntro eyebrow="Administración de acceso" title="Usuarios y permisos" description="Crea cuentas para el equipo y revisa el rol asignado a cada persona." />
     <div className="grid items-start gap-5 xl:grid-cols-[.85fr_1.4fr]">
       <section className="panel p-5 md:p-6">
         <div className="mb-5 flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-lg bg-[#eaf1eb] text-[#347b69]"><Users size={18} /></span><div><p className="eyebrow">Nueva cuenta</p><h2 className="font-[var(--app-font-serif)] text-base font-bold">Añadir usuario</h2></div></div>
@@ -379,7 +397,6 @@ function CatalogPage({ user }: { user: User }) {
   };
   const filteredObjectives = data?.objetivos.filter(obj => !search || `${obj.codigo} ${obj.titulo} ${obj.acciones.map(a => `${a.codigo} ${a.titulo} ${a.indicadores.map(i => `${i.id} ${i.descripcion}`).join(' ')}`).join(' ')}`.toLocaleLowerCase('es').includes(search.toLocaleLowerCase('es')));
   return <div className="fade-up space-y-6">
-    <PageIntro eyebrow="Referencia institucional" title="Catálogo oficial" description="Consulta la estructura vigente de objetivos, acciones e indicadores del programa." />
     {user.role === UserRole.admin_tecnico && <section className="panel flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between md:p-6">
       <div><p className="eyebrow">Administración del catálogo</p><h2 className="mt-1 font-[var(--app-font-serif)] text-base font-bold">Importar una versión oficial</h2><p className="mt-1 max-w-2xl text-xs leading-relaxed text-[#6e7974]">El servidor valida la estructura y conserva las versiones anteriores. Solo se activa una versión nueva si el JSON cumple las comprobaciones del PIC.</p>
         {importError && <div className="mt-3"><InlineAlert text={importError} kind="error" /></div>}
@@ -641,9 +658,6 @@ function AuthFrame({ children, variant }: { children: ReactNode; variant?: 'logi
   return <main className="app-shell flex min-h-[100dvh] flex-col"><header className="flex h-[68px] items-center gap-3 border-b border-[#e5dfd2] bg-[#f8f6ef] px-5 md:px-10"><BrandMark /><div><p className="font-[var(--app-font-serif)] text-sm font-extrabold tracking-tight text-[#26383d]">INNOVA-C2</p><p className="text-[9px] tracking-[.12em] text-[#7b8580]">ESPACIO DE COORDINACIÓN</p></div><span className="ml-auto hidden text-xs text-[#737e78] sm:block">IES Manuel Martín González</span></header><div className="flex flex-1 items-start justify-center px-4 py-10 md:items-center md:py-14"><section className="panel w-full max-w-[620px] p-6 md:p-9">{children}</section></div><footer className="px-5 py-4 text-center text-[10px] tracking-wide text-[#7d8580]">INNOVA-C2 · Coordinación educativa</footer></main>;
 }
 
-function PageIntro({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
-  return <div className="flex flex-col gap-4 border-b border-[#e5dfd2] pb-5 md:flex-row md:items-end md:justify-between"><div><p className="eyebrow">{eyebrow}</p><h2 className="mt-1 font-[var(--app-font-serif)] text-2xl font-extrabold tracking-tight text-[#26383d] md:text-[28px]">{title}</h2><p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#6e7974]">{description}</p></div></div>;
-}
 function Field({ label, id, children }: { label: string; id: string; children: ReactNode }) {
   return <div className="space-y-1.5"><label htmlFor={id} className="block text-xs font-semibold text-[#43534f]">{label}</label>{children}</div>;
 }

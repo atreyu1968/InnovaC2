@@ -14,3 +14,9 @@ For public sign-in, keep the user-selected edge-to-edge split composition: an aq
 **Why:** The user asked the access screen to resemble the supplied reference, fill the full page, and use stock imagery. Links must lead to real implemented flows.
 
 **How to apply:** Preserve this treatment on `/login`, keep sign-in connected to the real API, and bundle assets so the app remains usable on a standalone Ubuntu server.
+
+Use the Seguimientos PIC section header as the shared model for all authenticated top-level sections, adapting its content and actions to each section.
+
+**Why:** The user explicitly approved this header and asked for it in every section.
+
+**How to apply:** Retain the dark-green hero treatment, contextual academic-course information and responsive layout consistently across the workspace; do not apply it to public sign-in screens.

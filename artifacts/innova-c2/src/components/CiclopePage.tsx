@@ -49,24 +49,23 @@ export function CiclopePage({ user }: { user: User }) {
 function Summary({ data, onRefresh, fetching }: { data: CiclopeOverview; onRefresh: () => void; fetching: boolean }) {
   const ciclope = data.meetings.filter(m => m.data.kind === 'ciclope' && m.state !== 'cancelada');
   const held = ciclope.filter(m => ['celebrada', 'acta_borrador', 'acta_validada'].includes(m.state)).length;
-  return <section className="rounded-xl bg-[#263c42] p-5 text-white md:p-6">
+  return <section className="panel min-w-0 p-5 md:p-6" data-testid="panel-ciclope-status">
     <div className="flex flex-wrap items-start justify-between gap-4">
-      <div><p className="eyebrow text-[#9bc7b5]">Comisión CICLOPE · curso {data.schoolYearLabel}</p>
-        <h2 className="mt-2 font-[var(--app-font-serif)] text-2xl font-bold">Reuniones, actas y acuerdos</h2>
-        <p className="mt-1 text-xs text-[#c4d1ce]">{data.canManage ? 'Gestión C2 / administración' : data.canApprove ? 'Refrendo de dirección' : 'Vista de persona convocada: solo reuniones a las que estás invitada/o.'}</p></div>
-      <button className="flex items-center gap-2 rounded-lg border border-white/20 px-3 py-2 text-xs font-semibold" onClick={onRefresh} disabled={fetching} data-testid="button-refresh-ciclope"><RefreshCw size={14} className={fetching ? 'animate-spin' : ''} />Actualizar</button>
+      <div><p className="eyebrow">Estado de la comisión · curso {data.schoolYearLabel}</p>
+        <p className="mt-1 text-xs text-[#68746e]">{data.canManage ? 'Gestión C2 / administración' : data.canApprove ? 'Refrendo de dirección' : 'Vista de persona convocada: solo reuniones a las que estás invitada/o.'}</p></div>
+      <button className="flex items-center gap-2 quiet-action flex items-center gap-2" onClick={onRefresh} disabled={fetching} data-testid="button-refresh-ciclope"><RefreshCw size={14} className={fetching ? 'animate-spin' : ''} />Actualizar</button>
     </div>
-    <div className="mt-5 grid gap-4 border-t border-white/15 pt-4 sm:grid-cols-4">
+    <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[#eee9df] pt-4 sm:grid-cols-4">
       <Stat label="Sesiones CICLOPE (activas)" value={`${ciclope.length} / ${data.minimumMeetings}`} testId="stat-ciclope-count" />
       <Stat label="Celebradas" value={String(held)} testId="stat-ciclope-held" />
       <Stat label="Reuniones red C1" value={String(data.meetings.filter(m => m.data.kind === 'red_c1').length)} testId="stat-c1-count" />
       <Stat label="Tareas abiertas" value={String(data.tasks.filter(t => !t.completedAt).length)} testId="stat-open-tasks" />
     </div>
-    {ciclope.length < data.minimumMeetings && <p className="mt-3 text-[11px] text-[#e9d9b0]">Faltan {data.minimumMeetings - ciclope.length} sesión(es) CICLOPE distintas para el mínimo del programa. Las reuniones de red C1 no computan.</p>}
+    {ciclope.length < data.minimumMeetings && <p className="mt-3 text-[11px] text-[#8a5a1c]">Faltan {data.minimumMeetings - ciclope.length} sesión(es) CICLOPE distintas para el mínimo del programa. Las reuniones de red C1 no computan.</p>}
   </section>;
 }
 function Stat({ label, value, testId }: { label: string; value: string; testId: string }) {
-  return <div><p className="text-[10px] uppercase tracking-wider text-[#a6b8b3]">{label}</p><p className="mt-1 font-[var(--app-font-serif)] text-xl font-bold" data-testid={testId}>{value}</p></div>;
+  return <div className="min-w-0"><p className="text-[10px] uppercase tracking-wider text-[#7b8580]">{label}</p><p className="mt-1 font-[var(--app-font-serif)] text-xl font-bold text-[#26383d]" data-testid={testId}>{value}</p></div>;
 }
 
 function PolicyPanel({ data, onDone }: { data: CiclopeOverview; onDone: () => Promise<void> }) {

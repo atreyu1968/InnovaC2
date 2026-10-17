@@ -105,11 +105,10 @@ export function CommunicationsPage({ userId }: { userId: string }) {
     }));
   }
   if (overview.isLoading) return <section className="panel p-8" aria-busy="true">Cargando bandeja…</section>;
-  if (overview.isError || !data) return <section className="panel p-8"><h1 className="text-xl font-bold">Comunicaciones</h1><p className="mt-2 text-sm">No se pudo cargar la bandeja. {explainError(overview.error)}</p><button className="quiet-action mt-4" onClick={() => overview.refetch()}>Reintentar</button></section>;
+  if (overview.isError || !data) return <section className="panel p-8"><h2 className="text-xl font-bold">No se pudo cargar la bandeja</h2><p className="mt-2 text-sm">No se pudo cargar la bandeja. {explainError(overview.error)}</p><button className="quiet-action mt-4" onClick={() => overview.refetch()}>Reintentar</button></section>;
 
   return <main className="fade-up space-y-5" data-testid="communications-page">
-    <header className="flex flex-wrap items-start justify-between gap-4">
-      <div><p className="eyebrow">Curso activo · {data.yearLabel}</p><h1 className="text-2xl font-bold text-[#20393b]">Comunicaciones institucionales</h1><p className="mt-1 max-w-2xl text-sm text-[#637475]">Contactos y conversaciones autorizadas. Cada destinatario recibe un mensaje individual y los envíos necesitan revisión humana.</p></div>
+    <header className="flex flex-wrap items-start justify-end gap-4">
       {data.canManage && <div className="flex flex-wrap gap-2">
         <button className="quiet-action" onClick={() => setContactForm(v => !v)}><Plus size={16} /> Contacto</button>
         <button className="quiet-action" onClick={() => setTemplateForm(v => !v)}><Plus size={16} /> Plantilla</button>

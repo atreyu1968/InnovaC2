@@ -18,6 +18,7 @@ import type {
 } from "@workspace/api-client-react";
 import { hasCoordinationAccess } from "../lib/role-access";
 import "./PicFollowupPage.css";
+import { SectionHeader } from "./SectionHeader";
 
 const REPORTS: { type: PicFollowupType; short: string; title: string; section: string; copy: string }[] = [
   { type: "primer_trimestre", short: "T1", title: "Primer trimestre", section: "11", copy: "Seguimiento trimestral · apartado 11" },
@@ -202,23 +203,17 @@ export function PicFollowupPage({ user }: { user: User }) {
   };
 
   if (!hasCoordinationAccess(user.role)) return <section className="panel p-6"><div className="flex gap-3"><ShieldCheck className="text-[#347b69]" /><div><h2 className="font-bold">Acceso restringido</h2><p className="mt-1 text-sm text-[#68746e]">El seguimiento del PIC está reservado a perfiles de coordinación autorizados.</p></div></div></section>;
-  if (planQuery.isLoading) return <div className="space-y-4" aria-label="Cargando curso actual"><div className="skeleton h-32" /><div className="skeleton h-16" /><div className="skeleton h-64" /></div>;
+  if (planQuery.isLoading) return <div className="space-y-4" aria-label="Cargando curso actual"><div className="skeleton h-40" /><div className="skeleton h-16" /><div className="skeleton h-64" /></div>;
   if (planQuery.isError && errorStatus(planQuery.error) !== 404) return <ErrorCard message={errorMessage(planQuery.error)} onRetry={() => planQuery.refetch()} />;
-  if (!planQuery.data) return <div className="fade-up space-y-5"><Intro title="Seguimiento del PIC" eyebrow="Curso actual · IES Manuel Martín González" /><div className="panel p-6 md:p-8"><p className="eyebrow">Aún no hay un plan para este curso</p><h2 className="mt-2 font-[var(--app-font-serif)] text-xl font-bold">El seguimiento se enlaza al PIC vigente</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#68746e]">Crea el borrador del plan PIC antes de preparar informes. Así, las acciones y el curso se reutilizan sin volver a introducirlos.</p></div></div>;
+  if (!planQuery.data) return <div className="fade-up space-y-5"><SectionHeader kicker="Evidencia reutilizable" title="Seguimiento del curso" subtitle="Del plan a la memoria, sin volver a capturar lo que ya está validado." status={<><LockKeyhole size={13} /> Borradores editables · snapshots inmutables</>} /><div className="panel p-6 md:p-8"><p className="eyebrow">Aún no hay un plan para este curso</p><h2 className="mt-2 font-[var(--app-font-serif)] text-xl font-bold">El seguimiento se enlaza al PIC vigente</h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#68746e]">Crea el borrador del plan PIC antes de preparar informes. Así, las acciones y el curso se reutilizan sin volver a introducirlos.</p></div></div>;
   if (workspace.isLoading) return <div className="space-y-4"><div className="skeleton h-32" /><div className="skeleton h-14" /><div className="skeleton h-56" /></div>;
   if (workspace.isError || !workspace.data) return <ErrorCard message={errorMessage(workspace.error)} onRetry={() => workspace.refetch()} />;
   const selectedReport = REPORTS.find(item => item.type === reportType) ?? REPORTS[0];
   const staleDetail = detail.isError && errorStatus(detail.error) === 409;
   return <div className="pic-followup fade-up">
-    <section className="followup-hero">
-      <div className="followup-hero-top"><div>
-        <p className="followup-kicker"><span className="kicker-mark" /> INNOVA-C2 <span className="kicker-divider">/</span> Evidencia reutilizable</p>
-        <h2>Seguimiento<br className="sm:hidden" /> del curso</h2>
-        <p className="followup-subtitle">Del plan a la memoria, sin volver a capturar lo que ya está validado.</p>
-      </div>
-      <div className="followup-course-stamp"><span className="course-stamp-label">CURSO ACTIVO</span><strong>{workspace.data.schoolYear}</strong><span>{workspace.data.centerName}</span></div></div>
-      <div className="followup-hero-foot"><span><LockKeyhole size={13} /> Borradores editables · snapshots inmutables</span><button type="button" className="followup-refresh" onClick={() => { void workspace.refetch(); void detail.refetch(); }} disabled={workspace.isFetching || detail.isFetching} data-testid="button-refresh-followup"><RefreshCw size={14} className={workspace.isFetching || detail.isFetching ? "animate-spin" : ""} /> Actualizar</button></div>
-    </section>
+    <SectionHeader kicker="Evidencia reutilizable" title="Seguimiento del curso" subtitle="Del plan a la memoria, sin volver a capturar lo que ya está validado." schoolYear={workspace.data.schoolYear} centerName={workspace.data.centerName}
+      status={<><LockKeyhole size={13} /> Borradores editables · snapshots inmutables</>}
+      action={<button type="button" className="followup-refresh" onClick={() => { void workspace.refetch(); void detail.refetch(); }} disabled={workspace.isFetching || detail.isFetching} data-testid="button-refresh-followup"><RefreshCw size={14} className={workspace.isFetching || detail.isFetching ? "animate-spin" : ""} /> Actualizar</button>} />
     <nav className="followup-tabs" aria-label="Informes del curso">{REPORTS.map((item, index) => {
       const saved = workspace.data.reports.find(entry => entry.reportType === item.type);
       return <button type="button" key={item.type} aria-current={reportType === item.type ? "page" : undefined} className={`followup-tab ${reportType === item.type ? "active" : ""}`} onClick={() => { setReportType(item.type); setSelectedSnapshotId(""); }} data-testid={`tab-followup-${item.type}`}>
@@ -265,7 +260,6 @@ export function PicFollowupPage({ user }: { user: User }) {
   </div>;
 }
 
-function Intro({ title, eyebrow }: { title: string; eyebrow: string }) { return <div className="followup-empty-intro"><p className="eyebrow">{eyebrow}</p><h2>{title}</h2></div>; }
 function ErrorCard({ message, onRetry }: { message: string; onRetry: () => void }) {
   return <section className="panel p-6" role="alert"><div className="flex gap-3"><AlertCircle size={18} className="text-[#a34838]" /><div><h2 className="font-bold">No se pudo cargar el seguimiento</h2><p className="mt-1 text-sm text-[#68746e]">{message}</p><button type="button" className="quiet-action mt-4 inline-flex items-center gap-2" onClick={onRetry}><RefreshCw size={14} /> Reintentar</button></div></div></section>;
 }

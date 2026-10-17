@@ -400,10 +400,6 @@ export function ActivitiesPhaseTwo({ user }: { user: User }) {
   if (!canOperate) return <section className="p2-panel p-6"><Notice tone="info">Esta vista de seguimiento está disponible para C2, jefaturas, coordinación y profesorado.</Notice></section>;
 
   return <div className="p2-page fade-up">
-    <header className="p2-intro">
-      <div><p className="p2-overline">Fase 2 · seguimiento del PIC</p><h1>Actuaciones y evidencias</h1><p>Registra lo realizado, conserva su trazabilidad y reúne la documentación que permite revisar cada indicador.</p></div>
-      <div className="p2-intro-meta"><span className="p2-meta-mark"><ClipboardCheck size={18} /></span><span><strong>Curso activo</strong><small>Registro del centro · revisión por roles</small></span></div>
-    </header>
 
     <div className="p2-alert-stack">{error && <Notice tone="error"><AlertCircle size={16} />{error}<button onClick={() => setError("")} aria-label="Cerrar aviso"><X size={14} /></button></Notice>}{notice && <Notice tone="success"><Check size={16} />{notice}</Notice>}</div>
     <nav className="p2-tabs" aria-label="Secciones de seguimiento">
