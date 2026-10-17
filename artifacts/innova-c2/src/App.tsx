@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/reac
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
 import {
   Activity, ArrowDownRight, ArrowLeft, ArrowRight, BookOpen, ChevronDown, ChevronRight,
-  CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu,
+  CalendarDays, CircleHelp, ClipboardList, GraduationCap, LayoutDashboard, LogOut, Menu,
   RefreshCw, ShieldCheck, Users, X,
 } from 'lucide-react';
 import {
