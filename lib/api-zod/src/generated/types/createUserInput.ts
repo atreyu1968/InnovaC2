@@ -20,4 +20,9 @@ export interface CreateUserInput {
      * @maxLength 1024
      */
   temporaryPassword: string;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  professionalFamily?: string | null;
 }

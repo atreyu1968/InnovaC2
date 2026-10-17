@@ -22,6 +22,20 @@
       "when": 1792246094683,
       "tag": "0002_square_chamber",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792247531862,
+      "tag": "0003_nappy_brother_voodoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792248461767,
+      "tag": "0004_parallel_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }

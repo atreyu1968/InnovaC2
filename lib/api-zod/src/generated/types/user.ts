@@ -12,6 +12,8 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  /** @nullable */
+  professionalFamily?: string | null;
   active: boolean;
   createdAt: Date;
 }

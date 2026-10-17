@@ -52,6 +52,7 @@ export const InitializeSetupResponse = zod.object({
   "email": zod.string().email(),
   "name": zod.string(),
   "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullish(),
   "active": zod.boolean(),
   "createdAt": zod.coerce.date()
 }),
@@ -77,6 +78,7 @@ export const LoginResponse = zod.object({
   "email": zod.string().email(),
   "name": zod.string(),
   "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullish(),
   "active": zod.boolean(),
   "createdAt": zod.coerce.date()
 }),
@@ -138,6 +140,7 @@ export const GetCurrentUserResponse = zod.object({
   "email": zod.string().email(),
   "name": zod.string(),
   "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullish(),
   "active": zod.boolean(),
   "createdAt": zod.coerce.date()
 }),
@@ -167,6 +170,7 @@ export const ListUsersResponseItem = zod.object({
   "email": zod.string().email(),
   "name": zod.string(),
   "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullish(),
   "active": zod.boolean(),
   "createdAt": zod.coerce.date()
 })
@@ -181,13 +185,16 @@ export const createUserBodyNameMax = 160;
 export const createUserBodyTemporaryPasswordMin = 12;
 export const createUserBodyTemporaryPasswordMax = 1024;
 
+export const createUserBodyProfessionalFamilyMax = 120;
+
 
 
 export const CreateUserBody = zod.object({
   "email": zod.string().email(),
   "name": zod.string().min(1).max(createUserBodyNameMax),
   "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
-  "temporaryPassword": zod.string().min(createUserBodyTemporaryPasswordMin).max(createUserBodyTemporaryPasswordMax)
+  "temporaryPassword": zod.string().min(createUserBodyTemporaryPasswordMin).max(createUserBodyTemporaryPasswordMax),
+  "professionalFamily": zod.string().max(createUserBodyProfessionalFamilyMax).nullish()
 })
 
 export const CreateUserResponse = zod.object({
@@ -195,9 +202,22 @@ export const CreateUserResponse = zod.object({
   "email": zod.string().email(),
   "name": zod.string(),
   "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullish(),
   "active": zod.boolean(),
   "createdAt": zod.coerce.date()
 })
+
+
+/**
+ * @summary List active staff names and families for C2 assignments
+ */
+export const ListStaffOptionsResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "name": zod.string(),
+  "role": zod.enum(['admin_tecnico', 'c2_innovacion', 'equipo_directivo', 'coordinacion_red', 'jefatura_departamento', 'profesorado', 'consulta_c1', 'consulta_auditora']),
+  "professionalFamily": zod.string().nullable()
+})
+export const ListStaffOptionsResponse = zod.array(ListStaffOptionsResponseItem)
 
 
 /**
@@ -1129,6 +1149,701 @@ export const ExportPicPdfResponse = zod.object({
   "mediaType": zod.string(),
   "contentBase64": zod.string(),
   "generatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List activities within the user's permitted scope
+ */
+export const listActivitiesResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const ListActivitiesResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(listActivitiesResponseActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListActivitiesResponse = zod.array(ListActivitiesResponseItem)
+
+
+/**
+ * @summary Record an activity and link it to selected PIC indicators
+ */
+export const createActivityBodyTitleMax = 200;
+
+export const createActivityBodyDescriptionMax = 4000;
+
+export const createActivityBodyActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const createActivityBodyProfessionalFamilyMax = 120;
+
+export const createActivityBodySourceLabelMax = 200;
+
+export const createActivityBodyIndicatorCodesItemMax = 80;
+
+
+
+export const CreateActivityBody = zod.object({
+  "title": zod.string().min(1).max(createActivityBodyTitleMax),
+  "description": zod.string().min(1).max(createActivityBodyDescriptionMax),
+  "activityDate": zod.string().regex(createActivityBodyActivityDateRegExp).nullish(),
+  "professionalFamily": zod.string().min(1).max(createActivityBodyProfessionalFamilyMax),
+  "projectId": zod.string().uuid().nullish(),
+  "responsibleUserId": zod.string().uuid().nullish(),
+  "sourceLabel": zod.string().min(1).max(createActivityBodySourceLabelMax),
+  "indicatorCodes": zod.array(zod.string().max(createActivityBodyIndicatorCodesItemMax))
+})
+
+export const createActivityResponseActivityActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const CreateActivityResponse = zod.object({
+  "activity": zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(createActivityResponseActivityActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}),
+  "duplicate": zod.boolean()
+})
+
+
+/**
+ * @summary Read an activity and its provenance
+ */
+export const GetActivityParams = zod.object({
+  "activityId": zod.coerce.string().uuid()
+})
+
+export const getActivityResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetActivityResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(getActivityResponseActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Correct an activity using optimistic concurrency
+ */
+export const UpdateActivityParams = zod.object({
+  "activityId": zod.coerce.string().uuid()
+})
+
+
+export const updateActivityBodyTitleMax = 200;
+
+export const updateActivityBodyDescriptionMax = 4000;
+
+export const updateActivityBodyActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const updateActivityBodyProfessionalFamilyMax = 120;
+
+export const updateActivityBodyIndicatorCodesItemMax = 80;
+
+
+
+export const UpdateActivityBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "title": zod.string().min(1).max(updateActivityBodyTitleMax).optional(),
+  "description": zod.string().min(1).max(updateActivityBodyDescriptionMax).optional(),
+  "activityDate": zod.string().regex(updateActivityBodyActivityDateRegExp).nullish(),
+  "professionalFamily": zod.string().min(1).max(updateActivityBodyProfessionalFamilyMax).optional(),
+  "projectId": zod.string().uuid().nullish(),
+  "indicatorCodes": zod.array(zod.string().max(updateActivityBodyIndicatorCodesItemMax)).optional()
+})
+
+export const updateActivityResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const UpdateActivityResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(updateActivityResponseActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Confirm the activity information or explicitly report no information
+ */
+export const ConfirmActivityParams = zod.object({
+  "activityId": zod.coerce.string().uuid()
+})
+
+
+
+
+export const ConfirmActivityBody = zod.object({
+  "expectedRevision": zod.number().int().min(1),
+  "informationStatus": zod.enum(['confirmada', 'sin_informacion', 'no_realizada'])
+})
+
+export const confirmActivityResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const ConfirmActivityResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(confirmActivityResponseActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Validate an evidenced activity as C2
+ */
+export const ValidateActivityParams = zod.object({
+  "activityId": zod.coerce.string().uuid()
+})
+
+
+
+
+export const ValidateActivityBody = zod.object({
+  "expectedRevision": zod.number().int().min(1)
+})
+
+export const validateActivityResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const ValidateActivityResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(validateActivityResponseActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Withdraw an activity without deleting its history
+ */
+export const DiscardActivityParams = zod.object({
+  "activityId": zod.coerce.string().uuid()
+})
+
+
+
+
+export const DiscardActivityBody = zod.object({
+  "expectedRevision": zod.number().int().min(1)
+})
+
+export const discardActivityResponseActivityDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const DiscardActivityResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "activityDate": zod.string().regex(discardActivityResponseActivityDateRegExp).nullable(),
+  "professionalFamily": zod.string(),
+  "projectId": zod.string().uuid().nullable(),
+  "responsibleUserId": zod.string().uuid(),
+  "status": zod.enum(['pendiente_responsable', 'pendiente_c2', 'validada', 'descartada']),
+  "informationStatus": zod.enum(['en_revision', 'confirmada', 'sin_informacion', 'no_realizada']),
+  "revision": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "indicatorCodes": zod.array(zod.string()),
+  "sourceLabels": zod.array(zod.string()),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary List documents visible to the current user
+ */
+export const ListDocumentsResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "accessScope": zod.enum(['family', 'center', 'restricted']),
+  "status": zod.enum(['pendiente_revision', 'aprobado', 'archivado']),
+  "revision": zod.number().int(),
+  "currentVersion": zod.number().int(),
+  "latestFileName": zod.string(),
+  "latestMediaType": zod.string(),
+  "sizeBytes": zod.number().int(),
+  "sha256": zod.string(),
+  "scanStatus": zod.enum(['limpio', 'infectado', 'no_configurado', 'no_disponible']),
+  "createdBy": zod.string().uuid().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+export const ListDocumentsResponse = zod.array(ListDocumentsResponseItem)
+
+
+/**
+ * @summary Store a private document version and evidence record
+ */
+export const uploadDocumentQueryTitleMax = 200;
+
+export const uploadDocumentQueryProfessionalFamilyMax = 120;
+
+export const uploadDocumentQueryIndicatorCodeMax = 80;
+
+export const uploadDocumentQueryFileNameMax = 255;
+
+
+
+export const UploadDocumentQueryParams = zod.object({
+  "title": zod.coerce.string().min(1).max(uploadDocumentQueryTitleMax),
+  "category": zod.enum(['evidencia', 'acta', 'informe', 'producto', 'otro']),
+  "professionalFamily": zod.coerce.string().max(uploadDocumentQueryProfessionalFamilyMax).optional(),
+  "accessScope": zod.enum(['family', 'center', 'restricted']),
+  "activityId": zod.coerce.string().uuid().optional(),
+  "indicatorCode": zod.coerce.string().max(uploadDocumentQueryIndicatorCodeMax).optional(),
+  "fileName": zod.coerce.string().max(uploadDocumentQueryFileNameMax)
+})
+
+export const UploadDocumentResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "accessScope": zod.enum(['family', 'center', 'restricted']),
+  "status": zod.enum(['pendiente_revision', 'aprobado', 'archivado']),
+  "revision": zod.number().int(),
+  "currentVersion": zod.number().int(),
+  "latestFileName": zod.string(),
+  "latestMediaType": zod.string(),
+  "sizeBytes": zod.number().int(),
+  "sha256": zod.string(),
+  "scanStatus": zod.enum(['limpio', 'infectado', 'no_configurado', 'no_disponible']),
+  "createdBy": zod.string().uuid().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Read document metadata and immutable versions
+ */
+export const GetDocumentParams = zod.object({
+  "documentId": zod.coerce.string().uuid()
+})
+
+export const GetDocumentResponse = zod.object({
+  "document": zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "accessScope": zod.enum(['family', 'center', 'restricted']),
+  "status": zod.enum(['pendiente_revision', 'aprobado', 'archivado']),
+  "revision": zod.number().int(),
+  "currentVersion": zod.number().int(),
+  "latestFileName": zod.string(),
+  "latestMediaType": zod.string(),
+  "sizeBytes": zod.number().int(),
+  "sha256": zod.string(),
+  "scanStatus": zod.enum(['limpio', 'infectado', 'no_configurado', 'no_disponible']),
+  "createdBy": zod.string().uuid().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+}),
+  "versions": zod.array(zod.object({
+  "version": zod.number().int(),
+  "originalName": zod.string(),
+  "mediaType": zod.string(),
+  "sizeBytes": zod.number().int(),
+  "sha256": zod.string(),
+  "scanStatus": zod.enum(['limpio', 'infectado', 'no_configurado', 'no_disponible']),
+  "uploadedBy": zod.string().uuid().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Add a new immutable version; approved content is never overwritten
+ */
+export const AddDocumentVersionParams = zod.object({
+  "documentId": zod.coerce.string().uuid()
+})
+
+export const addDocumentVersionHeaderXFileNameMax = 255;
+
+
+
+export const AddDocumentVersionHeader = zod.object({
+  "X-File-Name": zod.string().max(addDocumentVersionHeaderXFileNameMax).optional()
+})
+
+export const AddDocumentVersionResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "accessScope": zod.enum(['family', 'center', 'restricted']),
+  "status": zod.enum(['pendiente_revision', 'aprobado', 'archivado']),
+  "revision": zod.number().int(),
+  "currentVersion": zod.number().int(),
+  "latestFileName": zod.string(),
+  "latestMediaType": zod.string(),
+  "sizeBytes": zod.number().int(),
+  "sha256": zod.string(),
+  "scanStatus": zod.enum(['limpio', 'infectado', 'no_configurado', 'no_disponible']),
+  "createdBy": zod.string().uuid().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Approve the current document version after antivirus clearance
+ */
+export const ApproveDocumentParams = zod.object({
+  "documentId": zod.coerce.string().uuid()
+})
+
+
+
+
+export const ApproveDocumentBody = zod.object({
+  "expectedRevision": zod.number().int().min(1)
+})
+
+export const ApproveDocumentResponse = zod.object({
+  "id": zod.string().uuid(),
+  "title": zod.string(),
+  "category": zod.string(),
+  "professionalFamily": zod.string().nullable(),
+  "accessScope": zod.enum(['family', 'center', 'restricted']),
+  "status": zod.enum(['pendiente_revision', 'aprobado', 'archivado']),
+  "revision": zod.number().int(),
+  "currentVersion": zod.number().int(),
+  "latestFileName": zod.string(),
+  "latestMediaType": zod.string(),
+  "sizeBytes": zod.number().int(),
+  "sha256": zod.string(),
+  "scanStatus": zod.enum(['limpio', 'infectado', 'no_configurado', 'no_disponible']),
+  "createdBy": zod.string().uuid().nullable(),
+  "createdAt": zod.coerce.date(),
+  "updatedAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Grant or revoke a named user's access to a restricted document
+ */
+export const SetDocumentAccessParams = zod.object({
+  "documentId": zod.coerce.string().uuid()
+})
+
+export const SetDocumentAccessBody = zod.object({
+  "userId": zod.string().uuid(),
+  "granted": zod.boolean()
+})
+
+export const SetDocumentAccessResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Link an existing evidence record to an activity and PIC indicator
+ */
+export const LinkDocumentEvidenceParams = zod.object({
+  "documentId": zod.coerce.string().uuid()
+})
+
+export const linkDocumentEvidenceBodyIndicatorCodeMax = 80;
+
+export const linkDocumentEvidenceBodyNoteMax = 500;
+
+
+
+export const LinkDocumentEvidenceBody = zod.object({
+  "activityId": zod.string().uuid(),
+  "indicatorCode": zod.string().max(linkDocumentEvidenceBodyIndicatorCodeMax).nullish(),
+  "note": zod.string().max(linkDocumentEvidenceBodyNoteMax).optional()
+})
+
+export const LinkDocumentEvidenceResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Download an authorized document version as an attachment
+ */
+
+
+
+export const DownloadDocumentVersionParams = zod.object({
+  "documentId": zod.coerce.string().uuid(),
+  "version": zod.coerce.number().int().min(1)
+})
+
+export const DownloadDocumentVersionResponse = zod.unknown()
+
+
+/**
+ * @summary List requests assigned to the current user or visible to C2
+ */
+export const ListInformationRequestsResponseItem = zod.object({
+  "id": zod.string().uuid(),
+  "recipientUserId": zod.string().uuid(),
+  "subjectType": zod.enum(['activity', 'project']),
+  "subjectId": zod.string().uuid(),
+  "requestedFields": zod.array(zod.string()),
+  "reason": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "status": zod.enum(['solicitada', 'respondida', 'validada', 'cerrada']),
+  "revision": zod.number().int(),
+  "latestResponseStatus": zod.union([zod.literal('respondida'),zod.literal('sin_informacion'),zod.literal('no_realizada'),zod.literal(null)]).nullable(),
+  "latestAnswers": zod.record(zod.string(), zod.unknown()),
+  "latestComment": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+export const ListInformationRequestsResponse = zod.array(ListInformationRequestsResponseItem)
+
+
+/**
+ * @summary Request only still-missing information and reuse open requests
+ */
+export const createInformationRequestBodyRequestedFieldsItemMax = 80;
+
+
+export const createInformationRequestBodyReasonMax = 1000;
+
+
+
+export const CreateInformationRequestBody = zod.object({
+  "recipientUserId": zod.string().uuid(),
+  "subjectType": zod.enum(['activity', 'project']),
+  "subjectId": zod.string().uuid(),
+  "requestedFields": zod.array(zod.string().max(createInformationRequestBodyRequestedFieldsItemMax)).min(1),
+  "reason": zod.string().min(1).max(createInformationRequestBodyReasonMax),
+  "dueAt": zod.coerce.date().nullish()
+})
+
+export const CreateInformationRequestResponse = zod.object({
+  "id": zod.string().uuid(),
+  "recipientUserId": zod.string().uuid(),
+  "subjectType": zod.enum(['activity', 'project']),
+  "subjectId": zod.string().uuid(),
+  "requestedFields": zod.array(zod.string()),
+  "reason": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "status": zod.enum(['solicitada', 'respondida', 'validada', 'cerrada']),
+  "revision": zod.number().int(),
+  "latestResponseStatus": zod.union([zod.literal('respondida'),zod.literal('sin_informacion'),zod.literal('no_realizada'),zod.literal(null)]).nullable(),
+  "latestAnswers": zod.record(zod.string(), zod.unknown()),
+  "latestComment": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Respond, explicitly report no information, or report not realized
+ */
+export const RespondToInformationRequestParams = zod.object({
+  "requestId": zod.coerce.string().uuid()
+})
+
+export const respondToInformationRequestBodyCommentMax = 1000;
+
+
+
+export const RespondToInformationRequestBody = zod.object({
+  "responseStatus": zod.enum(['respondida', 'sin_informacion', 'no_realizada']),
+  "answers": zod.record(zod.string(), zod.unknown()),
+  "comment": zod.string().max(respondToInformationRequestBodyCommentMax).optional()
+})
+
+export const RespondToInformationRequestResponse = zod.object({
+  "id": zod.string().uuid(),
+  "recipientUserId": zod.string().uuid(),
+  "subjectType": zod.enum(['activity', 'project']),
+  "subjectId": zod.string().uuid(),
+  "requestedFields": zod.array(zod.string()),
+  "reason": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "status": zod.enum(['solicitada', 'respondida', 'validada', 'cerrada']),
+  "revision": zod.number().int(),
+  "latestResponseStatus": zod.union([zod.literal('respondida'),zod.literal('sin_informacion'),zod.literal('no_realizada'),zod.literal(null)]).nullable(),
+  "latestAnswers": zod.record(zod.string(), zod.unknown()),
+  "latestComment": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Validate an information response and apply supported activity fields
+ */
+export const ValidateInformationResponseParams = zod.object({
+  "requestId": zod.coerce.string().uuid()
+})
+
+
+
+
+export const ValidateInformationResponseBody = zod.object({
+  "expectedRevision": zod.number().int().min(1)
+})
+
+export const ValidateInformationResponseResponse = zod.object({
+  "id": zod.string().uuid(),
+  "recipientUserId": zod.string().uuid(),
+  "subjectType": zod.enum(['activity', 'project']),
+  "subjectId": zod.string().uuid(),
+  "requestedFields": zod.array(zod.string()),
+  "reason": zod.string(),
+  "dueAt": zod.coerce.date().nullable(),
+  "status": zod.enum(['solicitada', 'respondida', 'validada', 'cerrada']),
+  "revision": zod.number().int(),
+  "latestResponseStatus": zod.union([zod.literal('respondida'),zod.literal('sin_informacion'),zod.literal('no_realizada'),zod.literal(null)]).nullable(),
+  "latestAnswers": zod.record(zod.string(), zod.unknown()),
+  "latestComment": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Read selected current-plan indicators with live evidence counts
+ */
+export const ListCurrentIndicatorsResponseItem = zod.object({
+  "planId": zod.string().uuid(),
+  "actionCode": zod.string(),
+  "code": zod.string(),
+  "description": zod.string(),
+  "type": zod.enum(['booleano', 'porcentaje', 'numero']),
+  "methodNote": zod.string(),
+  "target": zod.union([zod.number(),zod.boolean()]).nullable(),
+  "risk": zod.union([zod.number(),zod.boolean()]).nullable(),
+  "currentValue": zod.union([zod.number(),zod.boolean()]).nullable(),
+  "activityCount": zod.number().int(),
+  "evidenceCount": zod.number().int(),
+  "latestObservation": zod.union([zod.object({
+  "id": zod.string().uuid(),
+  "planId": zod.string().uuid(),
+  "indicatorCode": zod.string(),
+  "period": zod.string(),
+  "revision": zod.number().int(),
+  "value": zod.union([zod.number(),zod.boolean()]),
+  "method": zod.string(),
+  "formula": zod.string(),
+  "evidenceIds": zod.array(zod.string().uuid()),
+  "sourceActivityCount": zod.number().int(),
+  "assessment": zod.enum(['logrado', 'en_progreso', 'no_logrado', 'sin_datos']),
+  "createdAt": zod.coerce.date()
+}),zod.null()])
+})
+export const ListCurrentIndicatorsResponse = zod.array(ListCurrentIndicatorsResponseItem)
+
+
+/**
+ * @summary Calculate or confirm an indicator with formula, evidence, and validator
+ */
+export const createIndicatorObservationPathIndicatorCodeMax = 80;
+
+
+
+export const CreateIndicatorObservationParams = zod.object({
+  "indicatorCode": zod.coerce.string().max(createIndicatorObservationPathIndicatorCodeMax)
+})
+
+export const createIndicatorObservationBodyPeriodMax = 40;
+
+export const createIndicatorObservationBodyNumeratorMin = 0;
+
+export const createIndicatorObservationBodyDenominatorMin = 0;
+
+
+
+export const CreateIndicatorObservationBody = zod.object({
+  "period": zod.string().min(1).max(createIndicatorObservationBodyPeriodMax),
+  "value": zod.union([zod.number(),zod.boolean()]).nullish(),
+  "numerator": zod.number().min(createIndicatorObservationBodyNumeratorMin).nullish(),
+  "denominator": zod.number().min(createIndicatorObservationBodyDenominatorMin).nullish(),
+  "evidenceIds": zod.array(zod.string().uuid()).optional()
+})
+
+export const CreateIndicatorObservationResponse = zod.object({
+  "id": zod.string().uuid(),
+  "planId": zod.string().uuid(),
+  "indicatorCode": zod.string(),
+  "period": zod.string(),
+  "revision": zod.number().int(),
+  "value": zod.union([zod.number(),zod.boolean()]),
+  "method": zod.string(),
+  "formula": zod.string(),
+  "evidenceIds": zod.array(zod.string().uuid()),
+  "sourceActivityCount": zod.number().int(),
+  "assessment": zod.enum(['logrado', 'en_progreso', 'no_logrado', 'sin_datos']),
+  "createdAt": zod.coerce.date()
 })
 
 

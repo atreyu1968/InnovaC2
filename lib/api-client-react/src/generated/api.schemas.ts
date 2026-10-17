@@ -40,8 +40,18 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  /** @nullable */
+  professionalFamily?: string | null;
   active: boolean;
   createdAt: string;
+}
+
+export interface StaffOption {
+  id: string;
+  name: string;
+  role: UserRole;
+  /** @nullable */
+  professionalFamily: string | null;
 }
 
 export interface AuthSession {
@@ -114,6 +124,11 @@ export interface CreateUserInput {
      * @maxLength 1024
      */
   temporaryPassword: string;
+  /**
+     * @maxLength 120
+     * @nullable
+     */
+  professionalFamily?: string | null;
 }
 
 export interface DashboardSummary {
@@ -532,4 +547,437 @@ export interface CatalogImportResult {
   actionCount: number;
   indicatorCount: number;
 }
+
+export type ActivityStatus = typeof ActivityStatus[keyof typeof ActivityStatus];
+
+
+export const ActivityStatus = {
+  pendiente_responsable: 'pendiente_responsable',
+  pendiente_c2: 'pendiente_c2',
+  validada: 'validada',
+  descartada: 'descartada',
+} as const;
+
+export type ActivityInformationStatus = typeof ActivityInformationStatus[keyof typeof ActivityInformationStatus];
+
+
+export const ActivityInformationStatus = {
+  en_revision: 'en_revision',
+  confirmada: 'confirmada',
+  sin_informacion: 'sin_informacion',
+  no_realizada: 'no_realizada',
+} as const;
+
+export interface Activity {
+  id: string;
+  title: string;
+  description: string;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  activityDate: string | null;
+  professionalFamily: string;
+  /** @nullable */
+  projectId: string | null;
+  responsibleUserId: string;
+  status: ActivityStatus;
+  informationStatus: ActivityInformationStatus;
+  revision: number;
+  evidenceCount: number;
+  indicatorCodes: string[];
+  sourceLabels: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateActivityInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title: string;
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  description: string;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  activityDate?: string | null;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  professionalFamily: string;
+  /** @nullable */
+  projectId?: string | null;
+  /** @nullable */
+  responsibleUserId?: string | null;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  sourceLabel: string;
+  /** @items.maxLength 80 */
+  indicatorCodes: string[];
+}
+
+export interface ActivityCreateResult {
+  activity: Activity;
+  duplicate: boolean;
+}
+
+export interface UpdateActivityInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  title?: string;
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
+  description?: string;
+  /**
+     * @nullable
+     * @pattern ^\d{4}-\d{2}-\d{2}$
+     */
+  activityDate?: string | null;
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  professionalFamily?: string;
+  /** @nullable */
+  projectId?: string | null;
+  /** @items.maxLength 80 */
+  indicatorCodes?: string[];
+}
+
+export type ConfirmActivityInputInformationStatus = typeof ConfirmActivityInputInformationStatus[keyof typeof ConfirmActivityInputInformationStatus];
+
+
+export const ConfirmActivityInputInformationStatus = {
+  confirmada: 'confirmada',
+  sin_informacion: 'sin_informacion',
+  no_realizada: 'no_realizada',
+} as const;
+
+export interface ConfirmActivityInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+  informationStatus: ConfirmActivityInputInformationStatus;
+}
+
+export interface RevisionInput {
+  /** @minimum 1 */
+  expectedRevision: number;
+}
+
+export type DocumentAccessScope = typeof DocumentAccessScope[keyof typeof DocumentAccessScope];
+
+
+export const DocumentAccessScope = {
+  family: 'family',
+  center: 'center',
+  restricted: 'restricted',
+} as const;
+
+export type DocumentStatus = typeof DocumentStatus[keyof typeof DocumentStatus];
+
+
+export const DocumentStatus = {
+  pendiente_revision: 'pendiente_revision',
+  aprobado: 'aprobado',
+  archivado: 'archivado',
+} as const;
+
+export type DocumentScanStatus = typeof DocumentScanStatus[keyof typeof DocumentScanStatus];
+
+
+export const DocumentScanStatus = {
+  limpio: 'limpio',
+  infectado: 'infectado',
+  no_configurado: 'no_configurado',
+  no_disponible: 'no_disponible',
+} as const;
+
+export interface Document {
+  id: string;
+  title: string;
+  category: string;
+  /** @nullable */
+  professionalFamily: string | null;
+  accessScope: DocumentAccessScope;
+  status: DocumentStatus;
+  revision: number;
+  currentVersion: number;
+  latestFileName: string;
+  latestMediaType: string;
+  sizeBytes: number;
+  sha256: string;
+  scanStatus: DocumentScanStatus;
+  /** @nullable */
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DocumentVersionScanStatus = typeof DocumentVersionScanStatus[keyof typeof DocumentVersionScanStatus];
+
+
+export const DocumentVersionScanStatus = {
+  limpio: 'limpio',
+  infectado: 'infectado',
+  no_configurado: 'no_configurado',
+  no_disponible: 'no_disponible',
+} as const;
+
+export interface DocumentVersion {
+  version: number;
+  originalName: string;
+  mediaType: string;
+  sizeBytes: number;
+  sha256: string;
+  scanStatus: DocumentVersionScanStatus;
+  /** @nullable */
+  uploadedBy: string | null;
+  createdAt: string;
+}
+
+export interface DocumentDetail {
+  document: Document;
+  versions: DocumentVersion[];
+}
+
+export interface DocumentAccessInput {
+  userId: string;
+  granted: boolean;
+}
+
+export interface DocumentEvidenceLinkInput {
+  activityId: string;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  indicatorCode?: string | null;
+  /** @maxLength 500 */
+  note?: string;
+}
+
+export type InformationRequestSubjectType = typeof InformationRequestSubjectType[keyof typeof InformationRequestSubjectType];
+
+
+export const InformationRequestSubjectType = {
+  activity: 'activity',
+  project: 'project',
+} as const;
+
+export type InformationRequestStatus = typeof InformationRequestStatus[keyof typeof InformationRequestStatus];
+
+
+export const InformationRequestStatus = {
+  solicitada: 'solicitada',
+  respondida: 'respondida',
+  validada: 'validada',
+  cerrada: 'cerrada',
+} as const;
+
+/**
+ * @nullable
+ */
+export type InformationRequestLatestResponseStatus = typeof InformationRequestLatestResponseStatus[keyof typeof InformationRequestLatestResponseStatus] | null;
+
+
+export const InformationRequestLatestResponseStatus = {
+  respondida: 'respondida',
+  sin_informacion: 'sin_informacion',
+  no_realizada: 'no_realizada',
+} as const;
+
+export type InformationRequestLatestAnswers = { [key: string]: unknown };
+
+export interface InformationRequest {
+  id: string;
+  recipientUserId: string;
+  subjectType: InformationRequestSubjectType;
+  subjectId: string;
+  requestedFields: string[];
+  reason: string;
+  /** @nullable */
+  dueAt: string | null;
+  status: InformationRequestStatus;
+  revision: number;
+  /** @nullable */
+  latestResponseStatus: InformationRequestLatestResponseStatus;
+  latestAnswers: InformationRequestLatestAnswers;
+  latestComment: string;
+  createdAt: string;
+}
+
+export type CreateInformationRequestInputSubjectType = typeof CreateInformationRequestInputSubjectType[keyof typeof CreateInformationRequestInputSubjectType];
+
+
+export const CreateInformationRequestInputSubjectType = {
+  activity: 'activity',
+  project: 'project',
+} as const;
+
+export interface CreateInformationRequestInput {
+  recipientUserId: string;
+  subjectType: CreateInformationRequestInputSubjectType;
+  subjectId: string;
+  /**
+     * @minItems 1
+     * @items.maxLength 80
+     */
+  requestedFields: string[];
+  /**
+     * @minLength 1
+     * @maxLength 1000
+     */
+  reason: string;
+  /** @nullable */
+  dueAt?: string | null;
+}
+
+export type RespondInformationRequestInputResponseStatus = typeof RespondInformationRequestInputResponseStatus[keyof typeof RespondInformationRequestInputResponseStatus];
+
+
+export const RespondInformationRequestInputResponseStatus = {
+  respondida: 'respondida',
+  sin_informacion: 'sin_informacion',
+  no_realizada: 'no_realizada',
+} as const;
+
+export type RespondInformationRequestInputAnswers = { [key: string]: unknown };
+
+export interface RespondInformationRequestInput {
+  responseStatus: RespondInformationRequestInputResponseStatus;
+  answers: RespondInformationRequestInputAnswers;
+  /** @maxLength 1000 */
+  comment?: string;
+}
+
+export type IndicatorSummaryType = typeof IndicatorSummaryType[keyof typeof IndicatorSummaryType];
+
+
+export const IndicatorSummaryType = {
+  booleano: 'booleano',
+  porcentaje: 'porcentaje',
+  numero: 'numero',
+} as const;
+
+export type IndicatorObservationAssessment = typeof IndicatorObservationAssessment[keyof typeof IndicatorObservationAssessment];
+
+
+export const IndicatorObservationAssessment = {
+  logrado: 'logrado',
+  en_progreso: 'en_progreso',
+  no_logrado: 'no_logrado',
+  sin_datos: 'sin_datos',
+} as const;
+
+export interface IndicatorObservation {
+  id: string;
+  planId: string;
+  indicatorCode: string;
+  period: string;
+  revision: number;
+  value: number | boolean;
+  method: string;
+  formula: string;
+  evidenceIds: string[];
+  sourceActivityCount: number;
+  assessment: IndicatorObservationAssessment;
+  createdAt: string;
+}
+
+export interface IndicatorSummary {
+  planId: string;
+  actionCode: string;
+  code: string;
+  description: string;
+  type: IndicatorSummaryType;
+  methodNote: string;
+  /** @nullable */
+  target: number | boolean | null;
+  /** @nullable */
+  risk: number | boolean | null;
+  /** @nullable */
+  currentValue: number | boolean | null;
+  activityCount: number;
+  evidenceCount: number;
+  latestObservation: IndicatorObservation | null;
+}
+
+export interface CreateIndicatorObservationInput {
+  /**
+     * @minLength 1
+     * @maxLength 40
+     */
+  period: string;
+  /** @nullable */
+  value?: number | boolean | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  numerator?: number | null;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  denominator?: number | null;
+  evidenceIds?: string[];
+}
+
+export type UploadDocumentParams = {
+/**
+ * @minLength 1
+ * @maxLength 200
+ */
+title: string;
+category: UploadDocumentCategory;
+/**
+ * @maxLength 120
+ */
+professionalFamily?: string;
+accessScope: UploadDocumentAccessScope;
+activityId?: string;
+/**
+ * @maxLength 80
+ */
+indicatorCode?: string;
+/**
+ * @maxLength 255
+ */
+fileName: string;
+};
+
+export type UploadDocumentCategory = typeof UploadDocumentCategory[keyof typeof UploadDocumentCategory];
+
+
+export const UploadDocumentCategory = {
+  evidencia: 'evidencia',
+  acta: 'acta',
+  informe: 'informe',
+  producto: 'producto',
+  otro: 'otro',
+} as const;
+
+export type UploadDocumentAccessScope = typeof UploadDocumentAccessScope[keyof typeof UploadDocumentAccessScope];
+
+
+export const UploadDocumentAccessScope = {
+  family: 'family',
+  center: 'center',
+  restricted: 'restricted',
+} as const;
 

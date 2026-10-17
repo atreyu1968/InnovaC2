@@ -19,6 +19,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { PicPlanPage } from '@/components/PicPlanPage';
+import { ActivitiesPhaseTwo } from '@/components/ActivitiesPhaseTwo';
 
 const loginTeamPhoto = new URL('./assets/innova-c2-login-team.jpg', import.meta.url).href;
 
@@ -38,7 +39,7 @@ const roleNames: Record<UserRoleValue, string> = {
 };
 
 const routeLabels: Record<string, string> = {
-  '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro',
+  '/': 'Panel de coordinación', '/usuarios': 'Gestión de usuarios', '/catalogo': 'Catálogo oficial', '/plan-pic': 'Plan de Innovación del Centro', '/actuaciones': 'Actuaciones y evidencias',
 };
 
 function messageFor(error: unknown) {
@@ -71,6 +72,7 @@ function Routed() {
         <Route path="/usuarios"><ProtectedPage page="users" /></Route>
         <Route path="/catalogo"><ProtectedPage page="catalog" /></Route>
         <Route path="/plan-pic"><ProtectedPage page="pic" /></Route>
+        <Route path="/actuaciones"><ProtectedPage page="activities" /></Route>
         <Route path="/"><ProtectedPage page="dashboard" /></Route>
         <Route component={NotFound} />
       </Switch>
@@ -78,7 +80,7 @@ function Routed() {
   );
 }
 
-function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' }) {
+function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pic' | 'activities' }) {
   const [, setLocation] = useLocation();
   const status = useGetSetupStatus({ query: { queryKey: getGetSetupStatusQueryKey(), retry: false } });
   const current = useGetCurrentUser({
@@ -99,10 +101,21 @@ function ProtectedPage({ page }: { page: 'dashboard' | 'users' | 'catalog' | 'pi
     return <LoadingScreen label="Preparando el espacio de coordinación" />;
   }
   if (current.isError) return <LoadingScreen label="Redirigiendo al acceso" />;
+  if (
+    page === 'activities' &&
+    ![
+      UserRole.c2_innovacion,
+      UserRole.coordinacion_red,
+      UserRole.jefatura_departamento,
+      UserRole.profesorado,
+    ].some(role => role === current.data.user.role)
+  ) {
+    return <NotFound />;
+  }
   return (
     <Workspace user={current.data.user}>
       {page === 'dashboard' ? <DashboardPage user={current.data.user} /> :
-        page === 'users' ? <UsersPage /> : page === 'catalog' ? <CatalogPage user={current.data.user} /> : <PicPlanPage user={current.data.user} />}
+        page === 'users' ? <UsersPage /> : page === 'catalog' ? <CatalogPage user={current.data.user} /> : page === 'pic' ? <PicPlanPage user={current.data.user} /> : <ActivitiesPhaseTwo user={current.data.user} />}
     </Workspace>
   );
 }
@@ -147,6 +160,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
             <NavItem href="/" active={location === '/'} icon={<LayoutDashboard size={18} />} label="Panel principal" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
             {user.role === UserRole.admin_tecnico && <NavItem href="/usuarios" active={location === '/usuarios'} icon={<Users size={18} />} label="Usuarios y permisos" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             {user.role === UserRole.c2_innovacion && <NavItem href="/plan-pic" active={location === '/plan-pic'} icon={<ClipboardList size={18} />} label="Plan PIC" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
+            {[UserRole.c2_innovacion, UserRole.coordinacion_red, UserRole.jefatura_departamento, UserRole.profesorado].some(role => role === user.role) && <NavItem href="/actuaciones" active={location === '/actuaciones'} icon={<Activity size={18} />} label="Actuaciones y evidencias" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />}
             <NavItem href="/catalogo" active={location === '/catalogo'} icon={<BookOpen size={18} />} label="Catálogo oficial" collapsed={collapsed} onSelect={() => setMobileOpen(false)} />
           </nav>
           <div className="workspace-sidebar-bottom">
@@ -226,20 +240,25 @@ function QuickLink({ href, icon, title, text }: { href: string; icon: ReactNode;
 function UsersPage() {
   const client = useQueryClient();
   const users = useListUsers({ query: { queryKey: getListUsersQueryKey(), refetchOnMount: 'always' } });
+  const catalog = useGetCurrentCatalog({ query: { queryKey: getGetCurrentCatalogQueryKey(), retry: false } });
   const create = useCreateUser();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<UserRoleValue>(UserRole.profesorado);
+  const familyRequired = [UserRole.profesorado, UserRole.jefatura_departamento, UserRole.coordinacion_red].some(role => role === selectedRole);
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setError(''); setSuccess('');
     const formElement = event.currentTarget;
     const form = new FormData(event.currentTarget);
-    const data = { email: String(form.get('email')).trim(), name: String(form.get('name')).trim(), role: String(form.get('role')) as UserRoleValue, temporaryPassword: String(form.get('temporaryPassword')) };
+    const professionalFamily = String(form.get('professionalFamily') ?? '').trim();
+    const data = { email: String(form.get('email')).trim(), name: String(form.get('name')).trim(), role: String(form.get('role')) as UserRoleValue, temporaryPassword: String(form.get('temporaryPassword')), professionalFamily: professionalFamily || null };
     create.mutate({ data }, {
       onSuccess: created => {
         client.setQueryData<User[]>(getListUsersQueryKey(), old => old ? [created, ...old] : [created]);
         setSuccess(`La cuenta de ${created.name} se ha creado correctamente.`);
         formElement.reset();
+        setSelectedRole(UserRole.profesorado);
       },
       onError: issue => setError(messageFor(issue)),
     });
@@ -252,7 +271,8 @@ function UsersPage() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <Field label="Nombre completo" id="user-name"><input id="user-name" name="name" className="field" required maxLength={160} autoComplete="name" data-testid="input-user-name" /></Field>
           <Field label="Correo electrónico" id="user-email"><input id="user-email" name="email" type="email" className="field" required autoComplete="email" data-testid="input-user-email" /></Field>
-          <Field label="Rol de acceso" id="user-role"><select id="user-role" name="role" className="field" defaultValue={UserRole.profesorado} data-testid="select-user-role">{Object.entries(roleNames).map(([role, label]) => <option key={role} value={role}>{label}</option>)}</select></Field>
+          <Field label="Rol de acceso" id="user-role"><select id="user-role" name="role" className="field" value={selectedRole} onChange={event => setSelectedRole(event.target.value as UserRoleValue)} data-testid="select-user-role">{Object.entries(roleNames).map(([role, label]) => <option key={role} value={role}>{label}</option>)}</select></Field>
+          <Field label="Familia profesional" id="user-family"><select id="user-family" name="professionalFamily" className="field" required={familyRequired} defaultValue="" data-testid="select-user-family"><option value="">Selecciona una familia</option>{catalog.data?.familias_profesionales.map(family => <option key={family} value={family}>{family}</option>)}</select>{familyRequired && <span className="mt-1 block text-[10px] text-[#77817c]">Necesaria para limitar las actuaciones al ámbito de esta cuenta.</span>}{catalog.isError && <span className="mt-1 block text-[10px] text-[#9b4337]">No se han podido cargar las familias del catálogo oficial.</span>}</Field>
           <Field label="Contraseña temporal" id="user-password"><input id="user-password" name="temporaryPassword" type="password" className="field" required minLength={12} autoComplete="new-password" data-testid="input-user-password" /><span className="mt-1 block text-[10px] text-[#77817c]">Mínimo 12 caracteres.</span></Field>
           {error && <InlineAlert text={error} kind="error" />}
           {success && <InlineAlert text={success} kind="success" />}
@@ -261,7 +281,7 @@ function UsersPage() {
       </section>
       <section className="panel overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#eee9df] px-5 py-4 md:px-6"><div><p className="eyebrow">Acceso al espacio</p><h2 className="mt-1 font-[var(--app-font-serif)] text-lg font-bold">Cuentas registradas</h2></div><button className="quiet-action flex items-center gap-2" onClick={() => users.refetch()} disabled={users.isFetching} data-testid="button-refresh-users"><RefreshCw size={14} className={users.isFetching ? 'animate-spin' : ''} />Actualizar</button></div>
-        {users.isLoading ? <div className="space-y-3 p-5">{[1,2,3].map(n => <div key={n} className="skeleton h-12" />)}</div> : users.isError ? <div className="p-6"><ErrorNotice text={messageFor(users.error)} onRetry={() => users.refetch()} /></div> : users.data?.length ? <div className="overflow-x-auto"><table className="w-full min-w-[600px] text-left"><thead className="bg-[#f7f5ef] text-[10px] uppercase tracking-wider text-[#7b8580]"><tr><th className="px-5 py-3 font-bold">Persona</th><th className="px-4 py-3 font-bold">Rol</th><th className="px-4 py-3 font-bold">Estado</th><th className="px-4 py-3 font-bold">Alta</th></tr></thead><tbody className="divide-y divide-[#eee9df]">{users.data.map(person => <tr key={person.id} data-testid={`row-user-${person.id}`}><td className="px-5 py-3.5"><p className="text-sm font-bold text-[#34444a]" data-testid={`text-user-name-${person.id}`}>{person.name}</p><p className="mt-0.5 text-[11px] text-[#7b8580]">{person.email}</p></td><td className="px-4 py-3.5 text-xs text-[#53615c]">{roleNames[person.role]}</td><td className="px-4 py-3.5"><span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${person.active ? 'text-[#347b69]' : 'text-[#838783]'}`}><span className={`h-1.5 w-1.5 rounded-full ${person.active ? 'bg-[#58a47e]' : 'bg-[#a8aaa4]'}`} />{person.active ? 'Activa' : 'Inactiva'}</span></td><td className="px-4 py-3.5 text-xs text-[#6f7974]">{formatDate(person.createdAt)}</td></tr>)}</tbody></table></div> : <EmptyNotice title="No hay cuentas adicionales" text="Cuando se creen usuarios, aparecerán aquí con su rol y estado." />}
+         {users.isLoading ? <div className="space-y-3 p-5">{[1,2,3].map(n => <div key={n} className="skeleton h-12" />)}</div> : users.isError ? <div className="p-6"><ErrorNotice text={messageFor(users.error)} onRetry={() => users.refetch()} /></div> : users.data?.length ? <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left"><thead className="bg-[#f7f5ef] text-[10px] uppercase tracking-wider text-[#7b8580]"><tr><th className="px-5 py-3 font-bold">Persona</th><th className="px-4 py-3 font-bold">Rol</th><th className="px-4 py-3 font-bold">Familia profesional</th><th className="px-4 py-3 font-bold">Estado</th><th className="px-4 py-3 font-bold">Alta</th></tr></thead><tbody className="divide-y divide-[#eee9df]">{users.data.map(person => <tr key={person.id} data-testid={`row-user-${person.id}`}><td className="px-5 py-3.5"><p className="text-sm font-bold text-[#34444a]" data-testid={`text-user-name-${person.id}`}>{person.name}</p><p className="mt-0.5 text-[11px] text-[#7b8580]">{person.email}</p></td><td className="px-4 py-3.5 text-xs text-[#53615c]">{roleNames[person.role]}</td><td className="px-4 py-3.5 text-xs text-[#53615c]">{person.professionalFamily ?? 'Sin asignar'}</td><td className="px-4 py-3.5"><span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold ${person.active ? 'text-[#347b69]' : 'text-[#838783]'}`}><span className={`h-1.5 w-1.5 rounded-full ${person.active ? 'bg-[#58a47e]' : 'bg-[#a8aaa4]'}`} />{person.active ? 'Activa' : 'Inactiva'}</span></td><td className="px-4 py-3.5 text-xs text-[#6f7974]">{formatDate(person.createdAt)}</td></tr>)}</tbody></table></div> : <EmptyNotice title="No hay cuentas adicionales" text="Cuando se creen usuarios, aparecerán aquí con su rol y estado." />}
         <div className="border-t border-[#eee9df] px-5 py-3 md:px-6"><button className="flex items-center gap-2 text-xs font-semibold text-[#52625d] hover:text-[#347b69]" onClick={() => setExpanded(!expanded)} aria-expanded={expanded} data-testid="button-toggle-roles"><ChevronDown size={14} className={expanded ? 'rotate-180' : ''} />{expanded ? 'Ocultar' : 'Revisar'} matriz de roles</button>
           {expanded && <div className="mt-3 grid gap-2 border-t border-[#eee9df] pt-3 sm:grid-cols-2">{Object.entries(roleNames).map(([role, title]) => <div key={role} className="flex items-start gap-2 rounded-md bg-[#f7f5ef] p-2.5" data-testid={`role-${role}`}><ShieldCheck size={14} className="mt-0.5 shrink-0 text-[#347b69]" /><div><p className="text-xs font-bold text-[#405057]">{title}</p><p className="mt-0.5 font-mono text-[9px] text-[#84908a]">{role}</p></div></div>)}</div>}
         </div>

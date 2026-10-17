@@ -62,6 +62,7 @@ export const usersTable = pgTable(
     name: text("name").notNull(),
     passwordHash: text("password_hash").notNull(),
     role: userRoleEnum("role").notNull(),
+    professionalFamily: text("professional_family"),
     active: boolean("active").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

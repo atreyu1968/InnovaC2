@@ -20,6 +20,14 @@ tags:
     description: User and role administration
   - name: catalog
     description: Official PIC catalogue
+  - name: activities
+    description: Captura, contraste y validación de actuaciones
+  - name: documents
+    description: Documentos y evidencias privadas
+  - name: information
+    description: Solicitudes mínimas de información
+  - name: indicators
+    description: Observaciones y cálculos trazables de indicadores
 paths:
   /health:
     get:
@@ -275,6 +283,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /staff/options:
+    get:
+      operationId: listStaffOptions
+      tags: [users]
+      summary: List active staff names and families for C2 assignments
+      responses:
+        "200":
+          description: Minimal staff selector data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffOption"
   /catalogs/current:
     get:
       operationId: getCurrentCatalog
@@ -658,6 +680,616 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ExportFile"
+  /activities:
+    get:
+      operationId: listActivities
+      tags: [activities]
+      summary: List activities within the user's permitted scope
+      responses:
+        "200":
+          description: Activities and evidence summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+    post:
+      operationId: createActivity
+      tags: [activities]
+      summary: Record an activity and link it to selected PIC indicators
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateActivityInput"
+      responses:
+        "201":
+          description: New activity or deduplicated activity with the source attached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActivityCreateResult"
+        "400":
+          description: Invalid activity data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Activity was changed or belongs to an incompatible scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /activities/{activityId}:
+    parameters:
+      - name: activityId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getActivity
+      tags: [activities]
+      summary: Read an activity and its provenance
+      responses:
+        "200":
+          description: Activity detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "404":
+          description: Activity not found in the user's permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateActivity
+      tags: [activities]
+      summary: Correct an activity using optimistic concurrency
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateActivityInput"
+      responses:
+        "200":
+          description: Updated activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "409":
+          description: Stale revision or validated activity requires C2 correction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /activities/{activityId}/confirm:
+    post:
+      operationId: confirmActivity
+      tags: [activities]
+      summary: Confirm the activity information or explicitly report no information
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmActivityInput"
+      responses:
+        "200":
+          description: Confirmation recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "409":
+          description: Stale revision or invalid state transition
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /activities/{activityId}/validate:
+    post:
+      operationId: validateActivity
+      tags: [activities]
+      summary: Validate an evidenced activity as C2
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevisionInput"
+      responses:
+        "200":
+          description: Activity validated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "409":
+          description: Stale revision or activity does not meet validation requirements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /activities/{activityId}/discard:
+    post:
+      operationId: discardActivity
+      tags: [activities]
+      summary: Withdraw an activity without deleting its history
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevisionInput"
+      responses:
+        "200":
+          description: Activity withdrawn and retained in history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "409":
+          description: Stale revision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents:
+    get:
+      operationId: listDocuments
+      tags: [documents]
+      summary: List documents visible to the current user
+      responses:
+        "200":
+          description: Visible document metadata
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Document"
+    post:
+      operationId: uploadDocument
+      tags: [documents]
+      summary: Store a private document version and evidence record
+      parameters:
+        - name: title
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+        - name: category
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [evidencia, acta, informe, producto, otro]
+        - name: professionalFamily
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 120
+        - name: accessScope
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [family, center, restricted]
+        - name: activityId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: indicatorCode
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 80
+        - name: fileName
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 255
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "201":
+          description: Private document and evidence stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "400":
+          description: Invalid file, metadata, or signature
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: File exceeds the configured size limit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}:
+    get:
+      operationId: getDocument
+      tags: [documents]
+      summary: Read document metadata and immutable versions
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Document and version history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentDetail"
+        "404":
+          description: Document not found in the user's permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}/versions:
+    post:
+      operationId: addDocumentVersion
+      tags: [documents]
+      summary: Add a new immutable version; approved content is never overwritten
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-File-Name
+          in: header
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "201":
+          description: New version stored and sent for review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "409":
+          description: Identical content already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}/approve:
+    post:
+      operationId: approveDocument
+      tags: [documents]
+      summary: Approve the current document version after antivirus clearance
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevisionInput"
+      responses:
+        "200":
+          description: Document approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Document"
+        "409":
+          description: Version is unscanned, infected, or has changed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}/access:
+    post:
+      operationId: setDocumentAccess
+      tags: [documents]
+      summary: Grant or revoke a named user's access to a restricted document
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentAccessInput"
+      responses:
+        "200":
+          description: Document access grant updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: User or document not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}/links:
+    post:
+      operationId: linkDocumentEvidence
+      tags: [documents]
+      summary: Link an existing evidence record to an activity and PIC indicator
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DocumentEvidenceLinkInput"
+      responses:
+        "201":
+          description: Evidence link stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "404":
+          description: Document or activity not found in the user's permitted scope
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /documents/{documentId}/versions/{version}/content:
+    get:
+      operationId: downloadDocumentVersion
+      tags: [documents]
+      summary: Download an authorized document version as an attachment
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Document bytes; never rendered inline
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Document or version not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /information-requests:
+    get:
+      operationId: listInformationRequests
+      tags: [information]
+      summary: List requests assigned to the current user or visible to C2
+      responses:
+        "200":
+          description: Minimal information requests with latest response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InformationRequest"
+    post:
+      operationId: createInformationRequest
+      tags: [information]
+      summary: Request only still-missing information and reuse open requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInformationRequestInput"
+      responses:
+        "201":
+          description: Request created or merged into an open request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InformationRequest"
+        "400":
+          description: No requested fields remain missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /information-requests/{requestId}/respond:
+    post:
+      operationId: respondToInformationRequest
+      tags: [information]
+      summary: Respond, explicitly report no information, or report not realized
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespondInformationRequestInput"
+      responses:
+        "201":
+          description: Response recorded for C2 review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InformationRequest"
+        "403":
+          description: Request is not assigned to this user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /information-requests/{requestId}/validate:
+    post:
+      operationId: validateInformationResponse
+      tags: [information]
+      summary: Validate an information response and apply supported activity fields
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevisionInput"
+      responses:
+        "200":
+          description: Response validated and history retained
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InformationRequest"
+  /indicators/current:
+    get:
+      operationId: listCurrentIndicators
+      tags: [indicators]
+      summary: Read selected current-plan indicators with live evidence counts
+      responses:
+        "200":
+          description: Selected indicators and their current traceable values
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/IndicatorSummary"
+        "404":
+          description: No active PIC plan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /indicators/{indicatorCode}/observations:
+    post:
+      operationId: createIndicatorObservation
+      tags: [indicators]
+      summary: Calculate or confirm an indicator with formula, evidence, and validator
+      parameters:
+        - name: indicatorCode
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 80
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIndicatorObservationInput"
+      responses:
+        "201":
+          description: Immutable indicator observation recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IndicatorObservation"
+        "400":
+          description: Observation is inconsistent with the official indicator type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: A required evidence reference is missing or inaccessible
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -709,12 +1341,27 @@ components:
           type: string
         role:
           $ref: "#/components/schemas/UserRole"
+        professionalFamily:
+          type: [string, "null"]
         active:
           type: boolean
         createdAt:
           type: string
           format: date-time
       required: [id, email, name, role, active, createdAt]
+    StaffOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+        professionalFamily:
+          type: [string, "null"]
+      required: [id, name, role, professionalFamily]
     AuthSession:
       type: object
       properties:
@@ -798,6 +1445,9 @@ components:
           type: string
           minLength: 12
           maxLength: 1024
+        professionalFamily:
+          type: [string, "null"]
+          maxLength: 120
       required: [email, name, role, temporaryPassword]
     DashboardSummary:
       type: object
@@ -1467,4 +2117,416 @@ components:
         - objectiveCount
         - actionCount
         - indicatorCount
+    Activity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        activityDate:
+          type: [string, "null"]
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        professionalFamily:
+          type: string
+        projectId:
+          type: [string, "null"]
+          format: uuid
+        responsibleUserId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pendiente_responsable, pendiente_c2, validada, descartada]
+        informationStatus:
+          type: string
+          enum: [en_revision, confirmada, sin_informacion, no_realizada]
+        revision:
+          type: integer
+        evidenceCount:
+          type: integer
+        indicatorCodes:
+          type: array
+          items:
+            type: string
+        sourceLabels:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [id, title, description, activityDate, professionalFamily, projectId, responsibleUserId, status, informationStatus, revision, evidenceCount, indicatorCodes, sourceLabels, createdAt, updatedAt]
+    CreateActivityInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        activityDate:
+          type: [string, "null"]
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        professionalFamily:
+          type: string
+          minLength: 1
+          maxLength: 120
+        projectId:
+          type: [string, "null"]
+          format: uuid
+        responsibleUserId:
+          type: [string, "null"]
+          format: uuid
+        sourceLabel:
+          type: string
+          minLength: 1
+          maxLength: 200
+        indicatorCodes:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 80
+      required:
+        [title, description, professionalFamily, sourceLabel, indicatorCodes]
+    ActivityCreateResult:
+      type: object
+      properties:
+        activity:
+          $ref: "#/components/schemas/Activity"
+        duplicate:
+          type: boolean
+      required: [activity, duplicate]
+    UpdateActivityInput:
+      type: object
+      properties:
+        expectedRevision:
+          type: integer
+          minimum: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        activityDate:
+          type: [string, "null"]
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        professionalFamily:
+          type: string
+          minLength: 1
+          maxLength: 120
+        projectId:
+          type: [string, "null"]
+          format: uuid
+        indicatorCodes:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 80
+      required: [expectedRevision]
+    ConfirmActivityInput:
+      type: object
+      properties:
+        expectedRevision:
+          type: integer
+          minimum: 1
+        informationStatus:
+          type: string
+          enum: [confirmada, sin_informacion, no_realizada]
+      required: [expectedRevision, informationStatus]
+    RevisionInput:
+      type: object
+      properties:
+        expectedRevision:
+          type: integer
+          minimum: 1
+      required: [expectedRevision]
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        category:
+          type: string
+        professionalFamily:
+          type: [string, "null"]
+        accessScope:
+          type: string
+          enum: [family, center, restricted]
+        status:
+          type: string
+          enum: [pendiente_revision, aprobado, archivado]
+        revision:
+          type: integer
+        currentVersion:
+          type: integer
+        latestFileName:
+          type: string
+        latestMediaType:
+          type: string
+        sizeBytes:
+          type: integer
+        sha256:
+          type: string
+        scanStatus:
+          type: string
+          enum: [limpio, infectado, no_configurado, no_disponible]
+        createdBy:
+          type: [string, "null"]
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        [id, title, category, professionalFamily, accessScope, status, revision, currentVersion, latestFileName, latestMediaType, sizeBytes, sha256, scanStatus, createdBy, createdAt, updatedAt]
+    DocumentVersion:
+      type: object
+      properties:
+        version:
+          type: integer
+        originalName:
+          type: string
+        mediaType:
+          type: string
+        sizeBytes:
+          type: integer
+        sha256:
+          type: string
+        scanStatus:
+          type: string
+          enum: [limpio, infectado, no_configurado, no_disponible]
+        uploadedBy:
+          type: [string, "null"]
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        [version, originalName, mediaType, sizeBytes, sha256, scanStatus, uploadedBy, createdAt]
+    DocumentDetail:
+      type: object
+      properties:
+        document:
+          $ref: "#/components/schemas/Document"
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentVersion"
+      required: [document, versions]
+    DocumentAccessInput:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        granted:
+          type: boolean
+      required: [userId, granted]
+    DocumentEvidenceLinkInput:
+      type: object
+      properties:
+        activityId:
+          type: string
+          format: uuid
+        indicatorCode:
+          type: [string, "null"]
+          maxLength: 80
+        note:
+          type: string
+          maxLength: 500
+      required: [activityId]
+    InformationRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        recipientUserId:
+          type: string
+          format: uuid
+        subjectType:
+          type: string
+          enum: [activity, project]
+        subjectId:
+          type: string
+          format: uuid
+        requestedFields:
+          type: array
+          items:
+            type: string
+        reason:
+          type: string
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+        status:
+          type: string
+          enum: [solicitada, respondida, validada, cerrada]
+        revision:
+          type: integer
+        latestResponseStatus:
+          type: [string, "null"]
+          enum: [respondida, sin_informacion, no_realizada, null]
+        latestAnswers:
+          type: object
+          additionalProperties: true
+        latestComment:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        [id, recipientUserId, subjectType, subjectId, requestedFields, reason, dueAt, status, revision, latestResponseStatus, latestAnswers, latestComment, createdAt]
+    CreateInformationRequestInput:
+      type: object
+      properties:
+        recipientUserId:
+          type: string
+          format: uuid
+        subjectType:
+          type: string
+          enum: [activity, project]
+        subjectId:
+          type: string
+          format: uuid
+        requestedFields:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 80
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        dueAt:
+          type: [string, "null"]
+          format: date-time
+      required: [recipientUserId, subjectType, subjectId, requestedFields, reason]
+    RespondInformationRequestInput:
+      type: object
+      properties:
+        responseStatus:
+          type: string
+          enum: [respondida, sin_informacion, no_realizada]
+        answers:
+          type: object
+          additionalProperties: true
+        comment:
+          type: string
+          maxLength: 1000
+      required: [responseStatus, answers]
+    IndicatorSummary:
+      type: object
+      properties:
+        planId:
+          type: string
+          format: uuid
+        actionCode:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+          enum: [booleano, porcentaje, numero]
+        methodNote:
+          type: string
+        target:
+          type: [number, boolean, "null"]
+        risk:
+          type: [number, boolean, "null"]
+        currentValue:
+          type: [number, boolean, "null"]
+        activityCount:
+          type: integer
+        evidenceCount:
+          type: integer
+        latestObservation:
+          oneOf:
+            - $ref: "#/components/schemas/IndicatorObservation"
+            - type: "null"
+      required:
+        [planId, actionCode, code, description, type, methodNote, target, risk, currentValue, activityCount, evidenceCount, latestObservation]
+    CreateIndicatorObservationInput:
+      type: object
+      properties:
+        period:
+          type: string
+          minLength: 1
+          maxLength: 40
+        value:
+          type: [number, boolean, "null"]
+        numerator:
+          type: [number, "null"]
+          minimum: 0
+        denominator:
+          type: [number, "null"]
+          minimum: 0
+        evidenceIds:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            format: uuid
+      required: [period]
+    IndicatorObservation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        planId:
+          type: string
+          format: uuid
+        indicatorCode:
+          type: string
+        period:
+          type: string
+        revision:
+          type: integer
+        value:
+          type: [number, boolean]
+        method:
+          type: string
+        formula:
+          type: string
+        evidenceIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        sourceActivityCount:
+          type: integer
+        assessment:
+          type: string
+          enum: [logrado, en_progreso, no_logrado, sin_datos]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        [id, planId, indicatorCode, period, revision, value, method, formula, evidenceIds, sourceActivityCount, assessment, createdAt]
 

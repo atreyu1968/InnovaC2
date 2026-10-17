@@ -15,6 +15,7 @@ import {
   requirePermission,
   type AuthContext,
 } from "../lib/auth";
+import initialCatalog from "../../../../config/pic_2026_2027_catalogo.json";
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.get(
         email: usersTable.email,
         name: usersTable.name,
         role: usersTable.role,
+        professionalFamily: usersTable.professionalFamily,
         active: usersTable.active,
         createdAt: usersTable.createdAt,
       })
@@ -56,7 +58,18 @@ router.post(
   requirePermission("users.create"),
   async (req, res) => {
     const parsed = CreateUserBody.safeParse(req.body);
-    if (!parsed.success || parsed.data.temporaryPassword.length > 1024) {
+    const catalogFamilies = new Set(initialCatalog.familias_profesionales);
+    if (
+      !parsed.success ||
+      parsed.data.temporaryPassword.length > 1024 ||
+      (parsed.data.professionalFamily !== undefined &&
+        parsed.data.professionalFamily !== null &&
+        !catalogFamilies.has(parsed.data.professionalFamily)) ||
+      (["profesorado", "jefatura_departamento", "coordinacion_red"].includes(
+        parsed.data.role,
+      ) &&
+        !parsed.data.professionalFamily)
+    ) {
       res.status(400).json({ error: "Los datos de la cuenta no son válidos." });
       return;
     }
@@ -85,12 +98,14 @@ router.post(
           name: parsed.data.name.trim(),
           passwordHash,
           role: parsed.data.role,
+          professionalFamily: parsed.data.professionalFamily ?? null,
         })
         .returning({
           id: usersTable.id,
           email: usersTable.email,
           name: usersTable.name,
           role: usersTable.role,
+          professionalFamily: usersTable.professionalFamily,
           active: usersTable.active,
           createdAt: usersTable.createdAt,
         });
