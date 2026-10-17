@@ -2235,7 +2235,7 @@ export const getCheckAdminAIProviderUrl = () => {
 }
 
 /**
- * Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados.
+ * Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados. Una comprobación por usuario cada minuto y tres por centro cada cinco minutos, sin comprobaciones simultáneas del mismo usuario o centro. Los límites se comparten entre sesiones del proceso servidor y se reinician al reiniciarlo.
  */
 export const checkAdminAIProvider = async (aIProviderCheckInput: AIProviderCheckInput, options?: Parameters<typeof customFetch>[1]): Promise<AIProviderCheckResult> => {
 
@@ -2268,7 +2268,7 @@ return customFetch<AIProviderCheckResult>(getCheckAdminAIProviderUrl(),
 
 export const getCheckAdminAIProviderMutationKey = () => ['checkAdminAIProvider'] as const;
 
-export const getCheckAdminAIProviderMutationOptions = <TError = ErrorType<void>,
+export const getCheckAdminAIProviderMutationOptions = <TError = ErrorType<void | ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext> => {
 
@@ -2297,10 +2297,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type CheckAdminAIProviderMutationResult = NonNullable<Awaited<ReturnType<typeof checkAdminAIProvider>>>
     export type CheckAdminAIProviderMutationBody = BodyType<AIProviderCheckInput>
-    export type CheckAdminAIProviderMutationError = ErrorType<void>
+    export type CheckAdminAIProviderMutationError = ErrorType<void | ErrorResponse>
     export type CheckAdminAIProviderMutationVariables = {data: BodyType<AIProviderCheckInput>}
 
-    export const useCheckAdminAIProvider = <TError = ErrorType<void>,
+    export const useCheckAdminAIProvider = <TError = ErrorType<void | ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkAdminAIProvider>>, TError,CheckAdminAIProviderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof checkAdminAIProvider>>,

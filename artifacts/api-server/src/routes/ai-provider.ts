@@ -9,8 +9,10 @@ import { resolveAIEndpoint } from "../lib/ai-http";
 import { UpdateAdminAIProviderSettingsBody, CheckAdminAIProviderBody, CheckAdminAIProviderResponse } from "@workspace/api-zod";
 import { AIProviderError, encryptAIProviderKey, loadAIProvider, type AIProviderMode } from "../lib/ai-provider";
 import { checkAIProvider } from "../lib/ai-provider-check";
+import { AIProviderCheckLimits } from "../lib/ai-provider-check-limits";
 
 const router = Router();
+const checkLimits = new AIProviderCheckLimits();
 
 class SettingsFailure extends Error {
   constructor(readonly status: number, message: string) { super(message); }
@@ -94,7 +96,18 @@ router.post("/admin/ai/provider/check", requireAuth, requireCsrf, async (req, re
     if (config.revision !== parsed.data.expectedRevision) {
       throw new SettingsFailure(409, "La configuración cambió. Recárgala y confirma de nuevo la comprobación.");
     }
-    res.json(CheckAdminAIProviderResponse.parse(await checkAIProvider(config)));
+    const admission = checkLimits.acquire(identity);
+    if (!admission.allowed) {
+      res.set("Retry-After", String(admission.retryAfterSeconds));
+      res.status(429).json({ error: admission.message });
+      return;
+    }
+    try {
+      res.json(CheckAdminAIProviderResponse.parse(await checkAIProvider(config)));
+    } finally {
+      // Completion and errors both release concurrency, but keep the usage count.
+      admission.release();
+    }
   } catch (error) { replyError(res, error); }
 });
 

@@ -1039,7 +1039,7 @@ export const UpdateAdminAIProviderSettingsResponse = zod.object({
 
 
 /**
- * Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados.
+ * Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados. Una comprobación por usuario cada minuto y tres por centro cada cinco minutos, sin comprobaciones simultáneas del mismo usuario o centro. Los límites se comparten entre sesiones del proceso servidor y se reinician al reiniciarlo.
  */
 export const CheckAdminAIProviderHeader = zod.object({
   "X-CSRF-Token": zod.string()

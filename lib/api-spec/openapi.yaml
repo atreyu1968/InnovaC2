@@ -424,7 +424,7 @@ paths:
   /admin/ai/provider/check:
     post:
       operationId: checkAdminAIProvider
-      description: Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados.
+      description: Solo administración técnica; comprueba la revisión guardada con muestras sintéticas confirmadas, sin persistir resultados. Una comprobación por usuario cada minuto y tres por centro cada cinco minutos, sin comprobaciones simultáneas del mismo usuario o centro. Los límites se comparten entre sesiones del proceso servidor y se reinician al reiniciarlo.
       parameters:
         - {$ref: "#/components/parameters/CsrfToken"}
       requestBody:
@@ -442,6 +442,15 @@ paths:
         "401": {description: Sesión requerida}
         "403": {description: Rol o CSRF no válido}
         "409": {description: La configuración guardada ha cambiado}
+        "429":
+          description: Comprobación en curso o límite de usuario o centro alcanzado; no se contacta con el proveedor
+          headers:
+            Retry-After:
+              description: Segundos mínimos antes de reintentar; si sigue en curso hay que esperar a que termine
+              schema: {type: integer, minimum: 1}
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/ErrorResponse"}
         "503": {description: Proveedor desactivado o incompleto}
         "500": {description: No se pudo completar la comprobación}
   /webhooks/resend:

@@ -14,3 +14,9 @@ Technical diagnostics must ask for confirmation before sending synthetic samples
 **Why:** The user explicitly requires confirmation, synthetic-only checks and a distinction between connectivity and result quality.
 
 **How to apply:** Keep diagnostic content independent of meeting records. A synthetic tone without speech may legitimately return an empty transcription; accept that as a compatible response, not as evidence of precision.
+
+Keep technical diagnostics deliberate and manual. Do not automatically run or retry them on page load, settings changes, background polling or routine validation.
+
+**Why:** Preventing accidental provider consumption is a product requirement. Even failed diagnostic calls may consume quota or incur costs.
+
+**How to apply:** Preserve explicit confirmation on every user-initiated check, disable automatic mutation retries, and use isolated fake providers for regression tests.
