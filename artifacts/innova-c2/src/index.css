@@ -270,7 +270,7 @@
 :root { font-synthesis: none; text-rendering: optimizeLegibility; }
 body { min-width: 320px; min-height: 100dvh; }
 button, a, input, select { -webkit-tap-highlight-color: transparent; }
-.brand-mark { display:grid; place-items:center; width:36px; height:36px; border-radius:10px; background:#f1fbf8; color:#154c46; font:800 14px var(--app-font-serif); letter-spacing:-.08em; }
+.brand-mark { display:block; width:36px; height:36px; border-radius:10px; object-fit:contain; flex-shrink:0; }
 .sidebar-link { display:flex; align-items:center; gap:12px; width:100%; min-height:44px; padding:11px 12px; border-radius:8px; color:#fff; text-decoration:none; font-size:13px; font-weight:600; transition:background .18s,color .18s,transform .18s; }
 .sidebar-link:hover { background:rgba(255,255,255,.13); color:#fff; }
 .sidebar-link.active { background:#c8eee7; color:#124c46; box-shadow:inset 3px 0 #0d514a; }

@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { BrandMark } from './components/BrandMark';
 import { hasCoordinationAccess } from './lib/role-access';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { Link, Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
@@ -146,7 +147,7 @@ function Workspace({ user, children }: { user: User; children: ReactNode }) {
       <header className="workspace-header">
         <button className="workspace-menu-button" onClick={() => setMobileOpen(true)} aria-label="Abrir navegación" aria-controls="primary-navigation" aria-expanded={mobileOpen} data-testid="button-open-navigation"><Menu size={20} /></button>
         <div className="workspace-brand">
-          <div className="brand-mark shrink-0" aria-hidden="true">IC</div>
+          <BrandMark className="shrink-0" />
           <div className="min-w-0"><p className="workspace-brand-name">INNOVA-C2</p><p className="workspace-brand-school">IES Manuel Martín González</p></div>
         </div>
         <div className="workspace-account">
@@ -582,7 +583,7 @@ function AuthFrame({ children, variant }: { children: ReactNode; variant?: 'logi
           </section>
           <section className="login-card" aria-labelledby="login-title">
             <div className="login-brand">
-              <div className="brand-mark login-brand-mark" aria-hidden="true">IC</div>
+              <BrandMark className="login-brand-mark" />
               <div className="login-wordmark"><p>INNOVA-C2</p><span>ESPACIO DE COORDINACIÓN</span></div>
             </div>
             {children}
@@ -592,7 +593,7 @@ function AuthFrame({ children, variant }: { children: ReactNode; variant?: 'logi
       </div>
     </main>;
   }
-  return <main className="app-shell flex min-h-[100dvh] flex-col"><header className="flex h-[68px] items-center gap-3 border-b border-[#e5dfd2] bg-[#f8f6ef] px-5 md:px-10"><div className="brand-mark">IC</div><div><p className="font-[var(--app-font-serif)] text-sm font-extrabold tracking-tight text-[#26383d]">INNOVA-C2</p><p className="text-[9px] tracking-[.12em] text-[#7b8580]">ESPACIO DE COORDINACIÓN</p></div><span className="ml-auto hidden text-xs text-[#737e78] sm:block">IES Manuel Martín González</span></header><div className="flex flex-1 items-start justify-center px-4 py-10 md:items-center md:py-14"><section className="panel w-full max-w-[620px] p-6 md:p-9">{children}</section></div><footer className="px-5 py-4 text-center text-[10px] tracking-wide text-[#7d8580]">INNOVA-C2 · Coordinación educativa</footer></main>;
+  return <main className="app-shell flex min-h-[100dvh] flex-col"><header className="flex h-[68px] items-center gap-3 border-b border-[#e5dfd2] bg-[#f8f6ef] px-5 md:px-10"><BrandMark /><div><p className="font-[var(--app-font-serif)] text-sm font-extrabold tracking-tight text-[#26383d]">INNOVA-C2</p><p className="text-[9px] tracking-[.12em] text-[#7b8580]">ESPACIO DE COORDINACIÓN</p></div><span className="ml-auto hidden text-xs text-[#737e78] sm:block">IES Manuel Martín González</span></header><div className="flex flex-1 items-start justify-center px-4 py-10 md:items-center md:py-14"><section className="panel w-full max-w-[620px] p-6 md:p-9">{children}</section></div><footer className="px-5 py-4 text-center text-[10px] tracking-wide text-[#7d8580]">INNOVA-C2 · Coordinación educativa</footer></main>;
 }
 
 function PageIntro({ eyebrow, title, description }: { eyebrow: string; title: string; description: string }) {
@@ -617,7 +618,7 @@ function CatalogSkeleton() {
   return <div className="space-y-4" aria-label="Cargando catálogo"><div className="skeleton h-40 rounded-xl" /><div className="panel space-y-3 p-5">{[1,2,3,4].map(i => <div className="skeleton h-12" key={i} />)}</div></div>;
 }
 function LoadingScreen({ label }: { label: string }) {
-  return <main className="app-shell grid min-h-[100dvh] place-items-center p-5"><div className="w-full max-w-sm panel p-6" role="status" aria-label={label}><div className="flex items-center gap-3"><div className="brand-mark">IC</div><div className="skeleton h-4 w-40" /></div><div className="skeleton mt-6 h-3 w-3/4" /><div className="skeleton mt-3 h-3 w-1/2" /><p className="mt-5 text-xs text-[#6e7974]">{label}…</p></div></main>;
+  return <main className="app-shell grid min-h-[100dvh] place-items-center p-5"><div className="w-full max-w-sm panel p-6" role="status" aria-label={label}><div className="flex items-center gap-3"><BrandMark /><div className="skeleton h-4 w-40" /></div><div className="skeleton mt-6 h-3 w-3/4" /><div className="skeleton mt-3 h-3 w-1/2" /><p className="mt-5 text-xs text-[#6e7974]">{label}…</p></div></main>;
 }
 function formatDate(value: string) {
   const date = new Date(value);
