@@ -6,7 +6,8 @@ attached_assets
 node_modules
 **/node_modules
 **/dist
-**/.tsbuildinfo
+*.tsbuildinfo
+**/*.tsbuildinfo
 backups
 data
 .env

@@ -28,7 +28,7 @@ services:
       NODE_ENV: production
       PORT: "3000"
       BASE_PATH: /
-      WEB_DIST_DIR: /app/artifacts/innova-c2/dist
+      WEB_DIST_DIR: /app/artifacts/innova-c2/dist/public
       DATA_DIR: /var/lib/innova/documents
       DATABASE_URL: postgresql://${POSTGRES_USER:-innova}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-innova_c2}
       SESSION_SECRET: ${SESSION_SECRET:?Create .env with SESSION_SECRET}

@@ -3,14 +3,25 @@ import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { createRequire } from "node:module";
 import { createHmac, randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const { Pool } = require(require.resolve("pg", { paths: [path.join(root, "lib/db")] }));
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+if (!testDatabaseUrl) {
+  throw new Error("Define TEST_DATABASE_URL for an isolated disposable PostgreSQL database; DATABASE_URL is never used by the phase tests.");
+}
+if (testDatabaseUrl === process.env.DATABASE_URL) {
+  throw new Error("TEST_DATABASE_URL must be different from DATABASE_URL to protect application data.");
+}
+const testDatabaseName = decodeURIComponent(new URL(testDatabaseUrl).pathname).replace(/^\/+/, "");
+if (!/test/i.test(testDatabaseName)) {
+  throw new Error("The TEST_DATABASE_URL database name must contain 'test' to reduce the risk of using application data.");
+}
+const pool = new Pool({ connectionString: testDatabaseUrl });
 const testId = randomUUID().replaceAll("-", "").slice(0, 12);
 const centerName = `INNOVA-C2 Fase 0 test ${testId}`;
 const adminEmail = `phase0-admin-${testId}@example.invalid`;
@@ -21,12 +32,20 @@ const failedLoginIp = "203.0.113.27";
 const blockedEmail = `phase0-lock-${testId}@example.invalid`;
 const port = String(32_000 + Math.floor(Math.random() * 12_000));
 const base = `http://127.0.0.1:${port}/api/v1`;
+const testDataDirectory = path.join("/tmp", `innova-c2-phase0-${testId}`);
 const server = spawn(
   process.execPath,
   [path.join(root, "artifacts/api-server/dist/index.mjs")],
   {
     cwd: root,
-    env: { ...process.env, PORT: port, NODE_ENV: "test", TRUST_PROXY: "1" },
+    env: {
+      ...process.env,
+      DATABASE_URL: testDatabaseUrl,
+      DATA_DIR: testDataDirectory,
+      PORT: port,
+      NODE_ENV: "test",
+      TRUST_PROXY: "1",
+    },
     stdio: ["ignore", "pipe", "pipe"],
   },
 );
@@ -117,6 +136,7 @@ async function cleanup() {
     [keyHash(failedLoginIp)],
   );
   await pool.end();
+  await rm(testDataDirectory, { recursive: true, force: true });
 }
 
 let cleanupFailure;

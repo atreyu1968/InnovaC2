@@ -86,12 +86,14 @@ restauración planificada.
 
 ## Desarrollo y pruebas
 
-El proyecto usa pnpm workspaces. Tras instalar dependencias y tener configurada
-una base PostgreSQL de desarrollo:
+El proyecto usa pnpm workspaces. Para las pruebas, prepara una base PostgreSQL
+desechable, separada de `DATABASE_URL`, y exporta `TEST_DATABASE_URL` con su
+cadena de conexión. Las pruebas rechazan usar la misma cadena que la aplicación:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm --filter @workspace/db run push
+export TEST_DATABASE_URL='postgresql://innova:contraseña-local@127.0.0.1:5432/innova_c2_test'
+DATABASE_URL="$TEST_DATABASE_URL" pnpm --filter @workspace/db run push
 pnpm -w run typecheck
 pnpm run test:phase0
 pnpm run test:phase1
@@ -99,8 +101,9 @@ BASE_PATH=/ PORT=3000 pnpm -w run build
 ```
 
 Las pruebas de fase 0 y 1 inicializan cuentas, centro y planes temporales en la
-base real configurada, y los eliminan al terminar. Ejecútalas solo contra una
-base de desarrollo aislada, nunca contra producción. `test:phase1` verifica
+base indicada por `TEST_DATABASE_URL`, y los eliminan al terminar. El servidor
+de prueba usa además un directorio temporal para evidencias. No las ejecutes
+contra producción ni contra la base activa del centro. `test:phase1` verifica
 permisos, edición, validación oficial, concurrencia, snapshots, exportaciones
 DOCX/PDF, salida Laycos y almacenamiento/descarga del justificante.
 

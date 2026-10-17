@@ -10,7 +10,18 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const { Pool } = require(require.resolve("pg", { paths: [path.join(root, "lib/db")] }));
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+if (!testDatabaseUrl) {
+  throw new Error("Define TEST_DATABASE_URL for an isolated disposable PostgreSQL database; DATABASE_URL is never used by the phase tests.");
+}
+if (testDatabaseUrl === process.env.DATABASE_URL) {
+  throw new Error("TEST_DATABASE_URL must be different from DATABASE_URL to protect application data.");
+}
+const testDatabaseName = decodeURIComponent(new URL(testDatabaseUrl).pathname).replace(/^\/+/, "");
+if (!/test/i.test(testDatabaseName)) {
+  throw new Error("The TEST_DATABASE_URL database name must contain 'test' to reduce the risk of using application data.");
+}
+const pool = new Pool({ connectionString: testDatabaseUrl });
 const testId = randomUUID().replaceAll("-", "").slice(0, 12);
 const centerName = `INNOVA-C2 Fase 1 test ${testId}`;
 const adminEmail = `phase1-admin-${testId}@example.invalid`;
@@ -27,6 +38,7 @@ const server = spawn(
     cwd: root,
     env: {
       ...process.env,
+      DATABASE_URL: testDatabaseUrl,
       PORT: port,
       NODE_ENV: "test",
       TRUST_PROXY: "1",
