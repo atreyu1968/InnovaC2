@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "k7ZNGOXxbNnRjLSXZr1fe"
+uri = "file://attached_assets/image_search/pexels-5955023.jpg"
+type = "image"
+title = "Foto de stock usada en el acceso de INNOVA-C2"
+description = "Foto de Theo Decker publicada en Pexels. Su licencia permite uso gratuito en aplicaciones; se usa localmente y se identifica como ilustrativa. Fuente: https://www.pexels.com/photo/man-and-woman-looking-at-a-digital-tablet-5955023/"
+logical_id = "ec381776-b324-47ca-94ce-ad2ca14da0dd"
+content_hash = "sha256:6826af8138bf365aa5b19f69a2674cbd67f49e83b090b96b7689beb29fff84ba"
+size = 83621
+mtime_ms = 1792244798797
+storage_uri = "gcs://replit-rams-assets-riker/rams/assets/repl:1bb4a87a-98c4-4d49-8312-f91b53f286f4/ec381776-b324-47ca-94ce-ad2ca14da0dd/1e5d7c21-6c5c-4613-8f6c-f2d54c9621b5"
+storage_version_token = "1792245547892907"
+content_type = "image/jpeg"
